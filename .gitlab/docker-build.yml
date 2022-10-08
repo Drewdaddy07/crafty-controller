@@ -47,7 +47,8 @@ docker-build-dev:
       --build-arg "CRAFTY_VER=${VERSION}"
       --tag "$CI_REGISTRY_IMAGE${tag}"
       --platform linux/arm64/v8,linux/amd64
-      --push .
+    - docker tag "$CI_REGISTRY_IMAGE${tag}" "$CI_REGISTRY_IMAGE${VERSION}"
+    - docker push -a
   after_script:
     - |
       docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
@@ -102,7 +103,8 @@ docker-build-prod:
       --build-arg "CRAFTY_VER=${VERSION}"
       --tag "$CI_REGISTRY_IMAGE${tag}"
       --platform linux/arm64/v8,linux/amd64
-      --push .
+    - docker tag "$CI_REGISTRY_IMAGE${tag}" "$CI_REGISTRY_IMAGE${VERSION}"
+    - docker push -a
   after_script:
     - |
       docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
