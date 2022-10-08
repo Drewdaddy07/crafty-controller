@@ -46,8 +46,9 @@ docker-build-dev:
       --build-arg "BUILD_REF=${CI_COMMIT_SHA}"
       --build-arg "CRAFTY_VER=${VERSION}"
       --tag "$CI_REGISTRY_IMAGE${tag}"
-      --platform linux/arm64/v8,linux/amd64
-      --push .
+      --platform linux/arm64/v8,linux/amd64 .
+    - docker image tag "$CI_REGISTRY_IMAGE${tag}" "$CI_REGISTRY_IMAGE${VERSION}"
+    - docker image push -a
   after_script:
     - |
       docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
@@ -101,8 +102,9 @@ docker-build-prod:
       --build-arg "BUILD_REF=${CI_COMMIT_SHA}"
       --build-arg "CRAFTY_VER=${VERSION}"
       --tag "$CI_REGISTRY_IMAGE${tag}"
-      --platform linux/arm64/v8,linux/amd64
-      --push .
+      --platform linux/arm64/v8,linux/amd64 .
+    - docker image tag "$CI_REGISTRY_IMAGE${tag}" "$CI_REGISTRY_IMAGE${VERSION}"
+    - docker image push -a
   after_script:
     - |
       docker buildx rm zedBuilder && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
