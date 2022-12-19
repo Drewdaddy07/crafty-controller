@@ -1,0 +1,39 @@
+# yamllint disable rule:line-length
+---
+mac-dev-build:
+  stage: dev-deployment
+  tags:
+    - macM1
+  cache:
+    paths:
+      - .venv/
+  rules:
+    - if: "$CI_COMMIT_BRANCH == 'dev'"
+  environment:
+    name: development
+  script:
+    - |
+      python3 -m venv .venv
+      source .venv/bin/activate
+      python -m pip install --upgrade pip
+      pip install pyinstaller
+      pip install -r requirements.txt
+    - pyinstaller -F main.py
+      --distpath .
+      --name "crafty"
+      --paths .venv\Lib\site-packages
+      --hidden-import cryptography
+      --hidden-import cffi
+      --hidden-import apscheduler
+      --collect-all tzlocal
+      --collect-all tzdata
+      --collect-all pytz
+      --collect-all six
+    - chmod +x crafty4
+    - tar --exclude='./app/classes/' -cvzf crafty4.tar.gz crafty4 app/
+  artifacts:
+    name: "craftyOSX-${CI_RUNNER_TAGS}-${CI_COMMIT_BRANCH}_${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - .\crafty4.tar.gz
+    exclude:
+      - app\classes\**\*

@@ -17,6 +17,7 @@ include:
   - local: .gitlab/lint.yml
   - local: .gitlab/docker-build.yml
   - local: .gitlab/windows-build.yml
+  - local: .gitlab/mac-build.yml
   - local: .gitlab/release.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
   - template: Security/SAST.gitlab-ci.yml
