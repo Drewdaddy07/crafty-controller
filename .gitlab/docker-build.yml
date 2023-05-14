@@ -28,8 +28,8 @@ docker-build-dev:
       docker version
     - docker run --rm --privileged aptman/qus -- -r
     - docker run --rm --privileged aptman/qus -s -- -p aarch64 x86_64
-    - echo $CI_BUILD_TOKEN | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
-    - echo $DOCKERHUB_TOKEN | docker login -u "$DOCKERHUB_USER" --password-stdin $DOCKERHUB_REGISTRY
+    - docker login -u "$CI_REGISTRY_USER" -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker login -u "$DOCKERHUB_USER" -p $DOCKERHUB_TOKEN $DOCKERHUB_REGISTRY
   script:
     - |
       tag=":$CI_COMMIT_REF_SLUG"
