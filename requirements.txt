@@ -17,6 +17,6 @@ requests==2.31.0
 termcolor==1.1
 tornado==6.3.3
 tzlocal==5.1
-jsonschema==4.19.1
+jsonschema==4.5.1
 orjson==3.9.7
 prometheus-client==0.17.1
