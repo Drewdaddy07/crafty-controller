@@ -26,6 +26,7 @@ win-dev-build:
       --hidden-import cryptography
       --hidden-import cffi
       --hidden-import apscheduler
+      --hidden-import jsonschema
       --collect-all tzlocal
       --collect-all tzdata
       --collect-all pytz
@@ -74,6 +75,7 @@ win-prod-build:
       --hidden-import cryptography
       --hidden-import cffi
       --hidden-import apscheduler
+      --hidden-import jsonschema
       --collect-all tzlocal
       --collect-all tzdata
       --collect-all pytz
