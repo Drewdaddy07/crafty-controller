@@ -364,7 +364,7 @@ class Helpers:
 
     def create_pass(self):
         # Maximum length of password needed
-        max_len = 25
+        max_len = 64
 
         # Declare string of the character that we need in our password
         digits = string.digits
