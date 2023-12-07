@@ -85,7 +85,7 @@ class Controller:
                 encoding="utf-8",
             ) as f:
                 self.auth_tracker = json.load(f)
-        except:
+        except (FileNotFoundError, json.JSONDecodeError):
             self.auth_tracker = {}
 
     def log_attempt(self, remote_ip, username):
@@ -528,6 +528,10 @@ class Controller:
             created_by=user_id,
             server_host=monitoring_host,
             server_type=monitoring_type,
+        )
+        self.management.set_backup_config(
+            new_server_id,
+            backup_path,
         )
         if data["create_type"] == "minecraft_java":
             if root_create_data["create_type"] == "download_jar":
