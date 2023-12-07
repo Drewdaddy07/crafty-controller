@@ -362,6 +362,42 @@ class Helpers:
 
         return result_of_check == 0
 
+    def create_pass(self):
+        # Maximum length of password needed
+        max_len = 64
+
+        # Declare string of the character that we need in our password
+        digits = string.digits
+        locase = string.ascii_lowercase
+        upcase = string.ascii_uppercase
+        symbols = "!@#$%^&*"  # Reducing to avoid issues with ([]{}<>,'`) etc
+
+        # Combine all the character strings above to form one string
+        combo = digits + upcase + locase + symbols
+
+        # Randomly select at least one character from each character set above
+        rand_digit = secrets.choice(digits)
+        rand_upper = secrets.choice(upcase)
+        rand_lower = secrets.choice(locase)
+        rand_symbol = secrets.choice(symbols)
+
+        # Combine the character randomly selected above
+        temp_pass = rand_digit + rand_upper + rand_lower + rand_symbol
+
+        # Fill the rest of the password length by selecting randomly char list
+        for _ in range(max_len - 4):
+            temp_pass += secrets.choice(combo)
+
+        # Shuffle the temporary password to prevent predictable patterns
+        temp_pass_list = list(temp_pass)
+        secrets.SystemRandom().shuffle(temp_pass_list)
+
+        # Form the password by concatenating the characters
+        password = "".join(temp_pass_list)
+
+        # Return completed password
+        return password
+
     @staticmethod
     def cmdparse(cmd_in):
         # Parse a string into arguments
