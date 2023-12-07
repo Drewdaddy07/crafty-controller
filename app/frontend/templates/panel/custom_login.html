@@ -28,7 +28,12 @@
 
 
           {% if data['superuser'] %}
-          {% include "parts/crafty_config_list.html %}
+          <span class="d-none d-sm-block">
+            {% include "parts/crafty_config_list.html %}
+          </span>
+          <span class="d-block d-sm-none">
+            {% include "parts/m_crafty_config_list.html %}
+          </span>
           {% end %}
 
           <!-- Page Title Header Starts-->
@@ -51,16 +56,22 @@
                     <div class="col-12">
                       <h4>{{ translate('customLogin', 'loginImage', data['lang']) }}</h4>
                       <hr>
-                      <form class="form-row" name="zip" method="post" class="server-wizard" onSubmit="wait_msg(true)">
+                      <form class="form" name="zip" method="post" class="server-wizard" onSubmit="wait_msg(true)">
                         {% raw xsrf_form_html() %}
                         <input type="hidden" value="import_zip" name="create_type">
-                        <div class="col form-group">
-                          <span id="upload_input"><input type="file" class="form-control-file" id="file" name="file"
-                              multiple="false" required></span>
-                        </div>
-                        <div class="col form-group">
-                          <button type="button" class="btn btn-info" id="upload-button" onclick="sendFile()"
-                            disabled>UPLOAD</button>
+                        <div class="form-group">
+                          <div id="upload_input" class="input-group">
+                            <div class="custom-file">
+                              <input type="file" class="custom-file-input" id="file" name="file" multiple="false"
+                                required>
+                              <label id="fileLabel" class="custom-file-label" for="file">{{ translate('customLogin',
+                                'labelLoginImage', data['lang']) }}</label>
+                            </div>
+                            <div class="input-group-append">
+                              <button type="button" class="btn btn-info upload-button" id="upload-button"
+                                onclick="sendFile()" disabled>UPLOAD</button>
+                            </div>
+                          </div>
                         </div>
                       </form>
                       <hr>
@@ -228,6 +239,10 @@
 </div>
 
 <style>
+  .img-fluid {
+    margin-bottom: 1rem;
+  }
+
   .popover-body {
     color: white !important;
     ;
@@ -272,6 +287,7 @@
     console.log("File changed");
     if ($('#file').val()) {
       $('#upload-button').prop("disabled", false);
+      document.getElementById("fileLabel").innerHTML = $('#file').val().split('\\').pop().split('/').pop();
       console.log("File changed good");
     }
   });
@@ -293,33 +309,50 @@
     });
   });
 
-  $('.delete-photo').click(function () {
-    var token = getCookie("_xsrf")
+  $('.delete-photo').click(async function () {
     let photo = $('#photo').find(":selected").val();
-    $.ajax({
-      type: "POST",
-      headers: { 'X-XSRFToken': token },
-      url: '/ajax/delete_photo?photo=' + encodeURIComponent(photo),
-      success: function (data) {
-        location.reload();
+    const token = getCookie("_xsrf")
+    let res = await fetch(`/api/v2/crafty/config/customize`, {
+      method: 'DELETE',
+      headers: {
+        'X-XSRFToken': token
       },
+      body: JSON.stringify({ "photo": photo }),
     });
+    let responseData = await res.json();
+    if (responseData.status === "ok") {
+      window.location.reload();
+    } else {
+
+      bootbox.alert({
+        title: responseData.status,
+        message: responseData.error
+      });
+    }
   })
 
-  $('.select-photo').click(function () {
-    var token = getCookie("_xsrf")
+  $('.select-photo').click(async function () {
     let photo = $('#photo').find(":selected").val();
     let opacity = $('#modal_opacity').val();
-    let enc_photo = encodeURIComponent(photo);
-
-    $.ajax({
-      type: "POST",
-      headers: { 'X-XSRFToken': token },
-      url: '/ajax/select_photo?photo=' + enc_photo + '&opacity=' + opacity,
-      success: function (data) {
-        window.location.reload();
+    console.log(JSON.stringify({ "photo": photo, "opacity": opacity }))
+    const token = getCookie("_xsrf")
+    let res = await fetch(`/api/v2/crafty/config/customize`, {
+      method: 'PATCH',
+      headers: {
+        'X-XSRFToken': token
       },
+      body: JSON.stringify({ "photo": photo, "opacity": opacity }),
     });
+    let responseData = await res.json();
+    if (responseData.status === "ok") {
+      window.location.reload();
+    } else {
+
+      bootbox.alert({
+        title: responseData.status,
+        message: responseData.error
+      });
+    }
   })
 
   $(document).ready(function () {
@@ -352,7 +385,7 @@
   var file;
   function sendFile() {
     file = $("#file")[0].files[0]
-    document.getElementById("upload_input").innerHTML = '<div class="progress"><div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">&nbsp;<i class="fa-solid fa-spinner"></i></div></div>';
+    document.getElementById("upload_input").innerHTML = '<div class="progress" style="width: 100%"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">&nbsp;<i class="fa-solid fa-spinner"></i></div></div>';
     let xmlHttpRequest = new XMLHttpRequest();
     let token = getCookie("_xsrf")
     let fileName = file.name
@@ -380,7 +413,7 @@
     xmlHttpRequest.addEventListener('load', (event) => {
       if (event.target.responseText == 'success') {
         console.log('Upload for file', file.name, 'was successful!')
-        document.getElementById("upload_input").innerHTML = '<div class="card-header header-sm d-flex justify-content-between align-items-center"><span id="file-uploaded" style="color: gray;">' + fileName + '</span> 🔒</div>';
+        document.getElementById("upload_input").innerHTML = '<div class="card-header header-sm d-flex justify-content-between align-items-center" style="width: 100%"><span id="file-uploaded" style="color: gray;">' + fileName + '</span> 🔒</div>';
         setTimeout(function () {
           window.location.reload();
         }, 2000);

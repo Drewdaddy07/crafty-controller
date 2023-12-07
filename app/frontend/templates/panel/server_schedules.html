@@ -51,14 +51,16 @@
                     data-content="{{ translate('serverSchedules', 'cannotSeeOnMobile', data['lang']) }}" ,
                     data-placement="bottom"></span>
                   {% end %}
-                  <div><button
+                  <div>
+                    <button
                       onclick="location.href=`/panel/add_schedule?id={{ data['server_stats']['server_id']['server_id'] }}`"
                       class="btn btn-info">{{ translate('serverSchedules', 'create', data['lang']) }}<i
-                        class="fas fa-pencil-alt"></i></button></div>
+                        class="fas fa-pencil-alt"></i></button>
+                  </div>
                 </div>
                 <div class="card-body">
-                  <table class="table table-hover d-none d-lg-block responsive-table" id="schedule_table" width="100%"
-                    style="table-layout:fixed;">
+                  <table class="table table-hover d-none d-lg-block responsive-table" id="schedule_table"
+                    style="table-layout:fixed;" aria-describedby="Schedule List">
                     <thead>
                       <tr class="rounded">
                         <th style="width: 2%; min-width: 10px;">{{ translate('serverSchedules', 'name', data['lang']) }}
@@ -87,10 +89,10 @@
                           <p>{{schedule.action}}</p>
                         </td>
                         <td id="{{schedule.command}}" class="action" style="overflow: scroll; max-width: 30px;">
-                          <p>{{schedule.command}}</p>
+                          <p style="overflow: scroll;" class="no-scroll">{{schedule.command}}</p>
                         </td>
                         <td id="{{schedule.interval}}" class="action">
-                          {% if schedule.interval != '' %}
+                          {% if schedule.interval_type != '' and schedule.interval_type != 'reaction' %}
                           <p>{{ translate('serverSchedules', 'every', data['lang']) }}</p>
                           <p>{{schedule.interval}} {{schedule.interval_type}}</p>
                           {% elif schedule.interval_type == 'reaction' %}
@@ -126,8 +128,8 @@
                     </tbody>
                   </table>
                   <hr />
-                  <table class="table table-hover d-block d-lg-none" id="mini_schedule_table" width="100%"
-                    style="table-layout:fixed;">
+                  <table class="table table-hover d-block d-lg-none" id="mini_schedule_table"
+                    style="table-layout:fixed;" aria-describedby="Schedule List Mobile">
                     <thead>
                       <tr class="rounded">
                         <th style="width: 25%; min-width: 50px;">{{ translate('serverSchedules', 'action', data['lang'])
@@ -145,7 +147,7 @@
                           <p>{{schedule.action}}</p>
                         </td>
                         <td id="{{schedule.command}}" class="action" style="overflow: scroll; max-width: 30px;">
-                          <p>{{schedule.command}}</p>
+                          <p style="overflow: scroll;">{{schedule.command}}</p>
                         </td>
                         <td id="{{schedule.enabled}}" class="action">
                           {% if schedule.enabled %}
@@ -325,7 +327,7 @@
   const serverId = new URLSearchParams(document.location.search).get('id')
 
   $(document).ready(function () {
-    console.log('ready for JS!')
+    console.log('ready for JS!');
     $('#schedule_table').DataTable({
       'order': [4, 'asc'],
     }
@@ -381,39 +383,6 @@
     console.log("ready!");
 
   });
-
-  function yesnoCheck(that) {
-    if (that.value == "command") {
-      document.getElementById("ifYes").style.display = "block";
-      document.getElementById("command").required = true;
-    } else {
-      document.getElementById("ifYes").style.display = "none";
-      document.getElementById("command").required = false;
-    }
-  }
-  function basicAdvanced(that) {
-    if (that.value == "advanced") {
-      document.getElementById("ifAdvanced").style.display = "block";
-      document.getElementById("ifBasic").style.display = "none";
-      document.getElementById("interval").required = false;
-      document.getElementById("time").required = false;
-    } else {
-      document.getElementById("ifAdvanced").style.display = "none";
-      document.getElementById("ifBasic").style.display = "block";
-      document.getElementById("interval").required = true;
-      document.getElementById("time").required = true;
-    }
-  }
-  function ifDays(that) {
-    if (that.value == "days") {
-      document.getElementById("ifDays").style.display = "block";
-      document.getElementById("time").required = true;
-    } else {
-      document.getElementById("ifDays").style.display = "none";
-      document.getElementById("time").required = false;
-    }
-  }
-
   $(".del_button").click(function () {
     var sch_id = $(this).data('sch');
 
@@ -440,21 +409,19 @@
     });
   });
 
-  function del_task(sch_id, id) {
-    var token = getCookie("_xsrf")
+  async function del_task(sch_id, id) {
+    const token = getCookie("_xsrf")
 
-    $.ajax({
-      type: "DELETE",
-      headers: { 'X-XSRFToken': token },
-      url: '/ajax/del_task?server_id=' + id + '&schedule_id=' + sch_id,
-      data: {
-        schedule_id: sch_id,
-        id: id
-      },
-      success: function (data) {
-        location.reload();
+    let res = await fetch(`/api/v2/servers/${id}/tasks/${sch_id}`, {
+      method: 'DELETE',
+      headers: {
+        'token': token,
       },
     });
+    let responseData = await res;
+    if (responseData.statusText === "OK") {
+      window.location.reload();
+    }
   }
 
 </script>

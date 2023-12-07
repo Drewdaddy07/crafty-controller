@@ -11,6 +11,7 @@ import subprocess
 import html
 import urllib.request
 import glob
+import json
 
 from zoneinfo import ZoneInfo
 
@@ -132,6 +133,15 @@ class ServerInstance:
         self.server_object = HelperServers.get_server_obj(self.server_id)
         self.stats_helper = HelperServerStats(self.server_id)
         self.last_backup_failed = False
+        try:
+            with open(
+                os.path.join(self.server_object.path, "db_stats", "players_cache.json"),
+                "r",
+                encoding="utf-8",
+            ) as f:
+                self.player_cache = list(json.load(f).values())
+        except:
+            self.player_cache = []
         try:
             self.tz = get_localzone()
         except ZoneInfoNotFoundError as e:
@@ -460,7 +470,47 @@ class ServerInstance:
         #               STEAM SERVERS
         # ***********************************************
         # ***********************************************
-        elif HelperServers.get_server_type_by_id(self.server_id) == "steam":
+        elif HelperServers.get_server_type_by_id(self.server_id) == "raknet":
+            my_env = os.environ
+            env_mod = False
+            with open(
+                self.server_path + "/env.json",
+            ) as env_file:
+                env_file_data = json.load(env_file)
+                for key, value in env_file_data.items():
+                    if "path" in key.lower():
+                        items_validated = []
+                        for item in value["contents"]:
+                            try:
+                                p = Helpers.validate_traversal(self.server_path, item)
+                            except ValueError:
+                                logger.warning(
+                                    "Path traversal detected on server {self.server_id} for env {k} value {i}, skipping"
+                                )
+                            p = str(p).replace(":", "\:")
+                            items_validated.append(p)
+                        if my_env.get(key, None):
+                            if value["mode"] == "append":
+                                items_validated.insert(0, my_env[key])
+                            elif value["mode"] == "prepend":
+                                items_validated.append(my_env[key])
+                        my_env[key] = ":".join(items_validated)
+                    else:
+                        items = value["contents"]
+                        if value["mode"] == "append":
+                            items.insert(0, my_env[key])
+                        elif value["mode"] == "prepend":
+                            items.append(my_env[key])
+                        my_env[key] = ",".join(items)
+                env_mod = True
+            if env_mod:
+                logger.debug(
+                    f"Launching process for server {self.server_id} with modified environment {my_env}"
+                )
+            else:
+                logger.debug(
+                    f"Launching process for server {self.server_id} with un-modified environment"
+                )
             try:
                 self.process = subprocess.Popen(
                     self.server_command,
@@ -468,6 +518,7 @@ class ServerInstance:
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
+                    env=my_env,
                 )
             except Exception as ex:
                 logger.error(
@@ -486,6 +537,9 @@ class ServerInstance:
                     return
 
         else:
+            logger.debug(
+                f"Starting server {self.server_id} with unknown type {HelperServers.get_server_type_by_id(self.server_id)}"
+            )
             try:
                 self.process = subprocess.Popen(
                     self.server_command,
@@ -799,6 +853,7 @@ class ServerInstance:
                 )
         if self.settings["stop_command"]:
             self.send_command(self.settings["stop_command"])
+            self.write_player_cache()
         else:
             # windows will need to be handled separately for Ctrl+C
             self.process.terminate()
@@ -1247,6 +1302,40 @@ class ServerInstance:
         )
         update_thread.start()
 
+    def write_player_cache(self):
+        write_json = {}
+        for item in self.player_cache:
+            write_json[item["name"]] = item
+        with open(
+            os.path.join(self.server_path, "db_stats", "players_cache.json"),
+            "w",
+            encoding="utf-8",
+        ) as f:
+            f.write(json.dumps(write_json, indent=4))
+            logger.info("Cache file refreshed")
+
+    def cache_players(self):
+        server_players = self.get_server_players()
+        for p in self.player_cache[:]:
+            if p["status"] == "Online" and p["name"] not in server_players:
+                p["status"] = "Offline"
+                p["last_seen"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+            elif p["name"] in server_players:
+                self.player_cache.remove(p)
+        for player in server_players:
+            if player == "Anonymous Player":
+                # Skip Anonymous Player
+                continue
+            if player in self.player_cache:
+                self.player_cache.remove(player)
+            self.player_cache.append(
+                {
+                    "name": player,
+                    "status": "Online",
+                    "last_seen": datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
+                }
+            )
+
     def check_update(self):
         return self.stats_helper.get_server_stats()["updating"]
 
@@ -1433,6 +1522,12 @@ class ServerInstance:
             minutes=self.helper.get_setting("dir_size_poll_freq_minutes"),
             id=str(self.server_id) + "_dir_poll",
         )
+        self.dir_scheduler.add_job(
+            self.cache_players,
+            "interval",
+            seconds=5,
+            id=str(self.server_id) + "_players_poll",
+        )
 
     def calc_dir_size(self):
         server_dt = HelperServers.get_server_data_by_id(self.server_id)
@@ -1502,6 +1597,7 @@ class ServerInstance:
                         "created": datetime.datetime.now().strftime(
                             "%Y/%m/%d, %H:%M:%S"
                         ),
+                        "players_cache": self.player_cache,
                     },
                 )
             total_players += int(raw_ping_result.get("online"))
@@ -1543,7 +1639,10 @@ class ServerInstance:
         server_name = server.get("server_name", f"ID#{server_id}")
 
         logger.debug(f"Pinging server '{server}' on {internal_ip}:{server_port}")
-        if HelperServers.get_server_type_by_id(server_id) == "minecraft-bedrock":
+        if (
+            HelperServers.get_server_type_by_id(server_id) == "minecraft-bedrock"
+            or HelperServers.get_server_type_by_id(server_id) == "raknet"
+        ):
             int_mc_ping = ping_raknet(internal_ip, int(server_port))
         else:
             try:
@@ -1557,10 +1656,10 @@ class ServerInstance:
         # if we got a good ping return, let's parse it
         if int_mc_ping:
             int_data = True
-            if HelperServers.get_server_type_by_id(
-                server["server_id"]
-            ) == "minecraft-bedrock" or HelperServers.get_server_type_by_id(
-                server["server_id"] == "steam"
+            if (
+                HelperServers.get_server_type_by_id(server["server_id"])
+                == "minecraft-bedrock"
+                or HelperServers.get_server_type_by_id(server["server_id"]) == "raknet"
             ):
                 ping_data = Stats.parse_server_raknet_ping(int_mc_ping)
             else:
@@ -1670,7 +1769,10 @@ class ServerInstance:
         server_port = server_dt["server_port"]
 
         logger.debug(f"Pinging server '{self.name}' on {internal_ip}:{server_port}")
-        if HelperServers.get_server_type_by_id(server_id) == "minecraft-bedrock":
+        if (
+            HelperServers.get_server_type_by_id(server_id) == "minecraft-bedrock"
+            or HelperServers.get_server_type_by_id(server_id) == "raknet"
+        ):
             int_mc_ping = ping_raknet(internal_ip, int(server_port))
         else:
             int_mc_ping = ping(internal_ip, int(server_port))

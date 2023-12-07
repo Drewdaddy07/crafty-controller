@@ -43,6 +43,7 @@ class AuditLog(BaseModel):
 #                                Crafty Settings Class
 # **********************************************************************************
 class CraftySettings(BaseModel):
+    id = AutoField()
     secret_api_key = CharField(default="")
     cookie_secret = CharField(default="")
     login_photo = CharField(default="login_1.jpg")
@@ -144,7 +145,7 @@ class HelpersManagement:
     #                                   Audit_Log Methods
     # **********************************************************************************
     @staticmethod
-    def get_actity_log():
+    def get_activity_log():
         query = AuditLog.select()
         return DatabaseShortcuts.return_db_rows(query)
 

@@ -41,10 +41,10 @@ scheduler_intervals = {
 class TasksManager:
     controller: Controller
 
-    def __init__(self, helper, controller):
+    def __init__(self, helper, controller, file_helper):
         self.helper: Helpers = helper
         self.controller: Controller = controller
-        self.tornado: Webserver = Webserver(helper, controller, self)
+        self.tornado: Webserver = Webserver(helper, controller, self, file_helper)
         try:
             self.tz = get_localzone()
         except ZoneInfoNotFoundError as e:
@@ -421,6 +421,7 @@ class TasksManager:
                 )
             for item in jobs:
                 logger.info(f"JOB: {item}")
+            return task.schedule_id
 
     def remove_all_server_tasks(self, server_id):
         schedules = HelpersManagement.get_schedules_by_server(server_id)
@@ -450,7 +451,6 @@ class TasksManager:
         # created task a child of itself.
         if str(job_data.get("parent")) == str(sch_id):
             job_data["parent"] = None
-
         HelpersManagement.update_scheduled_task(sch_id, job_data)
 
         if not (
@@ -738,12 +738,21 @@ class TasksManager:
     def check_for_updates(self):
         logger.info("Checking for Crafty updates...")
         self.helper.update_available = self.helper.check_remote_version()
+        remote = self.helper.update_available
         if self.helper.update_available:
             logger.info(f"Found new version {self.helper.update_available}")
         else:
             logger.info(
                 "No updates found! You are on the most up to date Crafty version."
             )
+        if self.helper.update_available:
+            self.helper.update_available = {
+                "id": str(remote),
+                "title": f"{remote} Update Available",
+                "date": "",
+                "desc": "Release notes are available by clicking this notification.",
+                "link": "https://gitlab.com/crafty-controller/crafty-4/-/releases",
+            }
         logger.info("Refreshing Gravatar PFPs...")
         for user in HelperUsers.get_all_users():
             if user.email:
@@ -775,31 +784,37 @@ class TasksManager:
     def check_for_old_logs(self):
         # check for server logs first
         self.controller.servers.check_for_old_logs()
-        # check for crafty logs now
-        logs_path = os.path.join(self.controller.project_root, "logs")
-        logs_delete_after = int(
-            self.helper.get_setting("crafty_logs_delete_after_days")
-        )
-        latest_log_files = [
-            "session.log",
-            "schedule.log",
-            "tornado-access.log",
-            "session.log",
-            "commander.log",
-        ]
-        # we won't delete if delete logs after is set to 0
-        if logs_delete_after != 0:
-            log_files = list(
-                filter(
-                    lambda val: val not in latest_log_files,
-                    os.listdir(logs_path),
-                )
+        try:
+            # check for crafty logs now
+            logs_path = os.path.join(self.controller.project_root, "logs")
+            logs_delete_after = int(
+                self.helper.get_setting("crafty_logs_delete_after_days")
             )
-            for log_file in log_files:
-                log_file_path = os.path.join(logs_path, log_file)
-                if Helpers.check_file_exists(
-                    log_file_path
-                ) and Helpers.is_file_older_than_x_days(
-                    log_file_path, logs_delete_after
-                ):
-                    os.remove(log_file_path)
+            latest_log_files = [
+                "session.log",
+                "schedule.log",
+                "tornado-access.log",
+                "session.log",
+                "commander.log",
+            ]
+            # we won't delete if delete logs after is set to 0
+            if logs_delete_after != 0:
+                log_files = list(
+                    filter(
+                        lambda val: val not in latest_log_files,
+                        os.listdir(logs_path),
+                    )
+                )
+                for log_file in log_files:
+                    log_file_path = os.path.join(logs_path, log_file)
+                    if Helpers.check_file_exists(
+                        log_file_path
+                    ) and Helpers.is_file_older_than_x_days(
+                        log_file_path, logs_delete_after
+                    ):
+                        os.remove(log_file_path)
+        except:
+            logger.debug(
+                "Unable to find project root."
+                " If this issue persists please contact support."
+            )
