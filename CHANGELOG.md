@@ -1,4 +1,15 @@
 # Changelog
+## --- [4.2.3] - 2023/TBD
+### New features
+TBD
+### Bug fixes
+TBD
+### Tweaks
+TBD
+### Lang
+TBD
+<br><br>
+
 ## --- [4.2.2] - 2023/12/13
 ### New features
 - Loading Screen for Crafty during startup ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/668))
