@@ -82,6 +82,9 @@
           <span class="mdi mdi-chevron-double-left"></span>
           <span class="mdi mdi-chevron-double-right"></span>
         </button>
+        &nbsp;&nbsp;&nbsp;
+        <span class="badge-pill badge-outline-primary" id="server-name-nav" style="display: none;"></span>
+
 
         {% include notify.html %}
 
@@ -381,18 +384,21 @@
         if (x) {
           x.remove()
         }
-        bootbox.alert({
+        bootbox.confirm({
           title: "{{ translate('notify', 'downloadLogs', data['lang']) }}",
           message: "{{ translate('notify', 'finishedPreparing', data['lang']) }}",
           buttons: {
-            ok: {
+            confirm: {
               label: 'Download',
               className: 'btn-info'
             }
           },
-          callback: function () {
-            console.log("in callback")
-            location.href = "/panel/download_support_package";
+          callback: function (result) {
+            if (result){
+              location.href = "/panel/download_support_package";
+            } else {
+              bootbox.close();
+            }
           }
         });
       });

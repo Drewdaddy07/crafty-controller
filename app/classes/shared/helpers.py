@@ -80,6 +80,7 @@ class Helpers:
         self.translation = Translation(self)
         self.update_available = False
         self.ignored_names = ["crafty_managed.txt", "db_stats"]
+        self.crafty_starting = False
 
     @staticmethod
     def auto_installer_fix(ex):
@@ -361,6 +362,42 @@ class Helpers:
 
         return result_of_check == 0
 
+    def create_pass(self):
+        # Maximum length of password needed
+        max_len = 64
+
+        # Declare string of the character that we need in our password
+        digits = string.digits
+        locase = string.ascii_lowercase
+        upcase = string.ascii_uppercase
+        symbols = "!@#$%^&*"  # Reducing to avoid issues with ([]{}<>,'`) etc
+
+        # Combine all the character strings above to form one string
+        combo = digits + upcase + locase + symbols
+
+        # Randomly select at least one character from each character set above
+        rand_digit = secrets.choice(digits)
+        rand_upper = secrets.choice(upcase)
+        rand_lower = secrets.choice(locase)
+        rand_symbol = secrets.choice(symbols)
+
+        # Combine the character randomly selected above
+        temp_pass = rand_digit + rand_upper + rand_lower + rand_symbol
+
+        # Fill the rest of the password length by selecting randomly char list
+        for _ in range(max_len - 4):
+            temp_pass += secrets.choice(combo)
+
+        # Shuffle the temporary password to prevent predictable patterns
+        temp_pass_list = list(temp_pass)
+        secrets.SystemRandom().shuffle(temp_pass_list)
+
+        # Form the password by concatenating the characters
+        password = "".join(temp_pass_list)
+
+        # Return completed password
+        return password
+
     @staticmethod
     def cmdparse(cmd_in):
         # Parse a string into arguments
@@ -578,16 +615,19 @@ class Helpers:
         return version_data
 
     def get_announcements(self):
-        data = []
         try:
+            data = []
             response = requests.get("https://craftycontrol.com/notify", timeout=2)
             data = json.loads(response.content)
+            if self.update_available:
+                data.append(self.update_available)
+            return data
         except Exception as e:
             logger.error(f"Failed to fetch notifications with error: {e}")
-
-        if self.update_available:
-            data.append(self.update_available)
-        return data
+            if self.update_available:
+                data = [self.update_available]
+            else:
+                return False
 
     def get_version_string(self):
         version_data = self.get_version()
