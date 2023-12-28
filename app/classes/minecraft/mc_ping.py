@@ -34,8 +34,13 @@ class Server:
                 lines = []
 
                 description = self.description
+                if "text" in description.keys():
+                    lines.append(description["text"])
                 if "extra" in description.keys():
                     for e in description["extra"]:
+                        if not isinstance(e, dict):
+                            lines.append(e)
+                            continue
                         # Conversion format code needed only for Java Version
                         lines.append(get_code_format("reset"))
                         if "bold" in e.keys():
