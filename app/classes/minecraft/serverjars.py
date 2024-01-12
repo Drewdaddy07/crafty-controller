@@ -20,6 +20,10 @@ class ServerJars:
         self.base_url = "https://serverjars.com"
         self.academy = "https://mineacademy.org"
 
+    @staticmethod
+    def get_mineacademy_jars():
+        return MINEACADEMYJARS
+
     def _get_api_result(self, call_url: str):
         full_url = f"{self.base_url}{call_url}"
 
