@@ -1,5 +1,9 @@
 import logging
 import typing as t
+import datetime
+import os
+import json
+from apscheduler.schedulers.background import BackgroundScheduler
 from app.classes.models.servers import HelperServers
 
 from app.classes.models.users import HelperUsers
@@ -22,6 +26,7 @@ class UsersController:
         self.helper = helper
         self.users_helper = users_helper
         self.authentication = authentication
+        self.scheduler = BackgroundScheduler(timezone="Etc/UTC")
 
         _permissions_props = {
             "name": {
@@ -353,3 +358,41 @@ class UsersController:
 
     def delete_user_api_key(self, key_id: str):
         return self.users_helper.delete_user_api_key(key_id)
+
+    # **********************************************************************************
+    #                                   Lockout Methods
+    # **********************************************************************************
+    def start_anti_lockout(self, app_dir):
+        lockout_pass = self.helper.create_pass()
+        self.users_helper.add_user(
+            "anti-lockout-user",
+            None,
+            password=lockout_pass,
+            email="",
+            enabled=True,
+            superuser=True,
+            theme="ronald",
+        )
+        with open(
+            os.path.join(app_dir, "app", "config", "anti-lockout.txt"),
+            "w",
+            encoding="utf-8",
+        ) as cred_file:
+            cred_file.write(
+                json.dumps(
+                    {"username": "anti-lockout-user", "password": lockout_pass},
+                    indent=4,
+                )
+            )
+        os.chmod(os.path.join(app_dir, "app", "config", "anti-lockout.txt"), 0o600)
+        self.scheduler.add_job(
+            self.stop_anti_lockout,
+            "interval",
+            hours=1,
+            id="anti-lockout-watcher",
+            start_date=datetime.datetime.now(),
+        )
+
+    def stop_anti_lockout(self):
+        self.scheduler.remove_all_jobs()
+        self.users_helper.remove_user(self.get_id_by_name("anti-lockout-user"))
