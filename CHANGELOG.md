@@ -1,7 +1,7 @@
 # Changelog
 ## --- [4.2.3] - 2023/TBD
 ### New features
-TBD
+- Use Papermc Group's API for `paper` & `folia` builds in server builder ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/688))
 ### Bug fixes
 - Fix bukkit and downstream fork MOTD crash ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/686))
 ### Tweaks
