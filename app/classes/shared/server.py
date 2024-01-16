@@ -1593,6 +1593,7 @@ class ServerInstance:
                     "version": raw_ping_result.get("version"),
                     "icon": raw_ping_result.get("icon"),
                     "crashed": self.is_crashed,
+                    "count_players": self.server_object.count_players,
                 }
             )
 
