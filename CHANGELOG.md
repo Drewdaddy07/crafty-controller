@@ -3,7 +3,7 @@
 ### New features
 TBD
 ### Bug fixes
-TBD
+- Fix bukkit and downstream fork MOTD crash ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/686))
 ### Tweaks
 TBD
 ### Lang
