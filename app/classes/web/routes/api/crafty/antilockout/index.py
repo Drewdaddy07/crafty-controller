@@ -13,7 +13,7 @@ class ApiCraftyLockoutHandler(BaseApiHandler):
         self.controller.users.start_anti_lockout(self.controller.project_root)
         lockout_msg = (
             "Lockout account has been activated for 1 hour."
-            " Please find credentials in confg/anti-lockout.txt"
+            " Please find credentials in config/anti-lockout.txt"
         )
         return self.finish_json(
             200,
