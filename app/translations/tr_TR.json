@@ -327,6 +327,7 @@
         "bePatientDeleteFiles": "Sunucunuzu Crafty panelinden kaldırırken ve dosyalarını silerken lütfen sabırlı olun. Bu ekran birazdan kapanacaktır.",
         "bePatientUpdate": "Sunucuyu güncellerken lütfen sabırlı olun. İndirme süreleri internet hızınıza bağlı olarak değişebilir.<br /> Bu ekran birazdan kendini yenileyecektir",
         "cancel": "İptal",
+        "countPlayers": "Sunucuyu toplam oyuncu sayısına dahil et.",
         "crashTime": "Çökme Zaman Aşımı",
         "crashTimeDesc": "Sunucunuzun çöktüğünü varsaymadan önce ne kadar beklemeliyiz?",
         "deleteFilesQuestion": "Sunucu dosyaları makineden silinsin mi?",

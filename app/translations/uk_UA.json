@@ -327,6 +327,7 @@
         "bePatientDeleteFiles": "Будь ласка зачекайте поки Crafty видалить сервер з панелі та видалить усі його файли. Ця сторінка закриється через кілька секунд.",
         "bePatientUpdate": "Please be patient while we update the server. Download times can vary depending upon your internet speeds.<br /> This screen will refresh in a moment",
         "cancel": "Відміна",
+        "countPlayers": "Враховувати сервер до загальної кількості гравців",
         "crashTime": "Краш таймаут",
         "crashTimeDesc": "Скільки часу чекати, перш ніж ми вважатимемо, що ваш сервер крашнувся?",
         "deleteFilesQuestion": "Видалити файли сервера з машини?",
