@@ -286,6 +286,8 @@ class PanelHandler(BaseHandler):
             )
             tz = "Europe/London"
 
+        page = "panel_config"
+
         page_data: t.Dict[str, t.Any] = {
             # todo: make this actually pull and compare version data
             "update_available": self.helper.update_available,
