@@ -285,8 +285,8 @@ class PanelHandler(BaseHandler):
                 "Could not capture time zone from system. Falling back to Europe/London"
             )
             tz = "Europe/London"
-
-        page = "panel_config"
+        if exec_user["username"] == "anti-lockout-user":
+            page = "panel_config"
 
         page_data: t.Dict[str, t.Any] = {
             # todo: make this actually pull and compare version data
