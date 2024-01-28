@@ -10,6 +10,7 @@
 - Fix bug where invalid server Id leads to stack ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/690))
 - Fix indent on public status check box ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/691))
 - Fix unicode chars in terminal & logs w/ textiowrapper ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/689))
+- Provide feedback on file delete failure ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/699))
 ### Tweaks
 - Refactor Forge server initialisation flow for newer versions ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/687))
 - Remove scroll bars from player management ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/693))
