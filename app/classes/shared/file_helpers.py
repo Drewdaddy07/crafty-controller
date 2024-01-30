@@ -35,8 +35,9 @@ class FileHelpers:
         try:
             # This removes the top-level folder:
             path.rmdir()
-        except:
+        except Exception as e:
             logger.error("Unable to remove top level")
+            return e
         return True
 
     @staticmethod
@@ -47,9 +48,9 @@ class FileHelpers:
             # Remove the file
             os.remove(path)
             return True
-        except FileNotFoundError:
+        except (FileNotFoundError, PermissionError) as e:
             logger.error(f"Path specified is not a file or does not exist. {path}")
-            return False
+            return e
 
     @staticmethod
     def copy_dir(src_path, dest_path, dirs_exist_ok=False):

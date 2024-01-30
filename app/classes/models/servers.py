@@ -45,6 +45,7 @@ class Servers(BaseModel):
     # created_by = ForeignKeyField(Users, backref="creator_server", null=True)
     shutdown_timeout = IntegerField(default=60)
     ignored_exits = CharField(default="0")
+    count_players = BooleanField(default=True)
 
     class Meta:
         table_name = "servers"

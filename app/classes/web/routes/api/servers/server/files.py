@@ -237,10 +237,14 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             )
 
         if os.path.isdir(data["filename"]):
-            FileHelpers.del_dirs(data["filename"])
+            proc = FileHelpers.del_dirs(data["filename"])
         else:
-            FileHelpers.del_file(data["filename"])
-        return self.finish_json(200, {"status": "ok"})
+            proc = FileHelpers.del_file(data["filename"])
+        # disabling pylint because return value could be truthy
+        # but not a true boolean value
+        if proc == True:  # pylint: disable=singleton-comparison
+            return self.finish_json(200, {"status": "ok"})
+        return self.finish_json(500, {"status": "error", "error": str(proc)})
 
     def patch(self, server_id: str):
         auth_data = self.authenticate_user()
