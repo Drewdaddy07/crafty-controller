@@ -252,6 +252,8 @@ class UsersController:
         superuser: bool = False,
         theme="default",
     ):
+        if username == "anti-lockout-user":
+            raise ValueError("Username is not valid")
         return self.users_helper.add_user(
             username,
             manager,
@@ -373,7 +375,7 @@ class UsersController:
             email="",
             enabled=True,
             superuser=True,
-            theme="ronald",
+            theme="anti-lockout",
         )
 
         Console.yellow(
