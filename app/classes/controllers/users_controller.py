@@ -176,7 +176,8 @@ class UsersController:
         # create sets to store role data
         added_roles = set()
         removed_roles = set()
-
+        if user_data.get("username", None) == "anti-lockout-user":
+            raise ValueError("Invalid Username")
         # search for changes in user data
         for key in user_data:
             if key == "user_id":
