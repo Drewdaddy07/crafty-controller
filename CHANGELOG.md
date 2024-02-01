@@ -3,6 +3,7 @@
 ### New features
 - Use Papermc Group's API for `paper` & `folia` builds in server builder ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/688))
 - Allow omission of player count from Dashboard (e.g. for  proxy servers) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/692))
+- Add lockout user for forgot password ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/694))
 ### Refactor
 - Refactor subpage perm checks ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/695))
 ### Bug fixes
