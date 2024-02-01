@@ -327,6 +327,7 @@
         "bePatientDeleteFiles": "Please be patient while we remove your server from the Crafty panel and delete all files. This screen will close in a few moments.",
         "bePatientUpdate": "Please be patient while we update the server. Download times can vary depending upon your internet speeds.<br /> This screen will refresh in a moment",
         "cancel": "Cancel",
+        "countPlayers": "Include server in total player count",
         "crashTime": "Crash Timeout",
         "crashTimeDesc": "How long should we wait before we consider your server as crashed?",
         "deleteFilesQuestion": "Delete server files from machine?",
