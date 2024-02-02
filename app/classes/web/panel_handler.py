@@ -80,7 +80,9 @@ class PanelHandler(BaseHandler):
         ) in self.controller.crafty_perms.list_defined_crafty_permissions():
             argument = int(
                 float(
-                    nh3.clean(self.get_argument(f"permission_{permission.name}", "0"))
+                    nh3.clean(
+                        self.get_argument(f"permission_{permission.name}", "0")
+                    )  # pylint: disable=no-member
                 )
             )
             if argument:
@@ -89,7 +91,9 @@ class PanelHandler(BaseHandler):
                 )
 
             q_argument = int(
-                float(nh3.clean(self.get_argument(f"quantity_{permission.name}", "0")))
+                float(
+                    nh3.clean(self.get_argument(f"quantity_{permission.name}", "0"))
+                )  # pylint: disable=no-member
             )
             if q_argument:
                 server_quantity[permission.name] = q_argument
@@ -503,7 +507,9 @@ class PanelHandler(BaseHandler):
             template = "panel/dashboard.html"
 
         elif page == "server_detail":
-            subpage = nh3.clean(self.get_argument("subpage", ""))
+            subpage = nh3.clean(
+                self.get_argument("subpage", "")
+            )  # pylint: disable=no-member
 
             server_id = self.check_server_id()
             # load page the user was on last
@@ -1362,7 +1368,9 @@ class PanelHandler(BaseHandler):
             template = "panel/panel_edit_user_apikeys.html"
 
         elif page == "remove_user":
-            user_id = nh3.clean(self.get_argument("id", None))
+            user_id = nh3.clean(
+                self.get_argument("id", None)
+            )  # pylint: disable=no-member
 
             if (
                 not superuser
