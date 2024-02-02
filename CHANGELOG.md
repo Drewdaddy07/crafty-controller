@@ -1,5 +1,5 @@
 # Changelog
-## --- [4.2.3] - 2023/TBD
+## --- [4.2.3] - 2023/02/02
 ### New features
 - Use Papermc Group's API for `paper` & `folia` builds in server builder ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/688))
 - Allow omission of player count from Dashboard (e.g. for  proxy servers) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/692))
@@ -19,7 +19,7 @@
 - Remove scroll bars from player management ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/693))
 - Add warning to wizard for unsupported mc ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/701))
 - Improve display for `th-TH` characters ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/703))
-- Improve display of white text on **wssErrors** ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/703))
+- Improve display of white text on **wssErrors** ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/703) | [50e65f6](https://gitlab.com/crafty-controller/crafty-4/-/commit/50e65f65318b12b904442aca7bc474c0b36b97af))
 - Improve display of white text on  **Buttons** ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/703))
 - Fix dashboard motd issue #322 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/705))
 ### Lang
