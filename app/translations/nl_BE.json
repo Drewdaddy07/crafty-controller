@@ -327,6 +327,7 @@
         "bePatientDeleteFiles": "Even geduld terwijl we uw server uit het Crafty-paneel verwijderen, en alle bestanden verwijderen. Dit scherm wordt over enkele ogenblikken gesloten.",
         "bePatientUpdate": "Even geduld terwijl we de server updaten. De downloadtijden kunnen variëren, afhankelijk van je internetsnelheden.<br /> Dit scherm wordt zo vernieuwd",
         "cancel": "Annuleren",
+        "countPlayers": "Server opnemen in het totale spelersaantal",
         "crashTime": "Crash Timeout",
         "crashTimeDesc": "Hoe lang moet er gewacht worden voordat we uw server als gecrasht beschouwen?",
         "deleteFilesQuestion": "Serverbestanden van de machine verwijderen?",
@@ -511,6 +512,7 @@
         "cpuUsage": "CPU gebruik",
         "description": "Beschrijving",
         "errorCalculatingUptime": "Fout bij berekenen van uptime",
+        "loadingMotd": "MOTD laden",
         "memUsage": "Geheugengebruik",
         "offline": "Offline",
         "online": "Online",
@@ -578,6 +580,7 @@
         "serverUpload": "Gezipt bestand uploaden",
         "serverVersion": "Serverversie",
         "sizeInGB": "Grootte in GB",
+        "unsupported": "Minecraft-versies lager dan 1.8 worden niet ondersteund door Crafty. Je kunt het nog steeds installeren. De resultaten kunnen variëren.",
         "uploadButton": "Uploaden",
         "uploadZip": "Upload zip-bestand voor serverimport",
         "zipPath": "Serverpad"
