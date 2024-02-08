@@ -697,7 +697,7 @@ class ServerInstance:
                     version_param = version[0][0].split(".")
                     version_major = int(version_param[0])
                     version_minor = int(version_param[1])
-                    if version_param.length > 2:
+                    if len(version_param) > 2:
                         version_sub = int(version_param[2])
                     else:
                         version_sub = 0
@@ -782,7 +782,7 @@ class ServerInstance:
                         server_obj.execution_command = execution_command
                         Console.debug(SUCCESSMSG)
                     else:
-                        # NEW VERSION >= 1.20
+                        # NEW VERSION >= 1.20.3
                         # (executable jar is back in server dir)
 
                         # Retrieving the executable jar filename
