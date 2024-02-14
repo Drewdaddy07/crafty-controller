@@ -34,11 +34,10 @@ class SteamCMDcommand:
         :return: Index command was added at
         """
         self._commands.append(
-            f"+app_update "
-            f"{app_id}"
-            f'{" validate" if validate else ""}'
-            f'{" -beta {}".format(beta) if beta else ""}'
-            f'{" -betapassword {}".format(beta_pass) if beta_pass else ""}'
+            f"+app_update {app_id}"
+            f"{' validate' if validate else ''}"
+            f"{' -beta ' + beta if beta else ''}"
+            f"{' -betapassword ' + beta_pass if beta_pass else ''}"
         )
         return len(self._commands) - 1
 
