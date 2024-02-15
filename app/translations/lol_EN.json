@@ -327,6 +327,7 @@
         "bePatientDeleteFiles": "PLZ BE PAITENT I EAT UR SERVR AN EAT AW TEH YUMMI FISH. DIS SCRIEN WILL REFRESH SOONZ",
         "bePatientUpdate": "PLZ BE PAITENTZ WE GET TEH NEWZ SERVER. HUNTING TEIMZ CAN VARY IF UR INTERWEBZ IZ POOP.<BR /> DIS SCRIEN WILL REFRESH SOONZ",
         "cancel": "STAHP",
+        "countPlayers": "COUNT ALL DA HOOMANS IN TOTAL PLAYERZ",
         "crashTime": "DUN GOOF TIMEOUT",
         "crashTimeDesc": "HOW LONG SHUD WE WAIT BEFORE WE CONSIDR UR SERVR HAS DUN GOOFD?",
         "deleteFilesQuestion": "EAT SERVR FISH TOO?",
@@ -511,6 +512,7 @@
         "cpuUsage": "CPU USAGE",
         "description": "DESCRIPSHUN",
         "errorCalculatingUptime": "I DUN GOOF'D WEN CALCULATIN TEH TEIM AWAEK!",
+        "loadingMotd": "LOADIN' MEOWSSAGE OF DA DAY",
         "memUsage": "HOW HARD IZ THINKIN RN",
         "offline": "TURND OFF",
         "online": "TURND OAN",
@@ -578,6 +580,7 @@
         "serverUpload": "UPLOADZ ZIPPED SERVR",
         "serverVersion": "SERVR VERZHUN",
         "sizeInGB": "SIEZ IN GIGABITEZ",
+        "unsupported": "MINECRAFTZ OLDR THAN 1.8 NOT FRENDS WIF CWAFTY. U CAN STILL TRY INSTALLIN'. IT MIGHT WORKS, MIGHT NOT.",
         "uploadButton": "UPLOADZ",
         "uploadZip": "UPLOADZ ZIP FISH FOR SERVR BRING IN",
         "zipPath": "WER IZ ZIP FISH (PETH)"

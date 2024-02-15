@@ -43,6 +43,7 @@ class Servers(BaseModel):
     shutdown_timeout = IntegerField(default=60)
     ignored_exits = CharField(default="0")
     app_id = IntegerField(null=True)
+    count_players = BooleanField(default=True)
 
     class Meta:
         table_name = "servers"

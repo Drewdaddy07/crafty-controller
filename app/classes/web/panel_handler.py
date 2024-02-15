@@ -28,6 +28,18 @@ from app.classes.web.base_handler import BaseHandler
 from app.classes.web.webhooks.webhook_factory import WebhookFactory
 
 logger = logging.getLogger(__name__)
+# You must put any new subpages in here
+SUBPAGE_PERMS = {
+    "term": EnumPermissionsServer.TERMINAL,
+    "logs": EnumPermissionsServer.LOGS,
+    "schedules": EnumPermissionsServer.SCHEDULE,
+    "backup": EnumPermissionsServer.BACKUP,
+    "files": EnumPermissionsServer.FILES,
+    "config": EnumPermissionsServer.CONFIG,
+    "admin_controls": EnumPermissionsServer.PLAYERS,
+    "metrics": EnumPermissionsServer.LOGS,
+    "webhooks": EnumPermissionsServer.CONFIG,
+}
 
 
 class PanelHandler(BaseHandler):
@@ -68,6 +80,7 @@ class PanelHandler(BaseHandler):
         ) in self.controller.crafty_perms.list_defined_crafty_permissions():
             argument = int(
                 float(
+                    # pylint: disable=no-member
                     nh3.clean(self.get_argument(f"permission_{permission.name}", "0"))
                 )
             )
@@ -77,7 +90,10 @@ class PanelHandler(BaseHandler):
                 )
 
             q_argument = int(
-                float(nh3.clean(self.get_argument(f"quantity_{permission.name}", "0")))
+                float(
+                    # pylint: disable=no-member
+                    nh3.clean(self.get_argument(f"quantity_{permission.name}", "0"))
+                )
             )
             if q_argument:
                 server_quantity[permission.name] = q_argument
@@ -137,6 +153,11 @@ class PanelHandler(BaseHandler):
                     # same time, the chunks in memory will keep
                     # increasing and will eat up the RAM
                     del chunk
+
+    def check_subpage_perms(self, user_perms, subpage):
+        if SUBPAGE_PERMS.get(subpage, False) in user_perms:
+            return True
+        return False
 
     def check_server_id(self):
         server_id = self.get_argument("id", None)
@@ -285,6 +306,8 @@ class PanelHandler(BaseHandler):
                 "Could not capture time zone from system. Falling back to Europe/London"
             )
             tz = "Europe/London"
+        if exec_user["username"] == "anti-lockout-user":
+            page = "panel_config"
 
         page_data: t.Dict[str, t.Any] = {
             # todo: make this actually pull and compare version data
@@ -484,13 +507,24 @@ class PanelHandler(BaseHandler):
             template = "panel/dashboard.html"
 
         elif page == "server_detail":
+            # pylint: disable=no-member
             subpage = nh3.clean(self.get_argument("subpage", ""))
+            # pylint: enable=no-member
 
             server_id = self.check_server_id()
             # load page the user was on last
             server_subpage = self.controller.servers.server_subpage.get(server_id, "")
-            if subpage == "" and server_subpage != "":
-                subpage = self.controller.servers.server_subpage.get(server_id, "")
+            if (
+                subpage == ""
+                and server_subpage != ""
+                and self.check_subpage_perms(
+                    self.controller.server_perms.get_user_id_permissions_list(
+                        exec_user["user_id"], server_id
+                    ),
+                    server_subpage,
+                )
+            ):
+                subpage = server_subpage
             else:
                 self.controller.servers.server_subpage[server_id] = subpage
             if server_id is None:
@@ -502,16 +536,6 @@ class PanelHandler(BaseHandler):
                 page_data["backup_failed"] = server_obj.last_backup_status()
             server_obj = None
 
-            valid_subpages = [
-                "term",
-                "logs",
-                "backup",
-                "config",
-                "files",
-                "admin_controls",
-                "schedules",
-                "metrics",
-            ]
             if not self.failed_server:
                 server = self.controller.servers.get_server_instance_by_id(server_id)
             # server_data isn't needed since the server_stats also pulls server data
@@ -577,7 +601,6 @@ class PanelHandler(BaseHandler):
                 page_data["get_players"] = server.get_server_players()
             else:
                 page_data["get_players"] = []
-            page_data["active_link"] = subpage
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
                 "Terminal": EnumPermissionsServer.TERMINAL,
@@ -601,83 +624,41 @@ class PanelHandler(BaseHandler):
                 page_data["server_stats"][
                     "server_type"
                 ] = self.controller.servers.get_server_type_by_id(server_id)
-            if subpage not in valid_subpages:
-                logger.debug("not a valid subpage")
+
             if not subpage:
-                if (
-                    page_data["permissions"]["Terminal"]
-                    in page_data["user_permissions"]
-                ):
-                    subpage = "term"
-                elif page_data["permissions"]["Logs"] in page_data["user_permissions"]:
-                    subpage = "logs"
-                elif (
-                    page_data["permissions"]["Schedule"]
-                    in page_data["user_permissions"]
-                ):
-                    subpage = "schedules"
-                elif (
-                    page_data["permissions"]["Backup"] in page_data["user_permissions"]
-                ):
-                    subpage = "backup"
-                elif page_data["permissions"]["Files"] in page_data["user_permissions"]:
-                    subpage = "files"
-                elif (
-                    page_data["permissions"]["Config"] in page_data["user_permissions"]
-                ):
-                    subpage = "config"
-                elif (
-                    page_data["permissions"]["Players"] in page_data["user_permissions"]
-                ):
-                    subpage = "admin_controls"
-                else:
+                for spage, perm in SUBPAGE_PERMS.items():
+                    if perm in page_data["user_permissions"]:
+                        subpage = spage
+                        break
+                # If we still don't have a subpage we're going to assume they
+                # have no perms
+                if not subpage:
                     self.redirect("/panel/error?error=Unauthorized access to Server")
+            if subpage not in SUBPAGE_PERMS.keys():
+                self.set_status(404)
+                page_data["background"] = self.controller.cached_login
+                return self.render(
+                    "public/404.html",
+                    data=page_data,
+                    translate=self.translator.translate,
+                )
+            page_data["active_link"] = subpage
             logger.debug(f'Subpage: "{subpage}"')
 
-            if subpage == "term":
-                if (
-                    not page_data["permissions"]["Terminal"]
-                    in page_data["user_permissions"]
-                ):
-                    if not superuser:
-                        self.redirect(
-                            "/panel/error?error=Unauthorized access to Terminal"
-                        )
-                        return
-
-            if subpage == "logs":
-                if (
-                    not page_data["permissions"]["Logs"]
-                    in page_data["user_permissions"]
-                ):
-                    if not superuser:
-                        self.redirect("/panel/error?error=Unauthorized access to Logs")
-                        return
+            if (
+                not self.check_subpage_perms(page_data["user_permissions"], subpage)
+                and not superuser
+            ):
+                return self.redirect(
+                    f"/panel/error?error=Unauthorized access to {subpage}"
+                )
 
             if subpage == "schedules":
-                if (
-                    not page_data["permissions"]["Schedule"]
-                    in page_data["user_permissions"]
-                ):
-                    if not superuser:
-                        self.redirect(
-                            "/panel/error?error=Unauthorized access To Schedules"
-                        )
-                        return
                 page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                     server_id
                 )
 
             if subpage == "config":
-                if (
-                    not page_data["permissions"]["Config"]
-                    in page_data["user_permissions"]
-                ):
-                    if not superuser:
-                        self.redirect(
-                            "/panel/error?error=Unauthorized access Server Config"
-                        )
-                        return
                 page_data["java_versions"] = Helpers.find_java_installs()
                 server_obj: Servers = self.controller.servers.get_server_obj(server_id)
                 page_data["failed"] = self.failed_server
@@ -691,26 +672,7 @@ class PanelHandler(BaseHandler):
                             page_java.append(version)
 
                 page_data["java_versions"] = page_java
-
-            if subpage == "files":
-                if (
-                    not page_data["permissions"]["Files"]
-                    in page_data["user_permissions"]
-                ):
-                    if not superuser:
-                        self.redirect("/panel/error?error=Unauthorized access Files")
-                        return
-
             if subpage == "backup":
-                if (
-                    not page_data["permissions"]["Backup"]
-                    in page_data["user_permissions"]
-                ):
-                    if not superuser:
-                        self.redirect(
-                            "/panel/error?error=Unauthorized access to Backups"
-                        )
-                        return
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
                 page_data[
                     "backup_config"
@@ -761,15 +723,6 @@ class PanelHandler(BaseHandler):
                     server_id, hours=(days * 24)
                 )
             if subpage == "webhooks":
-                if (
-                    not page_data["permissions"]["Config"]
-                    in page_data["user_permissions"]
-                ):
-                    if not superuser:
-                        self.redirect(
-                            "/panel/error?error=Unauthorized access to Webhooks Config"
-                        )
-                        return
                 page_data[
                     "webhooks"
                 ] = self.controller.management.get_webhooks_by_server(
@@ -1415,7 +1368,9 @@ class PanelHandler(BaseHandler):
             template = "panel/panel_edit_user_apikeys.html"
 
         elif page == "remove_user":
+            # pylint: disable=no-member
             user_id = nh3.clean(self.get_argument("id", None))
+            # pylint: enable=no-member
 
             if (
                 not superuser

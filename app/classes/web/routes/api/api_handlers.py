@@ -82,7 +82,7 @@ from app.classes.web.routes.api.crafty.exe_cache import (
     ApiCraftyJarCacheIndexHandler,
     ApiCraftySteamCacheIndexHandler,
 )
-
+from app.classes.web.routes.api.crafty.antilockout.index import ApiCraftyLockoutHandler
 
 def api_handlers(handler_args):
     return [
@@ -95,6 +95,11 @@ def api_handlers(handler_args):
         (
             r"/api/v2/auth/invalidate_tokens/?",
             ApiAuthInvalidateTokensHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/crafty/resetPass/?",
+            ApiCraftyLockoutHandler,
             handler_args,
         ),
         (
