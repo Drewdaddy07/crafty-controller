@@ -37,7 +37,9 @@ from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
 from app.classes.shared.null_writer import NullWriter
 from app.classes.shared.websocket_manager import WebSocketManager
+from app.classes.steamcmd.steamcmd import SteamCMD
 from app.classes.web.webhooks.webhook_factory import WebhookFactory
+
 
 with redirect_stderr(NullWriter()):
     import psutil
@@ -1396,10 +1398,10 @@ class ServerInstance:
         ]
 
     @callback
-    def jar_update(self):
+    def server_upgrade(self):
         self.stats_helper.set_update(True)
         update_thread = threading.Thread(
-            target=self.a_jar_update, daemon=True, name=f"exe_update_{self.name}"
+            target=self.a_server_upgrade, daemon=True, name=f"exe_update_{self.name}"
         )
         update_thread.start()
 
@@ -1440,9 +1442,13 @@ class ServerInstance:
     def check_update(self):
         return self.stats_helper.get_server_stats()["updating"]
 
-    def a_jar_update(self):
+    def a_server_upgrade(self):
         server_users = PermissionsServers.get_server_user_list(self.server_id)
         was_started = "-1"
+
+        ###############################
+        # Backup Server ###############
+        ###############################
         self.backup_server()
         # checks if server is running. Calls shutdown if it is running.
         if self.check_running():
@@ -1521,14 +1527,19 @@ class ServerInstance:
                 )
             return False
 
-        # lets download the files
+        ################################
+        # Executable Download ##########
+        ################################
 
-        if HelperServers.get_server_type_by_id(self.server_id) != "minecraft-bedrock":
+        # Minecraft Java ###############
+        if HelperServers.get_server_type_by_id(self.server_id) == "minecraft-java":
             # boolean returns true for false for success
             downloaded = Helpers.download_file(
                 self.settings["executable_update_url"], current_executable
             )
-        else:
+
+        # Minecraft Bedrock ############
+        if HelperServers.get_server_type_by_id(self.server_id) == "raknet":
             # downloads zip from remote url
             try:
                 bedrock_url = Helpers.get_latest_bedrock_url()
@@ -1556,6 +1567,37 @@ class ServerInstance:
                     f"Failed to download bedrock executable for update \n{e}"
                 )
                 downloaded = False
+
+        # SteamCMD #####################
+        if HelperServers.get_server_type_by_id(self.server_id) == "steam_cmd":
+            try:
+                # Set our storage locations
+                steamcmd_path = os.path.join(self.settings["path"], "steamcmd_files")
+                gamefiles_path = os.path.join(self.settings["path"], "gameserver_files")
+                app_id = SteamCMD.find_app_id(gamefiles_path)
+
+                # Ensure game and steam directories exist in server directory.
+                self.helper.ensure_dir_exists(steamcmd_path)
+                self.helper.ensure_dir_exists(gamefiles_path)
+
+                # Set the SteamCMD install directory for next install.
+                self.steam = SteamCMD(steamcmd_path)
+
+                # Install the game server files.
+                self.steam.app_update(app_id, gamefiles_path, validate=True)
+                downloaded = True
+            except ValueError as e:
+                logger.critical(
+                    f"Failed to update SteamCMD Server \n App ID find failed: \n{e}"
+                )
+                downloaded = False
+            except Exception as e:
+                logger.critical(f"Failed to update SteamCMD Server \n{e}")
+                downloaded = False
+
+        ################################
+        # Start Upgraded Server ########
+        ################################
 
         if downloaded:
             logger.info("Executable updated successfully. Starting Server")

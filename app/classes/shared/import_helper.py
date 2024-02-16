@@ -24,7 +24,6 @@ class ImportHelpers:
         self.file_helper: FileHelpers = file_helper
         self.helper: Helpers = helper
         self.steam_apps: SteamApps = SteamApps(helper)
-        self.steam: SteamCMD()
 
     def import_jar_server(self, server_path, new_server_dir, port, new_id):
         import_thread = threading.Thread(
@@ -248,11 +247,14 @@ class ImportHelpers:
         self.helper.ensure_dir_exists(steamcmd_path)
         self.helper.ensure_dir_exists(gamefiles_path)
 
-        # Set the SteamCMD install directory for next install.
+        # Initialize SteamCMD
         self.steam = SteamCMD(steamcmd_path)
 
         # Install SteamCMD for managing game server files.
         self.steam.install()
+
+        # Install the game server files.
+        self.steam.app_update(app_id, gamefiles_path)
 
         # Set the server execuion command. TODO brainstorm how to approach.
         full_jar_path = os.path.join(steamcmd_path, server_exe)
@@ -261,9 +263,6 @@ class ImportHelpers:
         else:
             server_command = f"./{server_exe}"
         logger.debug("command: " + server_command)
-
-        # Install the game server files.
-        self.steam.app_update(app_id, gamefiles_path)
 
         # Finalise SteamCMD & game installing status.
         ServersController.finish_import(server_id)
