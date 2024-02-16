@@ -54,6 +54,9 @@ def migrate(migrator: Migrator, database, **kwargs):
             database = db
 
     try:
+        logger.error("Migrating Data from Int to UUID (Type Change)")
+        Console.error("Migrating Data from Int to UUID (Type Change)")
+
         # Changes on Server Table
         migrator.alter_column_type(
             Servers,
@@ -84,18 +87,20 @@ def migrate(migrator: Migrator, database, **kwargs):
             ),
         )
 
+        migrator.run()
+
     except Exception as ex:
         logger.error("Error while migrating Data from Int to UUID (Type Change)")
         logger.error(ex)
         Console.error("Error while migrating Data from Int to UUID (Type Change)")
         Console.error(ex)
-        last_migration = (
-            MigrateHistory.select().order_by(MigrateHistory.id.desc()).get()
-        )
+        last_migration = MigrateHistory.get_by_id(MigrateHistory.select().count())
         last_migration.delete()
         return False
 
     try:
+        logger.error("Migrating Data from Int to UUID (Foreign Keys)")
+        Console.error("Migrating Data from Int to UUID (Foreign Keys)")
         # Changes on Audit Log Table
         for audit_log in AuditLog.select():
             old_server_id = audit_log.server_id_id
@@ -164,13 +169,13 @@ def migrate(migrator: Migrator, database, **kwargs):
         logger.error(ex)
         Console.error("Error while migrating Data from Int to UUID (Foreign Keys)")
         Console.error(ex)
-        last_migration = (
-            MigrateHistory.select().order_by(MigrateHistory.id.desc()).get()
-        )
+        last_migration = MigrateHistory.get_by_id(MigrateHistory.select().count())
         last_migration.delete()
         return False
 
     try:
+        logger.error("Migrating Data from Int to UUID (Primary Keys)")
+        Console.error("Migrating Data from Int to UUID (Primary Keys)")
         # Migrating servers from the old id type to the new one
         for server in Servers.select():
             Servers.update(server_id=server.server_uuid).where(
@@ -182,14 +187,13 @@ def migrate(migrator: Migrator, database, **kwargs):
         logger.error(ex)
         Console.error("Error while migrating Data from Int to UUID (Primary Keys)")
         Console.error(ex)
-        last_migration = (
-            MigrateHistory.select().order_by(MigrateHistory.id.desc()).get()
-        )
+        last_migration = MigrateHistory.get_by_id(MigrateHistory.select().count())
         last_migration.delete()
         return False
 
     # Changes on Server Table
     migrator.drop_columns("servers", ["server_uuid"])
+    migrator.run()
 
     return True
 
