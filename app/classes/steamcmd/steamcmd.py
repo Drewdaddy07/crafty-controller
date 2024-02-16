@@ -1,4 +1,5 @@
 import os
+import re
 import platform
 import zipfile
 import tarfile
@@ -185,11 +186,13 @@ class SteamCMD:
         steam_command = SteamCMDcommand()
         if install_dir:
             steam_command.force_install_dir(install_dir)
+        steam_command.custom(f"+login {self._uname} {self._passw}")
         steam_command.app_update(app_id, validate, beta, betapassword)
         logger.debug(
             f"Downloading item {app_id}\n"
             f"into {install_dir} with validate set to {validate}"
         )
+
         return self.execute(steam_command)
 
     def workshop_update(
@@ -214,6 +217,7 @@ class SteamCMD:
         steam_command = SteamCMDcommand()
         if install_dir:
             steam_command.force_install_dir(install_dir)
+        steam_command.custom(f"+login {self._uname} {self._passw}")
         steam_command.workshop_download_item(app_id, workshop_id, validate)
         return self.execute(steam_command, n_tries)
 
@@ -234,7 +238,8 @@ class SteamCMD:
 
         params = (
             f'"{self.exe}"',
-            f"+login {self._uname} {self._passw}",
+            # f"+login {self._uname} {self._passw}", # steam isnt happy with cmd order
+            # if this is here
             cmd.get_cmd(),
             "+quit",
         )
@@ -271,3 +276,39 @@ class SteamCMD:
             raise SystemError(
                 f"SteamCMD was unable to run. Exit code was {e.returncode}."
             ) from e
+
+    @staticmethod
+    def find_app_id(gameserver_files_path):
+        """
+        Searches for appmanifest file in the given directory and extracts the app ID.
+
+        This function looks for files matching the pattern 'appmanifest_*.acf' within
+        the specified path. It reads content of the found appmanifest file to extract
+        the 'appid' using a regular expression.
+
+        :param gameserver_files_path: The path to the directory containing the steamapps
+        folder where appmanifest file is located. It's expected to be a part of the
+        gameserver files directory structure.
+
+        :return: The extracted app ID as a string if found.
+        :raises ValueError: If the app ID could not be found in the specified directory.
+        """
+        app_id = ""
+        steamapps_path = os.path.join(gameserver_files_path, "steamapps")
+
+        # Search for appmanifest_*.acf files in the directory
+        for file in os.listdir(steamapps_path):
+            if re.match(r"appmanifest_\d+\.acf", file):
+                appmanifest_path = os.path.join(steamapps_path, file)
+
+                with open(appmanifest_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    # Use regex to extract the appid
+                    match = re.search(r'"appid"\s+"(\d+)"', content)
+                    if match:
+                        app_id = match.group(1)  # Return the found appid
+        if app_id is None:
+            raise ValueError(
+                f"App ID could not be found in directory: {steamapps_path}"
+            )
+        return app_id
