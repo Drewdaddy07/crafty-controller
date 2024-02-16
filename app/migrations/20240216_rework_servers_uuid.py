@@ -54,8 +54,8 @@ def migrate(migrator: Migrator, database, **kwargs):
             database = db
 
     try:
-        logger.error("Migrating Data from Int to UUID (Type Change)")
-        Console.error("Migrating Data from Int to UUID (Type Change)")
+        logger.info("Migrating Data from Int to UUID (Type Change)")
+        Console.info("Migrating Data from Int to UUID (Type Change)")
 
         # Changes on Server Table
         migrator.alter_column_type(
@@ -88,6 +88,9 @@ def migrate(migrator: Migrator, database, **kwargs):
         )
 
         migrator.run()
+
+        logger.info("Migrating Data from Int to UUID (Type Change) : SUCCESS")
+        Console.info("Migrating Data from Int to UUID (Type Change) : SUCCESS")
 
     except Exception as ex:
         logger.error("Error while migrating Data from Int to UUID (Type Change)")
@@ -164,6 +167,10 @@ def migrate(migrator: Migrator, database, **kwargs):
                 RoleServers.role_id == role_servers.id
                 and RoleServers.server_id == old_server_id
             ).execute()
+
+        logger.error("Migrating Data from Int to UUID (Foreign Keys) : SUCCESS")
+        Console.error("Migrating Data from Int to UUID (Foreign Keys) : SUCCESS")
+
     except Exception as ex:
         logger.error("Error while migrating Data from Int to UUID (Foreign Keys)")
         logger.error(ex)
@@ -182,6 +189,9 @@ def migrate(migrator: Migrator, database, **kwargs):
                 Servers.server_id == server.server_id
             ).execute()
 
+        logger.error("Migrating Data from Int to UUID (Primary Keys) : SUCCESS")
+        Console.error("Migrating Data from Int to UUID (Primary Keys) : SUCCESS")
+
     except Exception as ex:
         logger.error("Error while migrating Data from Int to UUID (Primary Keys)")
         logger.error(ex)
@@ -192,8 +202,16 @@ def migrate(migrator: Migrator, database, **kwargs):
         return False
 
     # Changes on Server Table
+    logger.error("Migrating Data from Int to UUID (Removing UUID Field from Servers)")
+    Console.error("Migrating Data from Int to UUID (Removing UUID Field from Servers)")
     migrator.drop_columns("servers", ["server_uuid"])
     migrator.run()
+    logger.error(
+        "Migrating Data from Int to UUID (Removing UUID Field from Servers) : SUCCESS"
+    )
+    Console.error(
+        "Migrating Data from Int to UUID (Removing UUID Field from Servers) : SUCCESS"
+    )
 
     return True
 
