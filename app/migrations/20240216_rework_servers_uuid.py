@@ -4,7 +4,7 @@ import peewee
 import logging
 
 from app.classes.shared.console import Console
-from app.classes.shared.migration import Migrator
+from app.classes.shared.migration import Migrator, MigrateHistory
 from app.classes.models.management import (
     AuditLog,
     Webhooks,
@@ -53,35 +53,47 @@ def migrate(migrator: Migrator, database, **kwargs):
             table_name = "servers"
             database = db
 
-    # Changes on Server Table
-    migrator.alter_column_type(
-        Servers,
-        "server_id",
-        peewee.CharField(primary_key=True, default=str(uuid.uuid4())),
-    )
+    try:
+        # Changes on Server Table
+        migrator.alter_column_type(
+            Servers,
+            "server_id",
+            peewee.CharField(primary_key=True, default=str(uuid.uuid4())),
+        )
 
-    # Changes on Audit Log Table
-    migrator.alter_column_type(
-        AuditLog,
-        "server_id",
-        peewee.ForeignKeyField(
-            Servers,
-            backref="audit_server",
-            null=True,
-            field=peewee.CharField(primary_key=True, default=str(uuid.uuid4())),
-        ),
-    )
-    # Changes on Webhook Table
-    migrator.alter_column_type(
-        Webhooks,
-        "server_id",
-        peewee.ForeignKeyField(
-            Servers,
-            backref="webhook_server",
-            null=True,
-            field=peewee.CharField(primary_key=True, default=str(uuid.uuid4())),
-        ),
-    )
+        # Changes on Audit Log Table
+        migrator.alter_column_type(
+            AuditLog,
+            "server_id",
+            peewee.ForeignKeyField(
+                Servers,
+                backref="audit_server",
+                null=True,
+                field=peewee.CharField(primary_key=True, default=str(uuid.uuid4())),
+            ),
+        )
+        # Changes on Webhook Table
+        migrator.alter_column_type(
+            Webhooks,
+            "server_id",
+            peewee.ForeignKeyField(
+                Servers,
+                backref="webhook_server",
+                null=True,
+                field=peewee.CharField(primary_key=True, default=str(uuid.uuid4())),
+            ),
+        )
+
+    except Exception as ex:
+        logger.error("Error while migrating Data from Int to UUID (Type Change)")
+        logger.error(ex)
+        Console.error("Error while migrating Data from Int to UUID (Type Change)")
+        Console.error(ex)
+        last_migration = (
+            MigrateHistory.select().order_by(MigrateHistory.id.desc()).get()
+        )
+        last_migration.delete()
+        return False
 
     try:
         # Changes on Audit Log Table
@@ -152,6 +164,10 @@ def migrate(migrator: Migrator, database, **kwargs):
         logger.error(ex)
         Console.error("Error while migrating Data from Int to UUID (Foreign Keys)")
         Console.error(ex)
+        last_migration = (
+            MigrateHistory.select().order_by(MigrateHistory.id.desc()).get()
+        )
+        last_migration.delete()
         return False
 
     try:
@@ -166,6 +182,10 @@ def migrate(migrator: Migrator, database, **kwargs):
         logger.error(ex)
         Console.error("Error while migrating Data from Int to UUID (Primary Keys)")
         Console.error(ex)
+        last_migration = (
+            MigrateHistory.select().order_by(MigrateHistory.id.desc()).get()
+        )
+        last_migration.delete()
         return False
 
     # Changes on Server Table
