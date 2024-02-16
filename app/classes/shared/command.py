@@ -6,7 +6,6 @@ import logging
 import getpass
 from app.classes.shared.console import Console
 from app.classes.shared.import3 import Import3
-from app.classes.shared.migrate_uuid import MigrateUUID
 
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.tasks import TasksManager
@@ -25,7 +24,6 @@ class MainPrompt(cmd.Cmd):
         migration_manager,
         main_controller,
         import3,
-        migrate_uuid,
     ):
         super().__init__()
         self.helper: Helpers = helper
@@ -33,7 +31,6 @@ class MainPrompt(cmd.Cmd):
         self.migration_manager: MigrationManager = migration_manager
         self.controller: Controller = main_controller
         self.import3: Import3 = import3
-        self.migrate_uuid: MigrateUUID = migrate_uuid
 
         # overrides the default Prompt
         self.prompt = ""
@@ -121,9 +118,6 @@ class MainPrompt(cmd.Cmd):
 
     def do_import3(self, _line):
         self.import3.start_import()
-
-    def do_migrate_uuid(self, _line):
-        self.migrate_uuid.start_migrate()
 
     def universal_exit(self):
         logger.info("Stopping all server daemons / threads")
