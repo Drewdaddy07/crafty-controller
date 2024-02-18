@@ -116,7 +116,8 @@ class PublicHandler(BaseHandler):
 
             entered_username = nh3.clean(self.get_argument("username")) # pylint: disable=no-member
             try:
-                entered_password = base64.b64decode(self.get_argument("encPassword"))
+                entered_password = base64.b64decode(
+                    self.get_argument("encPassword")).decode("utf-8")
             except binascii.Error:
                 error_msg = ("Hello? Hello? Anybody home?"
                 " Go straight to jail. Do not pass go.")
@@ -220,7 +221,18 @@ class PublicHandler(BaseHandler):
                 # self.clear_cookie("user")
                 # self.clear_cookie("user_data")
                 self.clear_cookie("token")
-                error_msg = "Incorrect username or password. Please try again."
+                error_msg = (
+                self.helper.translation.translate("login",
+                                                    "incorrect",
+                                                    self.helper.get_setting("language"))
+                )
+                if entered_password == "app/config/default-creds.txt":
+                    error_msg += ". "
+                    error_msg += (
+                        self.helper.translation.translate("login",
+                                                    "defaultPath",
+                                                    self.helper.get_setting("language"))
+                    )
                 # log this failed login attempt
                 self.controller.management.add_to_audit_log(
                     user_data.user_id, "Tried to log in", 0, self.get_remote_ip()

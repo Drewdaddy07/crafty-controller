@@ -219,7 +219,9 @@
         "login": "Log In",
         "password": "Password",
         "username": "Username",
-        "viewStatus": "View Public Status Page"
+        "viewStatus": "View Public Status Page",
+        "incorrect": "Incorrect username or password",
+        "defaultPath": "The password you entered is the default credential path, not the password. Please find the default password in that location."
     },
     "notify": {
         "activityLog": "Activity Logs",
