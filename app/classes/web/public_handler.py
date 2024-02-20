@@ -164,7 +164,7 @@ class PublicHandler(BaseHandler):
                     403,
                     {
                         "status": "error",
-                        "error": "VWggb2ghIFN0aW5reSDwn5Kp",
+                        "error": "VWggb2ghIFN0aW5reSDwn5Kp 🪠",
                     },
                 )
 
