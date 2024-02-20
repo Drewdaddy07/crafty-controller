@@ -221,7 +221,8 @@
         "username": "Username",
         "viewStatus": "View Public Status Page",
         "incorrect": "Incorrect username or password",
-        "defaultPath": "The password you entered is the default credential path, not the password. Please find the default password in that location."
+        "defaultPath": "The password you entered is the default credential path, not the password. Please find the default password in that location.",
+        "disabled": "User account disabled. Please contact your system administrator for more info."
     },
     "notify": {
         "activityLog": "Activity Logs",

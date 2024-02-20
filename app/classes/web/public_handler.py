@@ -1,7 +1,11 @@
 import logging
 import binascii
 import base64
+import urllib
+import json
 import nh3
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 
 from app.classes.shared.helpers import Helpers
 from app.classes.models.users import HelperUsers
@@ -47,7 +51,7 @@ class PublicHandler(BaseHandler):
         }
 
         if self.request.query:
-            page_data["query"] = self.request.query
+            page_data["query"] = self.request.query_arguments.get("next")[0].decode()
 
         # sensible defaults
         template = "public/404.html"
@@ -77,11 +81,7 @@ class PublicHandler(BaseHandler):
 
         # if we have no page, let's go to login
         else:
-            if self.request.query:
-                self.redirect("/login?" + self.request.query)
-            else:
-                self.redirect("/login")
-            return
+            return self.redirect("/login")
 
         self.render(
             template,
@@ -91,42 +91,74 @@ class PublicHandler(BaseHandler):
         )
 
     def post(self, page=None):
-        # pylint: disable=no-member
-        error = nh3.clean(self.get_argument("error", "Invalid Login!"))
-        error_msg = nh3.clean(self.get_argument("error_msg", ""))
-        # pylint: enable=no-member
+        login_schema = {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]+$",
+                },
+                "password": {"type": "string"},
+            },
+            "required": ["username", "password"],
+            "additionalProperties": False,
+        }
+        try:
+            data = json.loads(self.request.body)
+        except json.decoder.JSONDecodeError as e:
+            logger.error(
+                "Invalid JSON schema for API"
+                f" login attempt from {self.get_remote_ip()}"
+            )
+            return self.finish_json(
+                400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
+            )
+
+        try:
+            validate(data, login_schema)
+        except ValidationError as e:
+            logger.error(
+                "Invalid JSON schema for API"
+                f" login attempt from {self.get_remote_ip()}"
+            )
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "INVALID_JSON_SCHEMA",
+                    "error_data": str(e),
+                },
+            )
 
         page_data = {
             "version": self.helper.get_version_string(),
-            "error": error,
             "lang": self.helper.get_setting("language"),
             "lang_page": self.helper.get_lang_page(self.helper.get_setting("language")),
             "query": "",
         }
         if self.request.query:
-            page_data["query"] = self.request.query
+            page_data["query"] = self.request.query_arguments.get("next")[0].decode()
 
         if page == "login":
+            data = json.loads(self.request.body)
+
             auth_log.info(
                 f"User attempting to authenticate from {self.get_remote_ip()}"
             )
-            next_page = "/login"
-            if self.request.query:
-                next_page = "/login?" + self.request.query
-
-            entered_username = nh3.clean(
-                self.get_argument("username")
-            )  # pylint: disable=no-member
+            entered_username = nh3.clean(data["username"])  # pylint: disable=no-member
             try:
-                entered_password = base64.b64decode(
-                    self.get_argument("encPassword")
-                ).decode("utf-8")
-            except binascii.Error:
-                error_msg = (
-                    "Hello? Hello? Anybody home?"
-                    " Go straight to jail. Do not pass go."
+                entered_password = urllib.parse.unquote(
+                    base64.b64decode(data["password"]).decode("utf-8")
                 )
-                return self.redirect(f"/login?error_msg={error_msg}")
+            except binascii.Error:
+                return self.finish_json(
+                    403,
+                    {
+                        "status": "error",
+                        "error": "Hello? Hello? Anybody home?"
+                        " Go straight to jail. Do not pass go.",
+                    },
+                )
 
             try:
                 user_id = HelperUsers.get_user_id_by_name(entered_username.lower())
@@ -138,18 +170,18 @@ class PublicHandler(BaseHandler):
                     f" Authentication failed from remote IP {self.get_remote_ip()}"
                     " Users does not exist."
                 )
-                error_msg = "Incorrect username or password. Please try again."
+                self.finish_json(
+                    403,
+                    {
+                        "status": "error",
+                        "error": self.helper.translation.translate(
+                            "login", "incorrect", self.helper.get_setting("language")
+                        ),
+                    },
+                )
                 # self.clear_cookie("user")
                 # self.clear_cookie("user_data")
-                self.clear_cookie("token")
-                if self.request.query:
-                    self.redirect(
-                        f"/login?err  or_msg={error_msg}" f"&{self.request.query}"
-                    )
-                else:
-                    self.redirect(f"/login?error_msg={error_msg}")
-                return
-
+                return self.clear_cookie("token")
             # if we don't have a user
             if not user_data:
                 auth_log.error(
@@ -158,15 +190,18 @@ class PublicHandler(BaseHandler):
                     " User does not exist."
                 )
                 self.controller.log_attempt(self.get_remote_ip(), entered_username)
-                error_msg = "Incorrect username or password. Please try again."
+                self.finish_json(
+                    403,
+                    {
+                        "status": "error",
+                        "error": self.helper.translation.translate(
+                            "login", "incorrect", self.helper.get_setting("language")
+                        ),
+                    },
+                )
                 # self.clear_cookie("user")
                 # self.clear_cookie("user_data")
-                self.clear_cookie("token")
-                if self.request.query:
-                    self.redirect(f"/login?error_msg={error_msg}&{self.request.query}")
-                else:
-                    self.redirect(f"/login?error_msg={error_msg}")
-                return
+                return self.clear_cookie("token")
 
             # if they are disabled
             if not user_data.enabled:
@@ -176,18 +211,18 @@ class PublicHandler(BaseHandler):
                     " User account disabled"
                 )
                 self.controller.log_attempt(self.get_remote_ip(), entered_username)
-                error_msg = (
-                    "User account disabled. Please contact "
-                    "your system administrator for more info."
+                self.finish_json(
+                    403,
+                    {
+                        "status": "error",
+                        "error": self.helper.translation.translate(
+                            "login", "disabled", self.helper.get_setting("language")
+                        ),
+                    },
                 )
                 # self.clear_cookie("user")
                 # self.clear_cookie("user_data")
-                self.clear_cookie("token")
-                if self.request.query:
-                    self.redirect(f"/login?error_msg={error_msg}&{self.request.query}")
-                else:
-                    self.redirect(f"/login?error_msg={error_msg}")
-                return
+                return self.clear_cookie("token")
             login_result = self.helper.verify_pass(entered_password, user_data.password)
 
             # Valid Login
@@ -212,12 +247,9 @@ class PublicHandler(BaseHandler):
                     user_data.user_id, "Logged in", 0, self.get_remote_ip()
                 )
 
-                if self.request.query_arguments.get("next"):
-                    next_page = self.request.query_arguments.get("next")[0].decode()
-                else:
-                    next_page = "/panel/dashboard"
-
-                self.redirect(next_page)
+                return self.finish_json(
+                    200, {"status": "ok", "data": {"message": "login successful!"}}
+                )
             else:
                 auth_log.error(
                     f"User attempted to log into {entered_username}."
@@ -239,12 +271,9 @@ class PublicHandler(BaseHandler):
                 self.controller.management.add_to_audit_log(
                     user_data.user_id, "Tried to log in", 0, self.get_remote_ip()
                 )
-                if self.request.query:
-                    self.redirect(f"/login?error_msg={error_msg}&{self.request.query}")
-                else:
-                    self.redirect(f"/login?error_msg={error_msg}")
+                return self.finish_json(
+                    403,
+                    {"status": "error", "error": error_msg},
+                )
         else:
-            if self.request.query:
-                self.redirect("/login?" + self.request.query)
-            else:
-                self.redirect("/login")
+            self.redirect("/login?")
