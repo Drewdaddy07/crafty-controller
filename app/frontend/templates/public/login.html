@@ -181,7 +181,7 @@
         },
         body: JSON.stringify({
           "username": formDataObject.username,
-          "password": btoa(encodeURIComponent(formDataObject.password))
+          "password": formDataObject.password
         }),
       });
       let responseData = await res.json();

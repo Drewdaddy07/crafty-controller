@@ -147,9 +147,7 @@ class PublicHandler(BaseHandler):
             )
             entered_username = nh3.clean(data["username"])  # pylint: disable=no-member
             try:
-                entered_password = urllib.parse.unquote(
-                    base64.b64decode(data["password"]).decode("utf-8")
-                )
+                entered_password = data["password"]
             except binascii.Error:
                 return self.finish_json(
                     403,
