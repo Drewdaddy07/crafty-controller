@@ -124,7 +124,7 @@ class PublicHandler(BaseHandler):
                 400,
                 {
                     "status": "error",
-                    "error": "INVALID_JSON_SCHEMA",
+                    "error": "VWggb2ghIFN0aW5reS 🪠",
                     "error_data": str(e),
                 },
             )
@@ -145,25 +145,7 @@ class PublicHandler(BaseHandler):
                 f"User attempting to authenticate from {self.get_remote_ip()}"
             )
             entered_username = nh3.clean(data["username"])  # pylint: disable=no-member
-            try:
-                entered_password = data["password"]
-            except binascii.Error:
-                return self.finish_json(
-                    403,
-                    {
-                        "status": "error",
-                        "error": "Hello? Hello? Anybody home?"
-                        " Go straight to jail. Do not pass go.",
-                    },
-                )
-            except UnicodeDecodeError:
-                return self.finish_json(
-                    403,
-                    {
-                        "status": "error",
-                        "error": "VWggb2ghIFN0aW5reS 🪠",
-                    },
-                )
+            entered_password = data["password"]
 
             try:
                 user_id = HelperUsers.get_user_id_by_name(entered_username.lower())
