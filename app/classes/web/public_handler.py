@@ -1,7 +1,4 @@
 import logging
-import binascii
-import base64
-import urllib
 import json
 import nh3
 from jsonschema import validate
@@ -237,30 +234,31 @@ class PublicHandler(BaseHandler):
                 return self.finish_json(
                     200, {"status": "ok", "data": {"message": "login successful!"}}
                 )
-            else:
-                auth_log.error(
-                    f"User attempted to log into {entered_username}."
-                    f" Authentication failed from remote IP {self.get_remote_ip()}"
+
+            # We'll continue on and handle unsuccessful logins
+            auth_log.error(
+                f"User attempted to log into {entered_username}."
+                f" Authentication failed from remote IP {self.get_remote_ip()}"
+            )
+            self.controller.log_attempt(self.get_remote_ip(), entered_username)
+            # self.clear_cookie("user")
+            # self.clear_cookie("user_data")
+            self.clear_cookie("token")
+            error_msg = self.helper.translation.translate(
+                "login", "incorrect", self.helper.get_setting("language")
+            )
+            if entered_password == "app/config/default-creds.txt":
+                error_msg += ". "
+                error_msg += self.helper.translation.translate(
+                    "login", "defaultPath", self.helper.get_setting("language")
                 )
-                self.controller.log_attempt(self.get_remote_ip(), entered_username)
-                # self.clear_cookie("user")
-                # self.clear_cookie("user_data")
-                self.clear_cookie("token")
-                error_msg = self.helper.translation.translate(
-                    "login", "incorrect", self.helper.get_setting("language")
-                )
-                if entered_password == "app/config/default-creds.txt":
-                    error_msg += ". "
-                    error_msg += self.helper.translation.translate(
-                        "login", "defaultPath", self.helper.get_setting("language")
-                    )
-                # log this failed login attempt
-                self.controller.management.add_to_audit_log(
-                    user_data.user_id, "Tried to log in", 0, self.get_remote_ip()
-                )
-                return self.finish_json(
-                    403,
-                    {"status": "error", "error": error_msg},
-                )
+            # log this failed login attempt
+            self.controller.management.add_to_audit_log(
+                user_data.user_id, "Tried to log in", 0, self.get_remote_ip()
+            )
+            return self.finish_json(
+                403,
+                {"status": "error", "error": error_msg},
+            )
         else:
             self.redirect("/login?")
