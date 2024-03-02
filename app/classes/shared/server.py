@@ -10,7 +10,6 @@ import threading
 import logging.config
 import subprocess
 import html
-import urllib.request
 import glob
 import json
 
@@ -697,6 +696,10 @@ class ServerInstance:
                     version_param = version[0][0].split(".")
                     version_major = int(version_param[0])
                     version_minor = int(version_param[1])
+                    if len(version_param) > 2:
+                        version_sub = int(version_param[2])
+                    else:
+                        version_sub = 0
 
                     # Checking which version we are with
                     if version_major <= 1 and version_minor < 17:
@@ -730,8 +733,8 @@ class ServerInstance:
                         server_obj.execution_command = execution_command
                         Console.debug(SUCCESSMSG)
 
-                    elif version_major <= 1 and version_minor < 20:
-                        # NEW VERSION >= 1.17 and <= 1.20
+                    elif version_major <= 1 and version_minor <= 20 and version_sub < 3:
+                        # NEW VERSION >= 1.17 and <= 1.20.2
                         # (no jar file in server dir, only run.bat and run.sh)
 
                         run_file_path = ""
@@ -778,7 +781,7 @@ class ServerInstance:
                         server_obj.execution_command = execution_command
                         Console.debug(SUCCESSMSG)
                     else:
-                        # NEW VERSION >= 1.20
+                        # NEW VERSION >= 1.20.3
                         # (executable jar is back in server dir)
 
                         # Retrieving the executable jar filename
@@ -1450,33 +1453,45 @@ class ServerInstance:
 
         # lets download the files
         if HelperServers.get_server_type_by_id(self.server_id) != "minecraft-bedrock":
-            # boolean returns true for false for success
-            downloaded = Helpers.download_file(
-                self.settings["executable_update_url"], current_executable
+
+            jar_dir = os.path.dirname(current_executable)
+            jar_file_name = os.path.basename(current_executable)
+
+            downloaded = FileHelpers.ssl_get_file(
+                self.settings["executable_update_url"], jar_dir, jar_file_name
             )
         else:
             # downloads zip from remote url
             try:
                 bedrock_url = Helpers.get_latest_bedrock_url()
-                if bedrock_url.lower().startswith("https"):
-                    urllib.request.urlretrieve(
-                        bedrock_url,
-                        os.path.join(self.settings["path"], "bedrock_server.zip"),
+                if bedrock_url:
+                    # Use the new method for secure download
+                    download_path = os.path.join(
+                        self.settings["path"], "bedrock_server.zip"
+                    )
+                    downloaded = FileHelpers.ssl_get_file(
+                        bedrock_url, self.settings["path"], "bedrock_server.zip"
                     )
 
-                unzip_path = os.path.join(self.settings["path"], "bedrock_server.zip")
-                unzip_path = self.helper.wtol_path(unzip_path)
-                # unzips archive that was downloaded.
-                FileHelpers.unzip_file(unzip_path, server_update=True)
-                # adjusts permissions for execution if os is not windows
-                if not self.helper.is_os_windows():
-                    os.chmod(
-                        os.path.join(self.settings["path"], "bedrock_server"), 0o0744
-                    )
+                    if downloaded:
+                        unzip_path = download_path
+                        unzip_path = self.helper.wtol_path(unzip_path)
 
-                # we'll delete the zip we downloaded now
-                os.remove(os.path.join(self.settings["path"], "bedrock_server.zip"))
-                downloaded = True
+                        # unzips archive that was downloaded.
+                        FileHelpers.unzip_file(unzip_path, server_update=True)
+
+                        # adjusts permissions for execution if os is not windows
+                        if not self.helper.is_os_windows():
+                            os.chmod(
+                                os.path.join(self.settings["path"], "bedrock_server"),
+                                0o0744,
+                            )
+
+                        # we'll delete the zip we downloaded now
+                        os.remove(download_path)
+                    else:
+                        logger.error("Failed to download the Bedrock server zip.")
+                        downloaded = False
             except Exception as e:
                 logger.critical(
                     f"Failed to download bedrock executable for update \n{e}"
