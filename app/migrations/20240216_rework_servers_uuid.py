@@ -99,11 +99,11 @@ def migrate(migrator: Migrator, database, **kwargs):
         Console.error(ex)
         last_migration = MigrateHistory.get_by_id(MigrateHistory.select().count())
         last_migration.delete()
-        return False
+        return
 
     try:
-        logger.error("Migrating Data from Int to UUID (Foreign Keys)")
-        Console.error("Migrating Data from Int to UUID (Foreign Keys)")
+        logger.info("Migrating Data from Int to UUID (Foreign Keys)")
+        Console.info("Migrating Data from Int to UUID (Foreign Keys)")
         # Changes on Audit Log Table
         for audit_log in AuditLog.select():
             old_server_id = audit_log.server_id_id
@@ -168,8 +168,8 @@ def migrate(migrator: Migrator, database, **kwargs):
                 and RoleServers.server_id == old_server_id
             ).execute()
 
-        logger.error("Migrating Data from Int to UUID (Foreign Keys) : SUCCESS")
-        Console.error("Migrating Data from Int to UUID (Foreign Keys) : SUCCESS")
+        logger.info("Migrating Data from Int to UUID (Foreign Keys) : SUCCESS")
+        Console.info("Migrating Data from Int to UUID (Foreign Keys) : SUCCESS")
 
     except Exception as ex:
         logger.error("Error while migrating Data from Int to UUID (Foreign Keys)")
@@ -178,19 +178,19 @@ def migrate(migrator: Migrator, database, **kwargs):
         Console.error(ex)
         last_migration = MigrateHistory.get_by_id(MigrateHistory.select().count())
         last_migration.delete()
-        return False
+        return
 
     try:
-        logger.error("Migrating Data from Int to UUID (Primary Keys)")
-        Console.error("Migrating Data from Int to UUID (Primary Keys)")
+        logger.info("Migrating Data from Int to UUID (Primary Keys)")
+        Console.info("Migrating Data from Int to UUID (Primary Keys)")
         # Migrating servers from the old id type to the new one
         for server in Servers.select():
             Servers.update(server_id=server.server_uuid).where(
                 Servers.server_id == server.server_id
             ).execute()
 
-        logger.error("Migrating Data from Int to UUID (Primary Keys) : SUCCESS")
-        Console.error("Migrating Data from Int to UUID (Primary Keys) : SUCCESS")
+        logger.info("Migrating Data from Int to UUID (Primary Keys) : SUCCESS")
+        Console.info("Migrating Data from Int to UUID (Primary Keys) : SUCCESS")
 
     except Exception as ex:
         logger.error("Error while migrating Data from Int to UUID (Primary Keys)")
@@ -199,21 +199,21 @@ def migrate(migrator: Migrator, database, **kwargs):
         Console.error(ex)
         last_migration = MigrateHistory.get_by_id(MigrateHistory.select().count())
         last_migration.delete()
-        return False
+        return
 
     # Changes on Server Table
-    logger.error("Migrating Data from Int to UUID (Removing UUID Field from Servers)")
-    Console.error("Migrating Data from Int to UUID (Removing UUID Field from Servers)")
+    logger.info("Migrating Data from Int to UUID (Removing UUID Field from Servers)")
+    Console.info("Migrating Data from Int to UUID (Removing UUID Field from Servers)")
     migrator.drop_columns("servers", ["server_uuid"])
     migrator.run()
-    logger.error(
+    logger.info(
         "Migrating Data from Int to UUID (Removing UUID Field from Servers) : SUCCESS"
     )
-    Console.error(
+    Console.info(
         "Migrating Data from Int to UUID (Removing UUID Field from Servers) : SUCCESS"
     )
 
-    return True
+    return
 
 
 def rollback(migrator: Migrator, database, **kwargs):
