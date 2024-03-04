@@ -83,6 +83,8 @@ class Helpers:
         self.crafty_starting = False
         self.minimum_password_length = 8
 
+        self.theme_list = self.load_themes()
+
     @staticmethod
     def auto_installer_fix(ex):
         logger.critical(f"Import Error: Unable to load {ex.name} module", exc_info=True)
@@ -585,7 +587,7 @@ class Helpers:
             )
         return False
 
-    def get_themes(self):
+    def load_themes(self):
         theme_list = []
         themes_path = os.path.join(self.webroot, "static", "assets", "css", "themes")
         theme_files = [
@@ -596,6 +598,9 @@ class Helpers:
         for theme in theme_files:
             theme_list.append(theme.split(".css")[0])
         return theme_list
+
+    def get_themes(self):
+        return self.theme_list
 
     @staticmethod
     def get_local_ip():
