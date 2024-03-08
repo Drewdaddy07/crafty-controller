@@ -81,6 +81,7 @@ class Helpers:
         self.update_available = False
         self.ignored_names = ["crafty_managed.txt", "db_stats"]
         self.crafty_starting = False
+        self.minimum_password_length = 8
 
     @staticmethod
     def auto_installer_fix(ex):
@@ -117,7 +118,7 @@ class Helpers:
         Get latest bedrock executable url \n\n
         returns url if successful, False if not
         """
-        url = "https://minecraft.net/en-us/download/server/bedrock/"
+        url = "https://www.minecraft.net/en-us/download/server/bedrock/"
         headers = {
             "Accept-Encoding": "identity",
             "Accept-Language": "en",
@@ -1112,7 +1113,7 @@ class Helpers:
         return os.path.normpath(path)
 
     def find_default_password(self):
-        default_file = os.path.join(self.root_dir, "default.json")
+        default_file = os.path.join(self.root_dir, "app", "config", "default.json")
         data = {}
 
         if Helpers.check_file_exists(default_file):
@@ -1179,25 +1180,6 @@ class Helpers:
                 zip_ref.extractall(temp_dir)
             return temp_dir
         return False
-
-    @staticmethod
-    def download_file(executable_url, jar_path):
-        try:
-            response = requests.get(executable_url, timeout=5)
-        except Exception as ex:
-            logger.error("Could not download executable: %s", ex)
-            return False
-        if response.status_code != 200:
-            logger.error("Unable to download file from %s", executable_url)
-            return False
-
-        try:
-            with open(jar_path, "wb") as jar_file:
-                jar_file.write(response.content)
-        except Exception as e:
-            logger.error("Unable to finish executable download. Error: %s", e)
-            return False
-        return True
 
     @staticmethod
     def remove_prefix(text, prefix):
