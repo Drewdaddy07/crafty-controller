@@ -1,4 +1,15 @@
 # Changelog
+## --- [4.3.1] - 2023/TBD
+### New features
+TBD
+### Bug fixes
+TBD
+### Tweaks
+TBD
+### Lang
+TBD
+<br><br>
+
 ## --- [4.3.0] - 2023/03/09
 ### Breaking Changes
 - This release includes database migrations that are not revertable. Once you update to this version you will not be able to rollback to a previous version.
