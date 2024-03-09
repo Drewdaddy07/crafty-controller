@@ -1,7 +1,20 @@
 # Changelog
-## --- [4.2.4] - 2023/TBD
+## --- [4.3.1] - 2023/TBD
 ### New features
 TBD
+### Bug fixes
+TBD
+### Tweaks
+TBD
+### Lang
+TBD
+<br><br>
+
+## --- [4.3.0] - 2023/03/09
+### Breaking Changes
+- This release includes database migrations that are not revertable. Once you update to this version you will not be able to rollback to a previous version.
+- In this release, we've implemented a breaking change to enhance server identification within Crafty: instead of relying on numerical integers (1, 2, 3, etc.), Servers are now uniquely identified by their UUIDs. Please adapt your API clients accordingly.
+
 ### Refactor
 - Refactor remote file downloads ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/719))
 ### Bug fixes
@@ -10,9 +23,10 @@ TBD
 - Do not allow users at server limit to clone servers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/718))
 - Fix bug where you cannot get to config with unloaded server ([Commit](https://gitlab.com/crafty-controller/crafty-4/-/commit/9de08973b6bb2ddf91283c5c6b0e189ff34f7e24))
 - Fix forge install v1.20, 1.20.1 and 1.20.2 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/710))
-- Fix Sanitisation on Passwords ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/715))
+- Fix Sanitisation on Passwords ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/715) | [Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/725))
 - Fix `Upload Imports` on unix systems, that have a space in the root dir name ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/722))
 - Fix Bedrock downloads, add `www` to download URL ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/723))
+- Fire backup webhook 'after' backup has finished ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/727))
 ### Tweaks
 - Bump pyOpenSSL & cryptography for CVE-2024-0727, CVE-2023-50782 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/716))
 - Bump cryptography for CVE-2024-26130 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/724))
