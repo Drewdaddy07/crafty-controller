@@ -181,6 +181,10 @@ class ManagementController:
     def get_backup_config(server_id):
         return HelpersManagement.get_backup_config(server_id)
 
+    @staticmethod
+    def get_backups_by_server(server_id, model=False):
+        return HelpersManagement.get_backups_by_server(server_id, model)
+
     def set_backup_config(
         self,
         server_id: int,

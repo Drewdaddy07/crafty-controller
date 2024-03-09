@@ -132,6 +132,7 @@ class Backups(BaseModel):
     shutdown = BooleanField(default=False)
     before = CharField(default="")
     after = CharField(default="")
+    enabled = BooleanField(default=True)
 
     class Meta:
         table_name = "backups"
@@ -390,7 +391,7 @@ class HelpersManagement:
                 Backups.select().where(Backups.server_id == server_id).join(Servers)[0]
             )
             conf = {
-                "backup_path": row.server_id.backup_path,
+                "backup_path": row.backup_location,
                 "excluded_dirs": row.excluded_dirs,
                 "max_backups": row.max_backups,
                 "server_id": row.server_id_id,
@@ -411,6 +412,29 @@ class HelpersManagement:
                 "after": "",
             }
         return conf
+
+    @staticmethod
+    def get_backups_by_server(server_id, model):
+        if not model:
+            data = {}
+            for backup in (
+                Backups.select().where(Backups.server_id == server_id).execute()
+            ):
+                data[str(backup.backup_id)] = {
+                    "backup_id": backup.backup_id,
+                    "backup_name": backup.backup_name,
+                    "backup_path": backup.backup_location,
+                    "excluded_dirs": backup.excluded_dirs,
+                    "max_backups": backup.max_backups,
+                    "server_id": backup.server_id_id,
+                    "compress": backup.compress,
+                    "shutdown": backup.shutdown,
+                    "before": backup.before,
+                    "after": backup.after,
+                }
+        else:
+            data = Backups.select().where(Backups.server_id == server_id).execute()
+        return data
 
     @staticmethod
     def remove_backup_config(server_id):
