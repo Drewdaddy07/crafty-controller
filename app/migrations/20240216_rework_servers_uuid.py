@@ -54,9 +54,6 @@ def migrate(migrator: Migrator, database, **kwargs):
             database = db
 
     try:
-        logger.info("Migrating Data from Int to UUID (Type Change)")
-        Console.info("Migrating Data from Int to UUID (Type Change)")
-
         # Changes on Server Table
         migrator.alter_column_type(
             Servers,
@@ -86,9 +83,6 @@ def migrate(migrator: Migrator, database, **kwargs):
                 field=peewee.CharField(primary_key=True, default=str(uuid.uuid4())),
             ),
         )
-
-        logger.info("Migrating Data from Int to UUID (Type Change) : SUCCESS")
-        Console.info("Migrating Data from Int to UUID (Type Change) : SUCCESS")
 
     except Exception as ex:
         logger.error("Error while migrating Data from Int to UUID (Type Change)")

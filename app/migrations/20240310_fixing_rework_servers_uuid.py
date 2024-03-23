@@ -48,9 +48,6 @@ def migrate(migrator: Migrator, database, **kwargs):
             database = db
 
     try:
-        logger.info("Migrating Data from Int to UUID (Fixing Issue)")
-        Console.info("Migrating Data from Int to UUID (Fixing Issue)")
-
         # Changes on Servers Roles Table
         migrator.alter_column_type(
             RoleServers,
@@ -86,11 +83,6 @@ def migrate(migrator: Migrator, database, **kwargs):
                 field=peewee.CharField(primary_key=True, default=str(uuid.uuid4())),
             ),
         )
-
-        migrator.run()
-
-        logger.info("Migrating Data from Int to UUID (Fixing Issue) : SUCCESS")
-        Console.info("Migrating Data from Int to UUID (Fixing Issue) : SUCCESS")
 
     except Exception as ex:
         logger.error("Error while migrating Data from Int to UUID (Fixing Issue)")
