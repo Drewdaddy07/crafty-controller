@@ -25,7 +25,7 @@ def migrate(migrator: Migrator, database, **kwargs):
     db = database
 
     this_migration = MigrateHistory.get_or_none(
-        MigrateHistory.name == "20240216_rework_servers_uuid_part2"
+        MigrateHistory.name == "20240217_rework_servers_uuid_part2"
     )
     if this_migration is not None:
         Console.debug("Update database already done, skipping this part")
@@ -142,7 +142,7 @@ def rollback(migrator: Migrator, database, **kwargs):
 
     # Condition to prevent running rollback each time we've got a rollback to do
     this_migration = MigrateHistory.get_or_none(
-        MigrateHistory.name == "20240216_rework_servers_uuid_part2"
+        MigrateHistory.name == "20240217_rework_servers_uuid_part2"
     )
     if this_migration is None:
         Console.debug("Update database already done, skipping this part")
