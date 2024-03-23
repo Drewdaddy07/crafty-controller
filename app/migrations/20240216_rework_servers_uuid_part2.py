@@ -22,12 +22,10 @@ def migrate(migrator: Migrator, database, **kwargs):
     """
     db = database
 
-    this_migration = MigrateHistory.get(MigrateHistory.name == "20240216_rework_servers_uuid_part2")
-    if this_migration:
-        Console.debug("Update database already done, skipping this migration")
+    this_migration = MigrateHistory.get_or_none(MigrateHistory.name == "20240216_rework_servers_uuid_part2")
+    if this_migration is not None:
+        Console.debug("Update database already done, skipping this part")
         return
-    else :
-        Console.debug("Update database not done, doing : Migration Data from Int to UUID")
 
     # **********************************************************************************
     #          Servers New Model from Old (easier to migrate without dunmping Database)
