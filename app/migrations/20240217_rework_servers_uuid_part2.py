@@ -61,9 +61,13 @@ def migrate(migrator: Migrator, database, **kwargs):
         Console.debug("Update database already done, skipping this part")
         return
     else:
-        servers_columns = db.get_columns('servers')
-        if not any(column_data.name == "server_uuid" for column_data in servers_columns):
-            Console.debug("Servers.server_uuid already deleted in Crafty version 4.3.0, skipping this part")
+        servers_columns = db.get_columns("servers")
+        if not any(
+            column_data.name == "server_uuid" for column_data in servers_columns
+        ):
+            Console.debug(
+                "Servers.server_uuid already deleted in Crafty version 4.3.0, skipping this part"
+            )
             return
 
     try:
@@ -250,9 +254,7 @@ def rollback(migrator: Migrator, database, **kwargs):
                 new_server_id = 0
             else:
                 try:
-                    server = Servers.get_or_none(
-                        Servers.server_uuid == old_server_id
-                    )
+                    server = Servers.get_or_none(Servers.server_uuid == old_server_id)
                     new_server_id = server.server_id
                 except:
                     new_server_id = old_server_id
