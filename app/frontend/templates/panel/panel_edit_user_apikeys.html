@@ -148,9 +148,15 @@
                                                             }}</label>
                                                     </td>
                                                     <td>
+                                                        {% if permission in data['user_crafty_permissions'] %}
                                                         <input type="checkbox" class="crafty_perm"
                                                             id="permission_{{ permission.name }}"
                                                             name="permission_{{ permission.name }}" value="1">
+                                                        {% else %}
+                                                        <input type="checkbox" class="crafty_perm"
+                                                            id="permission_{{ permission.name }}"
+                                                            name="permission_{{ permission.name }}" value="1" disabled>
+                                                        {% end %}
                                                     </td>
                                                 </tr>
                                                 {% end %}

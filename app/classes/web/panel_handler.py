@@ -1356,6 +1356,9 @@ class PanelHandler(BaseHandler):
             page_data["crafty_permissions_all"] = (
                 self.controller.crafty_perms.list_defined_crafty_permissions()
             )
+            page_data["user_crafty_permissions"] = (
+                self.controller.crafty_perms.get_crafty_permissions_list(user_id)
+            )
 
             if user_id is None:
                 self.redirect("/panel/error?error=Invalid User ID")
