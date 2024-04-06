@@ -2,6 +2,8 @@
 ## --- [4.3.2] - 2024/TBD
 ### New features
 TBD
+### Refactor
+- Refactor ServerJars caching and move to api.serverjars.com ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/744))
 ### Bug fixes
 - Fix migrator issue when jumping versions ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/734))
 - Fix backend issue causing error when restoring backups in 4.3.x ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/736))
