@@ -33,6 +33,17 @@ class ApiServersServerActionHandler(BaseApiHandler):
                 self.controller.crafty_perms.can_create_server(auth_data[4]["user_id"])
                 or auth_data[4]["superuser"]
             ):
+                srv_object = self.controller.servers.get_server_instance_by_id(
+                    server_id
+                )
+                if srv_object.check_running():
+                    return self.finish_json(
+                        409,
+                        {
+                            "status": "error",
+                            "error": "Server Running!",
+                        },
+                    )
                 self._clone_server(server_id, auth_data[4]["user_id"])
                 return self.finish_json(200, {"status": "ok"})
             return self.finish_json(
