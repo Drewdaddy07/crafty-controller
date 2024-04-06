@@ -175,6 +175,7 @@ class ServerJars:
                     for item in data.get("response", [])
                     if "version" in item
                 ]
+                versions.reverse()  # Reverse so versions are newest -> oldest
                 logger.debug(f"Versions extracted: {versions}")
                 return versions
         except requests.RequestException as e:
