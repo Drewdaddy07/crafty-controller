@@ -106,7 +106,7 @@ class ApiCraftyConfigIndexHandler(BaseApiHandler):
 
         try:
             data = orjson.loads(self.request.body)
-        except orjson.decoder.JSONDecodeError as e:
+        except orjson.JSONDecodeError as e:
             return self.finish_json(
                 400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
             )
@@ -128,7 +128,7 @@ class ApiCraftyConfigIndexHandler(BaseApiHandler):
         self.controller.management.add_to_audit_log(
             user["user_id"],
             "edited config.json",
-            server_id=0,
+            server_id=None,
             source_ip=self.get_remote_ip(),
         )
 
@@ -187,7 +187,7 @@ class ApiCraftyCustomizeIndexHandler(BaseApiHandler):
 
         try:
             data = orjson.loads(self.request.body)
-        except orjson.decoder.JSONDecodeError as e:
+        except orjson.JSONDecodeError as e:
             return self.finish_json(
                 400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
             )
@@ -225,7 +225,7 @@ class ApiCraftyCustomizeIndexHandler(BaseApiHandler):
         self.controller.management.add_to_audit_log(
             user["user_id"],
             f"customized login photo: {data['photo']}/{data['opacity']}",
-            server_id=0,
+            server_id=None,
             source_ip=self.get_remote_ip(),
         )
         self.controller.management.set_login_opacity(int(data["opacity"]))
