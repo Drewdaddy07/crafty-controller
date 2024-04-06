@@ -12,7 +12,7 @@ from app.classes.shared.file_helpers import FileHelpers
 from app.classes.shared.websocket_manager import WebSocketManager
 
 logger = logging.getLogger(__name__)
-# Temp type var until sjars restores generic fetchTypes
+# Temp type var until sjars restores generic fetchTypes0
 SERVERJARS_TYPES = ["modded", "proxies", "servers", "vanilla"]
 PAPERJARS = ["paper", "folia"]
 
@@ -150,11 +150,19 @@ class ServerJars:
             type_structure[server_type] = {project: [] for project in projects}
         return type_structure
 
-    def _get_jar_versions(self, server_type, project_name):
+    def _get_jar_versions(self, server_type, project_name, max_ver=50):
         """
-        Grabs available versions per project
+        Grabs available versions for specified project
+
+        Args:
+            server_type (str): Server Type Category (modded, servers, etc)
+            project_name (str): Target project (paper, forge, magma, etc)
+            max (int, optional): Max versions returned. Defaults to 50.
+
+        Returns:
+            list: An array of versions
         """
-        url = f"{self.base_url}/api/fetchAll/{server_type}/{project_name}"
+        url = f"{self.base_url}/api/fetchAll/{server_type}/{project_name}?max={max_ver}"
         try:
             response = requests.get(url, timeout=5)
             response.raise_for_status()  # Ensure HTTP errors are caught
