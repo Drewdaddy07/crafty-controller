@@ -12,6 +12,7 @@
 ### Tweaks
 - Clean up remaining http handler references ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/733))
 - Remove version disclosure on login page ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/737))
+- Add openjdk-21 for recent versions of MC ([Commit](https://gitlab.com/crafty-controller/crafty-4/-/commit/77b0c2c9d2eac124a7504a3d3916fa22d29fa9d1))
 ### Lang
 - Update `it_IT, cs_CS` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/739) | [Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/742))
 <br><br>
