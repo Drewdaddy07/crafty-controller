@@ -29,6 +29,7 @@
         "perms": "Oprávnění",
         "server": "Server: ",
         "superUser": "Super uživatel",
+        "fullAccess": "všechno",
         "yes": "Ano"
     },
     "base": {

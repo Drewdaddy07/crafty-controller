@@ -29,6 +29,7 @@
         "perms": "Yetkiler",
         "server": "Sunucu: ",
         "superUser": "Süper Kullanıcı",
+        "fullAccess": "Tam Erişim",
         "yes": "Evet"
     },
     "base": {

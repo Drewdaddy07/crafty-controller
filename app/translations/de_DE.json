@@ -28,7 +28,9 @@
         "permName": "Berechtigungs Name",
         "perms": "Berechtigungen",
         "server": "Server: ",
+        "fullAccess": "Vollzugriff",
         "superUser": "Super Benutzer",
+
         "yes": "Ja"
     },
     "base": {

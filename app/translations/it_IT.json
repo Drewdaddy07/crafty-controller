@@ -29,6 +29,7 @@
         "perms": "Permessi",
         "server": "Server: ",
         "superUser": "Super User",
+        "fullAccess": " Accesso completo",
         "yes": "Sì"
     },
     "base": {

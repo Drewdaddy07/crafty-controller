@@ -29,6 +29,7 @@
         "perms": "权限",
         "server": "服务器：",
         "superUser": "超级用户",
+        "fullAccess": "完全访问",
         "yes": "是"
     },
     "base": {
