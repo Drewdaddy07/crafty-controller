@@ -20,6 +20,7 @@
         "created": "Oluşturuldu",
         "deleteKeyConfirmation": "Bu API anahtarını silmek istediğine emin misin? Bu geri alınamaz.",
         "deleteKeyConfirmationTitle": "${keyId} API anahtarını kaldırma işlemi.",
+        "fullAccess": "Tam Erişim",
         "getToken": "Bir Token Al",
         "name": "Ad",
         "nameDesc": "Bu API tokeninin adı ne olsun?",
@@ -29,7 +30,6 @@
         "perms": "Yetkiler",
         "server": "Sunucu: ",
         "superUser": "Süper Kullanıcı",
-        "fullAccess": "Tam Erişim",
         "yes": "Evet"
     },
     "base": {

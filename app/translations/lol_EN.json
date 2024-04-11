@@ -20,6 +20,7 @@
         "created": "CREATED",
         "deleteKeyConfirmation": "U SURE U WANTZ TO DELETE DIS? CAN'T UNDO!",
         "deleteKeyConfirmationTitle": "I CAN EATZ IT??? : ${keyId}?",
+        "fullAccess": "All da Doors Open",
         "getToken": "GIT TOKEN",
         "name": "NAME",
         "nameDesc": "WUT WUD U LIEK 2 CALL DIS API TOKEN? ",
@@ -28,7 +29,6 @@
         "permName": "PERMISSION NAME",
         "perms": "PERMISSIONS",
         "server": "SERVER: ",
-        "fullAccess": "All da Doors Open",
         "superUser": "SUPA DOOPA USR",
         "yes": "YESH!"
     },
