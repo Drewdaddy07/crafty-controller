@@ -651,6 +651,7 @@ class Helpers:
             return False
 
     def log_colors(self, line):
+        print(line)
         # our regex replacements
         # note these are in a tuple
 
@@ -684,7 +685,201 @@ class Helpers:
         for old, new in replacements:
             line = re.sub(old, new, line, flags=re.IGNORECASE)
 
-        return line
+        # ASCII color codes
+        # Regex to match the escape sequence
+        regex = "(\\x1b\[.+?m)"
+        matches = re.findall(regex, line)
+        print(matches)
+
+        # Find the color coresponding to the escape sequence
+        colors = []
+        for match in matches:
+            color = self.interpret_ansi_colors(match)
+            colors.append(color)
+
+        # Find the text between the current and next escape sequence
+        res = ""
+        print("matches ", len(matches))
+        for i in range(len(matches)):
+
+            if i < len(matches) - 1:
+                sub1 = matches[i]
+                sub2 = matches[i + 1]
+
+                idx1 = line.index(sub1)
+                idx2 = line.index(sub2, idx1 + 1)
+
+                res += line[:idx1]  # Add text before the escape sequence
+                res += (
+                    "<span class='"
+                    + colors[i]
+                    + "'"
+                    + self.gen_ansi_style(colors[i], matches[i])
+                    + ">"
+                )  # Open the span
+                res += line[
+                    idx1 + len(sub1) : idx2
+                ]  # Add text within the escape sequence
+                res += "</span>"  # Close the span
+                line = line[idx2:]  # Remove processed part from line
+
+            else:  # There is no second substring for the end part
+                idx = line.index(matches[i])
+
+                res += line[:idx]  # Add text before the escape sequence
+                res += (
+                    "<span class='"
+                    + colors[i]
+                    + "'"
+                    + self.gen_ansi_style(colors[i], matches[i])
+                    + "'>"
+                )  # Open the span
+                res += line[
+                    idx + len(matches[i]) :
+                ]  # Add text within the escape sequence
+                res += "</span>"  # Close the span
+
+                # Add a space if the last character is not a space
+                if line[-1] != " ":
+                    res += " "
+
+        if len(matches) == 0:
+            return line
+        else:
+            return res
+
+    @staticmethod
+    def gen_ansi_style(color, code):
+
+        # TODO: 48;2 38;5 48;5
+        # Verify that colors has enough contrast
+        if color is "ansi-rgb" and code.find("\x1b[38;2;") > -1:
+            print("rgb values")
+            # Format: \x1b[38;2;85;255;255m
+            regex = "(\d{1,3})[;,m]"
+            matches = re.findall(regex, code)
+            rgb = []
+            for match in matches:
+                rgb.append(match[:-1])  # Get rid of the semicolons
+            print(rgb)
+            print(matches)
+            return (
+                "style='color: rgb("
+                + matches[2]
+                + ","
+                + matches[3]
+                + ","
+                + matches[4]
+                + ")'"
+            )
+        if color == "ansi-black":
+            return "style='color: black'"
+        elif color == "ansi-red":
+            return "style='color: var(--red)'"
+        elif color == "ansi-green":
+            return "style='color: var(--green)'"
+        elif color == "ansi-yellow":
+            return "style='color: var(--yellow)'"
+        elif color == "ansi-blue":
+            return "style='color: var(--blue)'"
+        elif color == "ansi-purple":
+            return "style='color: var(--purple)'"
+        elif color == "ansi-cyan":
+            return "style='color: var(--cyan)'"
+        elif color == "ansi-white":
+            return "style='color: var(--white)'"
+        elif color == "ansi-bg-black":
+            return "style='background-color: black'"
+        elif color == "ansi-bg-red":
+            return "style='background-color: var(--red); color: black'"
+        elif color == "ansi-bg-green":
+            return "style='background-color: var(--green); color: black'"
+        elif color == "ansi-bg-yellow":
+            return "style='background-color: var(--yellow); color: black'"
+        elif color == "ansi-bg-blue":
+            return "style='background-color: var(--blue); color: black'"
+        elif color == "ansi-bg-purple":
+            return "style='background-color: var(--purple); color: black'"
+        elif color == "ansi-bg-cyan":
+            return "style='background-color: var(--cyan); color: black'"
+        elif color == "ansi-bg-white":
+            return "style='background-color: var(--white); color: black'"
+        else:
+            return ""
+
+    @staticmethod
+    def interpret_ansi_colors(code):
+        if code == "\x1b[0m":
+            return "ansi-reset"
+        if code == "\x1b[30m":
+            return "ansi-black"
+        if code == "\x1b[31m":
+            return "ansi-red"
+        if code == "\x1b[32m":
+            return "ansi-green"
+        if code == "\x1b[33m":
+            return "ansi-yellow"
+        if code == "\x1b[34m":
+            return "ansi-blue"
+        if code == "\x1b[35m":
+            return "ansi-purple"
+        if code == "\x1b[36m":
+            return "ansi-cyan"
+        if code == "\x1b[37m":
+            return "ansi-white"
+        if code == "\x1b[40m":
+            return "ansi-bg-black"
+        if code == "\x1b[41m":
+            return "ansi-bg-red"
+        if code == "\x1b[42m":
+            return "ansi-bg-green"
+        if code == "\x1b[43m":
+            return "ansi-bg-yellow"
+        if code == "\x1b[44m":
+            return "ansi-bg-blue"
+        if code == "\x1b[45m":
+            return "ansi-bg-purple"
+        if code == "\x1b[46m":
+            return "ansi-bg-cyan"
+        if code == "\x1b[47m":
+            return "ansi-bg-white"
+        if code == "\x1b[90m":
+            return "ansi-light-grey"
+        if code == "\x1b[91m":
+            return "ansi-light-red"
+        if code == "\x1b[92m":
+            return "ansi-light-green"
+        if code == "\x1b[93m":
+            return "ansi-light-yellow"
+        if code == "\x1b[94m":
+            return "ansi-light-blue"
+        if code == "\x1b[95m":
+            return "ansi-light-purple"
+        if code == "\x1b[96m":
+            return "ansi-light-cyan"
+        if code == "\x1b[97m":
+            return "ansi-light-white"
+        if code == "\x1b[100m":
+            return "ansi-bg-light-grey"
+        if code == "\x1b[101m":
+            return "ansi-bg-light-red"
+        if code == "\x1b[102m":
+            return "ansi-bg-light-green"
+        if code == "\x1b[103m":
+            return "ansi-bg-light-yellow"
+        if code == "\x1b[104m":
+            return "ansi-bg-light-blue"
+        if code == "\x1b[105m":
+            return "ansi-bg-light-purple"
+        if code == "\x1b[106m":
+            return "ansi-bg-light-cyan"
+        if code == "\x1b[107m":
+            return "ansi-bg-light-white"
+        if "\x1b[38;2;" in code:
+            return "ansi-rgb"
+        if "\x1b[48;2;" in code:
+            return "ansi-bg-rgb"
+        return "reset"
 
     @staticmethod
     def validate_traversal(base_path, filename):
