@@ -748,12 +748,11 @@ class Helpers:
         else:
             return res
 
-    @staticmethod
-    def gen_ansi_style(color, code):
-
+    def gen_ansi_style(self, color, code):
+        term_bg = (39.536, 42.082, 63.618)  # card-banner-bg
         # TODO: 48;2 38;5 48;5
         # Verify that colors has enough contrast
-        if color is "ansi-rgb" and code.find("\x1b[38;2;") > -1:
+        if color == "ansi-rgb" and code.find("\x1b[38;2;") > -1:
             print("rgb values")
             # Format: \x1b[38;2;85;255;255m
             regex = "(\d{1,3})[;,m]"
@@ -771,6 +770,43 @@ class Helpers:
                 + ","
                 + matches[4]
                 + ")'"
+            )
+        elif color == "ansi-bg-rgb":
+            # Format: \x1b[38;2;85;255;255m
+            regex = "(\d{1,3})[;,m]"
+            matches = re.findall(regex, code)
+            rgb = []
+            for match in matches:
+                rgb.append(match[:-1])  # Get rid of the semicolons
+            print(rgb)
+            print(matches)
+            # TODO: Determine if white or black has higher contrast
+
+            textColor = "white"
+
+            if self.get_contrast(
+                (255, 255, 255), (rgb[2], rgb[3], rgb[4])
+            ) > self.get_contrast((0, 0, 0), (rgb[2], rgb[3], rgb[4])):
+                print(
+                    "white ",
+                    self.get_contrast((255, 255, 255), (rgb[2], rgb[3], rgb[4])),
+                )
+                print(
+                    "black ",
+                    self.get_contrast((0, 0, 0), (rgb[2], rgb[3], rgb[4])),
+                )
+                textColor = "black"
+
+            return (
+                "style='background-color: rgb("
+                + matches[2]
+                + ","
+                + matches[3]
+                + ","
+                + matches[4]
+                + "); color: "
+                + textColor
+                + "'"
             )
         if color == "ansi-black":
             return "style='color: black'"
@@ -880,6 +916,29 @@ class Helpers:
         if "\x1b[48;2;" in code:
             return "ansi-bg-rgb"
         return "reset"
+
+    @staticmethod
+    def get_contrast(color1, color2):
+        def get_luminence(color):
+            rgb = []
+            for c in color:
+                c = int(c)
+                c = c / 255.0
+                if c <= 0.03928:
+                    c = c / 12.92
+                else:
+                    c = ((c + 0.055) / 1.055) ** 2.4
+                rgb.append(c)
+
+            return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]
+
+        lum1 = get_luminence(color1)
+        lum2 = get_luminence(color2)
+
+        if lum1 > lum2:
+            return (lum1 + 0.05) / (lum2 + 0.05)
+        else:
+            return (lum2 + 0.05) / (lum1 + 0.05)
 
     @staticmethod
     def validate_traversal(base_path, filename):
