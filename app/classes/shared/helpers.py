@@ -496,7 +496,6 @@ class Helpers:
         # Config.json was removed from the repo to make it easier for users
         # To make non-breaking changes to the file.
         return {
-            "http_port": 8000,
             "https_port": 8443,
             "language": "en_EN",
             "cookie_expire": 30,
