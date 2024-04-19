@@ -17,7 +17,7 @@ create_role_schema = {
                 "type": "object",
                 "properties": {
                     "server_id": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 1,
                     },
                     "permissions": {
@@ -47,7 +47,7 @@ basic_create_role_schema = {
                 "type": "object",
                 "properties": {
                     "server_id": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 1,
                     },
                     "permissions": {
@@ -161,7 +161,7 @@ class ApiRolesIndexHandler(BaseApiHandler):
         self.controller.management.add_to_audit_log(
             user["user_id"],
             f"created role {role_name} (RID:{role_id})",
-            server_id=0,
+            server_id=None,
             source_ip=self.get_remote_ip(),
         )
 

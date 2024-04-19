@@ -1,5 +1,5 @@
 # Changelog
-## --- [4.3.1] - 2023/TBD
+## --- [4.3.3] - 2024/TBD
 ### New features
 TBD
 ### Bug fixes
@@ -10,7 +10,33 @@ TBD
 TBD
 <br><br>
 
-## --- [4.3.0] - 2023/03/09
+## --- [4.3.2] - 2024/04/07
+### Refactor
+- Refactor ServerJars caching and move to api.serverjars.com ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/744) | [Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/746))
+### Bug fixes
+- Fix migrator issue when jumping versions ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/734))
+- Fix backend issue causing error when restoring backups in 4.3.x ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/736))
+- Fix backend issue causing error when cloning servers in 4.3.x ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/741))
+- Bump orjson for CVE-2024-27454 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/747))
+- Fix calling of orjson JSONDecodeError class ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/747))
+- Fix stack on Crafty permissions route request in API ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/745))
+### Tweaks
+- Clean up remaining http handler references ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/733))
+- Remove version disclosure on login page ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/737))
+- Add openjdk-21 for recent versions of MC ([Commit](https://gitlab.com/crafty-controller/crafty-4/-/commit/77b0c2c9d2eac124a7504a3d3916fa22d29fa9d1))
+### Lang
+- Update `it_IT, cs_CS` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/739) | [Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/742))
+<br><br>
+
+## --- [4.3.1] - 2024/03/18
+### Bug fixes
+- Fix Server ID Rework for backups, schedules, and roles (INT ID to UUID migration) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/729))
+### Tweaks
+- Remove http re-direct handler. Users should implement nginx configurations for port 80 redirects ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/730))
+
+<br><br>
+
+## --- [4.3.0] - 2024/03/09
 ### Breaking Changes
 - This release includes database migrations that are not revertable. Once you update to this version you will not be able to rollback to a previous version.
 - In this release, we've implemented a breaking change to enhance server identification within Crafty: instead of relying on numerical integers (1, 2, 3, etc.), Servers are now uniquely identified by their UUIDs. Please adapt your API clients accordingly.
@@ -34,7 +60,7 @@ TBD
 - Update `de_DE, en_EN, es_ES, fr_FR, he_IL, lol_EN, lv_LV, nl_BE pl_PL, th_TH, tr_TR, uk_UA, zh_CN` translations for `4.3.0` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/715))
 <br><br>
 
-## --- [4.2.3] - 2023/02/02
+## --- [4.2.3] - 2024/02/02
 ### New features
 - Use Papermc Group's API for `paper` & `folia` builds in server builder ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/688))
 - Allow omission of player count from Dashboard (e.g. for  proxy servers) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/692))
