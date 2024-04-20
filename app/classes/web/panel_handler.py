@@ -677,15 +677,9 @@ class PanelHandler(BaseHandler):
                 page_data["java_versions"] = page_java
             if subpage == "backup":
                 server_info = self.controller.servers.get_server_data_by_id(server_id)
-                page_data["backup_config"] = (
-                    self.controller.management.get_backup_config(server_id)
-                )
+
                 page_data["backups"] = self.controller.management.get_backups_by_server(
                     server_id, model=True
-                )
-                exclusions = []
-                page_data["exclusions"] = (
-                    self.controller.management.get_excluded_backup_dirs(server_id)
                 )
                 page_data["backing_up"] = (
                     self.controller.servers.get_server_instance_by_id(
@@ -698,20 +692,8 @@ class PanelHandler(BaseHandler):
                     ).send_backup_status()
                 )
                 # makes it so relative path is the only thing shown
-                for file in page_data["exclusions"]:
-                    if Helpers.is_os_windows():
-                        exclusions.append(file.replace(server_info["path"] + "\\", ""))
-                    else:
-                        exclusions.append(file.replace(server_info["path"] + "/", ""))
-                page_data["exclusions"] = exclusions
+
                 self.controller.servers.refresh_server_settings(server_id)
-                try:
-                    page_data["backup_list"] = server.list_backups()
-                except:
-                    page_data["backup_list"] = []
-                page_data["backup_path"] = Helpers.wtol_path(
-                    page_data["backup_config"]["backup_path"]
-                )
 
             if subpage == "metrics":
                 try:
@@ -1259,6 +1241,15 @@ class PanelHandler(BaseHandler):
                     return
 
             template = "panel/server_schedule_edit.html"
+
+        elif page == "edit_backup":
+            exclusions = []
+            for file in page_data["exclusions"]:
+                if Helpers.is_os_windows():
+                    exclusions.append(file.replace(server_info["path"] + "\\", ""))
+                else:
+                    exclusions.append(file.replace(server_info["path"] + "/", ""))
+            page_data["exclusions"] = exclusions
 
         elif page == "edit_user":
             user_id = self.get_argument("id", None)
