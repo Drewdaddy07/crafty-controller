@@ -116,6 +116,7 @@
         "welcome": "Crafty Controller'a Hoşgeldiniz!"
     },
     "datatables": {
+        "loadingRecords": "Yükleniyor...",
         "i18n": {
             "aria": {
                 "sortAscending": ": artan sütun sıralamasını aktifleştir",

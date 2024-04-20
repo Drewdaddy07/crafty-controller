@@ -116,6 +116,7 @@
         "welcome": "欢迎来到 Crafty Controller"
     },
     "datatables": {
+        "loadingRecords": "正在加载……",
         "i18n": {
             "aria": {
                 "sortAscending": "：激活对队列的升序排列",

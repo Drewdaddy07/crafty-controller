@@ -116,6 +116,7 @@
         "welcome": "Vítejte v Crafty Controlleru"
     },
     "datatables": {
+        "loadingRecords": "Načítání...",
         "i18n": {
             "aria": {
                 "sortAscending": ": aktivace řazení sloupce vzestupně",

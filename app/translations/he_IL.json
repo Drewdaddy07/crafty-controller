@@ -116,6 +116,7 @@
         "welcome": "ברוכים הבאים ל-פאנל קראפטי"
     },
     "datatables": {
+        "loadingRecords": "...טוען",
         "i18n": {
             "aria": {
                 "sortAscending": ": הפעילו כדי למיין עמודות בסדר עולה",

@@ -116,6 +116,7 @@
         "welcome": "Witamy w Crafty Controller"
     },
     "datatables": {
+        "loadingRecords": "Wczytywanie...",
         "i18n": {
             "aria": {
                 "sortAscending": ": aktywuj, aby sortować kolumny w góre",
