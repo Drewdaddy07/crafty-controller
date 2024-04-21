@@ -56,29 +56,46 @@ def callback(called_func):
         try:
             res = called_func(*args, **kwargs)
         finally:
-            events = WebhookFactory.get_monitored_events()
-            if called_func.__name__ in events:
+            event_type = called_func.__name__
+
+            # For send_command, Retrieve command from args or kwargs
+            # TODO Test Properly
+            command = args[1] if len(args) > 1 else kwargs.get("command", "")
+
+            if event_type in WebhookFactory.get_monitored_events():
                 server_webhooks = HelpersWebhooks.get_webhooks_by_server(
                     args[0].server_id, True
                 )
                 for swebhook in server_webhooks:
-                    if called_func.__name__ in str(swebhook.trigger).split(","):
+                    if event_type in str(swebhook.trigger).split(","):
                         logger.info(
-                            f"Found callback for event {called_func.__name__}"
+                            f"Found callback for event {event_type}"
                             f" for server {args[0].server_id}"
                         )
                         webhook = HelpersWebhooks.get_webhook_by_id(swebhook.id)
                         webhook_provider = WebhookFactory.create_provider(
                             webhook["webhook_type"]
                         )
+
+                        event_data = {
+                            "server_name": args[0].name,
+                            "server_id": args[0].server_id,
+                            "user": "",
+                            "user_id" "command": command,
+                            "timestamp": datetime.datetime.utcnow().strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            ),
+                        }
+
                         if res is not False and swebhook.enabled:
                             webhook_provider.send(
-                                bot_name=webhook["bot_name"],
                                 server_name=args[0].name,
                                 title=webhook["name"],
                                 url=webhook["url"],
-                                message=webhook["body"],
+                                message_template=webhook["body"],
+                                event_data=event_data,
                                 color=webhook["color"],
+                                bot_name=webhook["bot_name"],
                             )
         return res
 
