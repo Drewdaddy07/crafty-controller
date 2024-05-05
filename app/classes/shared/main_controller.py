@@ -572,11 +572,14 @@ class Controller:
                 if create_data["type"] != "forge-installer":
                     server_obj = self.servers.get_server_obj(new_server_id)
                     url = self.big_bucket.get_fetch_url(
-                        create_data["type"], create_data["version"]
+                        create_data["category"],
+                        create_data["type"],
+                        create_data["version"],
                     )
                     server_obj.executable_update_url = url
                     self.servers.update_server(server_obj)
                 self.big_bucket.download_jar(
+                    create_data["category"],
                     create_data["type"],
                     create_data["version"],
                     full_jar_path,

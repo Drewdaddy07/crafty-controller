@@ -64,7 +64,9 @@ class BigBucket:
         try:
             response = requests.get(f"{self.base_url}/manifest.json", timeout=5)
             if response.status_code in [200, 201]:
-                return response.json().get("mc_java_servers")
+                data = response.json()
+                del data["manifest_version"]
+                return data
             return {}
         except TimeoutError as e:
             logger.error(f"Unable to get jars from remote with error {e}")
@@ -126,10 +128,11 @@ class BigBucket:
         logger.info("Automatic cache refresh initiated due to old cache.")
         self._refresh_cache()
 
-    def get_fetch_url(self, server, version) -> str:
+    def get_fetch_url(self, jar, server, version) -> str:
         """
         Constructs the URL for downloading a server JAR file based on the server type.
         Parameters:
+            jar (str): The category of the JAR file to download.
             server (str): Server software name (e.g., "paper").
             version (str): Server version.
 
@@ -139,21 +142,23 @@ class BigBucket:
         """
         try:
             # Read cache file for URL that is in a list of one item
-            return self._read_cache()["types"][server]["versions"][version]["url"][0]
+            return self._read_cache()["types"][jar][server]["versions"][version]["url"][
+                0
+            ]
         except Exception as e:
             logger.error(f"An error occurred while constructing fetch URL: {e}")
             return None
 
-    def download_jar(self, server, version, path, server_id):
+    def download_jar(self, jar, server, version, path, server_id):
         update_thread = threading.Thread(
             name=f"server_download-{server_id}-{server}-{version}",
             target=self.a_download_jar,
             daemon=True,
-            args=(server, version, path, server_id),
+            args=(jar, server, version, path, server_id),
         )
         update_thread.start()
 
-    def a_download_jar(self, server, version, path, server_id):
+    def a_download_jar(self, jar, server, version, path, server_id):
         """
         Downloads a server JAR file and performs post-download actions including
         notifying users and setting import status.
@@ -166,6 +171,7 @@ class BigBucket:
         notifies server users about the completion of the download.
 
         Parameters:
+            - jar (str): The category of the JAR file to download.
             - server (str): The type of server software (e.g., 'forge', 'paper').
             - version (str): The version of the server software.
             - path (str): The local filesystem path where the JAR file will be saved.
@@ -183,7 +189,7 @@ class BigBucket:
         # delaying download for server register to finish
         time.sleep(3)
 
-        fetch_url = self.get_fetch_url(server, version)
+        fetch_url = self.get_fetch_url(jar, server, version)
         if not fetch_url:
             return False
 

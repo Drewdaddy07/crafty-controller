@@ -65,10 +65,10 @@
 
                   <div class="col-sm-12">
                     <div class="form-group">
-                      <label for="server_type">{{ translate('serverWizard', 'serverSelect', data['lang']) }}</label>
+                      <label for="server_jar">{{ translate('serverWizard', 'serverType', data['lang']) }}</label>
                       <div class="input-group">
-                        <select required class="form-control form-control-lg select-css" id="server_type" name="type"
-                          onchange="serverTypeChange(this)">
+                        <select required class="form-control form-control-lg select-css" id="server_jar" name="type"
+                          onchange="serverJarChange(this)">
                           <option value="">{{ translate('serverWizard', 'selectServer', data['lang']) }}</option>
                           {% for s in data['server_types'] %}
                           <option value="{{ s }}">{{ s.capitalize() }}</option>
@@ -81,6 +81,16 @@
                         </div>
                         {% end %}
                       </div>
+                    </div>
+                  </div>
+
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label for="server_type">{{ translate('serverWizard', 'serverSelect', data['lang']) }}</label>
+                      <select required class="form-control form-control-lg select-css" id="server_type" name="type"
+                        onchange="serverTypeChange(this)">
+                        <option value="">{{ translate('serverWizard', 'selectServer', data['lang']) }}</option>
+                      </select>
                     </div>
                   </div>
 
@@ -957,8 +967,9 @@
         "minecraft_java_create_data": {
           "create_type": "download_jar",
           "download_jar_create_data": {
-            "type": formDataObject.version.split("|")[0],
-            "version": formDataObject.version.split("|")[1],
+            "category": formDataObject.version.split("|")[0],
+            "type": formDataObject.version.split("|")[1],
+            "version": formDataObject.version.split("|")[2],
             "mem_min": formDataObject.mem_min,
             "mem_max": formDataObject.mem_max,
             "server_properties_port": formDataObject.port
@@ -1184,11 +1195,12 @@
   function serverTypeChange(selectObj) {
     // get the index of the selected option
     let idx = document.getElementById('server_type').value;
+    let idx_list = idx.split("|");
     // get the value of the selected option
     let cSelect = document.getElementById("server");
     let which = {};
     try {
-      versions = Object.keys(serverTypesLists[idx]["versions"]);
+      versions = Object.keys(serverTypesLists[idx_list[0]][idx_list[1]]["versions"]);
     } catch {
       while (cSelect.options.length > 0) {
         cSelect.remove(0);
@@ -1230,5 +1242,48 @@
       $('.version-hint').popover("hide");
     }
   });
+
+  function serverJarChange(selectObj) {
+    const type_select = document.getElementById('server_jar')
+    const tidx = type_select.selectedIndex;
+    const val = type_select.options[tidx].value;
+    console.log(val);
+    let jcSelect = {};
+    if (val == 'None') {
+      jcSelect = document.getElementById("server_type");
+      while (jcSelect.options.length > 0) {
+        jcSelect.remove(0);
+      }
+      serverTypeChange(selectObj);
+      return;
+    }
+    // get the index of the selected option
+    let jidx = selectObj.selectedIndex;
+    // get the value of the selected option
+    let jwhich = selectObj.options[jidx].value;
+    // use the selected option value to retrieve the list of items from the serverTypesLists array
+    let jcList = Object.keys(serverTypesLists[jwhich]);
+    // get the country select element via its known id
+    jcSelect = document.getElementById("server_type");
+    // remove the current options from the country select
+    while (jcSelect.options.length > 0) {
+      jcSelect.remove(0);
+    }
+    let jnewOption;
+    // create new options ordered by ascending
+    jcList.forEach(type => {
+      jnewOption = document.createElement("option");
+      jnewOption.value = jwhich + "|" + type;  // assumes option string and value are the same
+      jnewOption.text = type;
+      // add the new option
+      try {
+        jcSelect.add(jnewOption);  // this will fail in DOM browsers but is needed for IE
+      }
+      catch (e) {
+        jcSelect.appendChild(jnewOption);
+      }
+    })
+    serverTypeChange(selectObj);
+  }
 </script>
 {% end %}
