@@ -1201,6 +1201,10 @@
       return;
     }
 
+    $("#server option").each(function () {
+      $(this).remove()
+    })
+
     // create new options ordered by ascending
     versions.forEach(type => {
       newOption = document.createElement("option");
@@ -1231,47 +1235,5 @@
       $('.version-hint').popover("hide");
     }
   });
-
-  function serverJarChange(selectObj) {
-    const type_select = document.getElementById('server_jar')
-    const tidx = type_select.selectedIndex;
-    const val = type_select.options[tidx].value;
-    let jcSelect = {};
-    if (val == 'None') {
-      jcSelect = document.getElementById("server_type");
-      while (jcSelect.options.length > 0) {
-        jcSelect.remove(0);
-      }
-      serverTypeChange(selectObj);
-      return;
-    }
-    // get the index of the selected option
-    let jidx = selectObj.selectedIndex;
-    // get the value of the selected option
-    let jwhich = selectObj.options[jidx].value;
-    // use the selected option value to retrieve the list of items from the serverTypesLists array
-    let jcList = Object.keys(serverTypesLists[jwhich]);
-    // get the country select element via its known id
-    jcSelect = document.getElementById("server_type");
-    // remove the current options from the country select
-    while (jcSelect.options.length > 0) {
-      jcSelect.remove(0);
-    }
-    let jnewOption;
-    // create new options ordered by ascending
-    jcList.forEach(type => {
-      jnewOption = document.createElement("option");
-      jnewOption.value = jwhich + "|" + type;  // assumes option string and value are the same
-      jnewOption.text = type;
-      // add the new option
-      try {
-        jcSelect.add(jnewOption);  // this will fail in DOM browsers but is needed for IE
-      }
-      catch (e) {
-        jcSelect.appendChild(jnewOption);
-      }
-    })
-    serverTypeChange(selectObj);
-  }
 </script>
 {% end %}
