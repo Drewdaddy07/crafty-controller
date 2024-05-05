@@ -18,8 +18,9 @@ logger = logging.getLogger(__name__)
 class BigBucket:
     def __init__(self, helper):
         self.helper = helper
-        self.base_url = "https://jars.arcadiatech.org"
-        self.paper_base = "https://api.papermc.io"
+        self.base_url = str(
+            self.helper.get_setting("big_bucket_repo", "https://jars.arcadiatech.org")
+        ).rstrip("/")
 
     def _read_cache(self) -> dict:
         cache_file = self.helper.big_bucket_cache
@@ -29,7 +30,7 @@ class BigBucket:
                 cache = json.load(f)
 
         except Exception as e:
-            logger.error(f"Unable to read serverjars.com cache file: {e}")
+            logger.error(f"Unable to read big_bucket cache file: {e}")
 
         return cache
 

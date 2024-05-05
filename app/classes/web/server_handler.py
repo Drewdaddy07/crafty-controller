@@ -146,8 +146,8 @@ class ServerHandler(BaseHandler):
                 return
             page_data["server_api"] = False
             if page_data["online"]:
-                page_data["server_api"] = self.helper.check_address_status(
-                    "https://api.serverjars.com"
+                page_data["server_api"] = (
+                    self.controller.big_bucket._check_bucket_alive()
                 )
             page_data["server_types"] = self.controller.big_bucket.get_bucket_data()
             page_data["js_server_types"] = json.dumps(

@@ -686,15 +686,15 @@ class TasksManager:
         )
 
     def big_bucket_cache_refresher(self):
-        logger.info("Refreshing serverjars.com cache on start")
+        logger.info("Refreshing big bucket cache on start")
         self.controller.big_bucket.refresh_cache()
 
-        logger.info("Scheduling Serverjars.com cache refresh service every 12 hours")
+        logger.info("Scheduling big bucket cache refresh service every 12 hours")
         self.scheduler.add_job(
             self.controller.big_bucket.refresh_cache,
             "interval",
             hours=12,
-            id="serverjars",
+            id="big_bucket",
         )
 
     def realtime(self):
