@@ -187,11 +187,12 @@
         {% if not data["server_api"] and data["online"] %}
         <div class="api-alert" style="position: absolute; top: -5px; z-index: 100; opacity: .99;">
           <p style="color: white !important;"><i class="fas fa-exclamation-triangle" style="color: red;"></i>&nbsp;{{
-            translate('error', 'serverJars1', data['lang']) }}<a style="color: red;" ;
+            translate('error', 'bigBucket1', data['lang']) }}<a style="color: red;" ;
               href="https://status.craftycontrol.com/status/craftycontrol" target="_blank" rel="noopener">&nbsp;{{
               translate('error',
               'craftyStatus', data['lang']) }}</a>
-            &nbsp;{{ translate('error', 'serverJars2', data['lang']) }}</p>
+            &nbsp;{{ translate('error', 'bigBucket2', data['lang']) }}</br></br><small>{{ translate('error', 'selfHost',
+              data['lang'])}}</small></p>
         </div>
         {% end %}
         {% if not data["online"] %}
@@ -1217,7 +1218,6 @@
       newOption = document.createElement("option");
       newOption.value = idx + "|" + type;  // assumes option string and value are the same
       newOption.text = type;
-      console.log(type)
       // add the new option
       try {
         cSelect.add(newOption);  // this will fail in DOM browsers but is needed for IE
@@ -1247,7 +1247,6 @@
     const type_select = document.getElementById('server_jar')
     const tidx = type_select.selectedIndex;
     const val = type_select.options[tidx].value;
-    console.log(val);
     let jcSelect = {};
     if (val == 'None') {
       jcSelect = document.getElementById("server_type");
