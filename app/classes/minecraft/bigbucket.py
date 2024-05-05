@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 class BigBucket:
     def __init__(self, helper):
         self.helper = helper
+        # remove any trailing slash from config.json
+        # url since we add it on all the calls
         self.base_url = str(
             self.helper.get_setting("big_bucket_repo", "https://jars.arcadiatech.org")
         ).rstrip("/")
