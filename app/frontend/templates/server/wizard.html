@@ -71,7 +71,10 @@
                           onchange="serverJarChange(this)">
                           <option value="">{{ translate('serverWizard', 'selectServer', data['lang']) }}</option>
                           {% for s in data['server_types'] %}
-                          <option value="{{ s }}">{{ s.capitalize() }}</option>
+                          {% if data['server_types'][s].get("enabled", False) %}
+                          <option value="{{ s }}">{{ data["server_types"][s].get("friendly_name", s).capitalize() }}
+                            {% end %}
+                          </option>
                           {% end %}
                         </select>
                         {% if data['super_user'] %}
@@ -1201,7 +1204,7 @@
     let cSelect = document.getElementById("server");
     let which = {};
     try {
-      versions = Object.keys(serverTypesLists[idx_list[0]][idx_list[1]]["versions"]);
+      versions = Object.keys(serverTypesLists[idx_list[0]]["types"][idx_list[1]]["versions"]);
     } catch {
       while (cSelect.options.length > 0) {
         cSelect.remove(0);
@@ -1247,6 +1250,15 @@
     const type_select = document.getElementById('server_jar')
     const tidx = type_select.selectedIndex;
     const val = type_select.options[tidx].value;
+    if (!val) {
+      $("#server_type option").each(function () {
+        $(this).remove()
+      })
+      $("#server option").each(function () {
+        $(this).remove()
+      })
+      return;
+    }
     let jcSelect = {};
     if (val == 'None') {
       jcSelect = document.getElementById("server_type");
@@ -1261,7 +1273,7 @@
     // get the value of the selected option
     let jwhich = selectObj.options[jidx].value;
     // use the selected option value to retrieve the list of items from the serverTypesLists array
-    let jcList = Object.keys(serverTypesLists[jwhich]);
+    let jcList = Object.keys(serverTypesLists[jwhich]["types"]);
     // get the country select element via its known id
     jcSelect = document.getElementById("server_type");
     // remove the current options from the country select
