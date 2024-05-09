@@ -6,6 +6,7 @@
 TBD
 ### Bug fixes
 - Reset query arguments on login if `?next` is not available ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/750))
+- Fix child schedule failing to load after del parent ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/753))
 ### Tweaks
 - Add link to go back to dashboard on error page ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/743))
 - Set audit logging to logfile instead of DB ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/751))
