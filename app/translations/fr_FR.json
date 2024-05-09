@@ -20,6 +20,7 @@
         "created": "Crée",
         "deleteKeyConfirmation": "Es-tu sûr de vouloir supprimer cette clé API? Tu ne pourras plus revenir en arrière.",
         "deleteKeyConfirmationTitle": "Supprimer la clé API ${keyId}?",
+        "fullAccess": "Accès Complet",
         "getToken": "Obtenir un Jeton",
         "name": "Nom",
         "nameDesc": "Comment appeler ce Jeton d'API ? ",
@@ -116,6 +117,7 @@
         "welcome": "Bienvenue sur Crafty Controller"
     },
     "datatables": {
+        "loadingRecords": "Chargement ...",
         "i18n": {
             "aria": {
                 "sortAscending": ": activer pour trier les colonnes dans l'ordre croissant",
@@ -203,6 +205,7 @@
         "not-downloaded": "Nous ne parvenons pas à trouver le fichier exécutable. A-t-il fini de Télécharger ? Les permissions permettent elles l'exécution ?",
         "portReminder": "Nous avons détecté que c'est la première fois que {} est exécuté. Assurez-vous de transférer le port {} via votre routeur/pare-feu pour le rendre accessible à distance depuis Internet.",
         "privMsg": "et le ",
+        "return": "Revenir au Tableau de Bord",
         "serverJars1": "l'API Server JARs est inaccessible. Merci de vérifier",
         "serverJars2": "pour les informations les plus à jour.",
         "start-error": "Le serveur {} n'a pas pu démarrer avec le code d'erreur : {}",
