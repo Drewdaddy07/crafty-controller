@@ -117,6 +117,7 @@
         "welcome": "Bienvenido a Crafty Controller"
     },
     "datatables": {
+        "loadingRecords": "Cargando...",
         "i18n": {
             "aria": {
                 "sortAscending": ": activar para ordenar las columnas de manera ascendente",

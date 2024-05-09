@@ -117,6 +117,7 @@
         "welcome": "Welkom bij Crafty Controller "
     },
     "datatables": {
+        "loadingRecords": "Bezig met laden...",
         "i18n": {
             "aria": {
                 "sortAscending": ": activeren om kolom oplopend te sorteren",

@@ -117,6 +117,7 @@
         "welcome": "WELCOM 2 CWAFTY CONTROLLR"
     },
     "datatables": {
+        "loadingRecords": "Loading...",
         "i18n": {
             "aria": {
                 "sortAscending": ": activate to sort column ascending",

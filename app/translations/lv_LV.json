@@ -118,6 +118,7 @@
         "welcome": "Esiet sveicināts Crafty Controller"
     },
     "datatables": {
+        "loadingRecords": "Ielādē...",
         "i18n": {
             "aria": {
                 "sortAscending": ": aktivizēt lai kārotu kolonnu augoši",
