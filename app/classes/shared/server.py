@@ -81,7 +81,8 @@ def callback(called_func):
                             "server_name": args[0].name,
                             "server_id": args[0].server_id,
                             "user": "",
-                            "user_id" "command": command,
+                            "user_id": "",
+                            "command": command,
                             "timestamp": datetime.datetime.utcnow().strftime(
                                 "%Y-%m-%d %H:%M:%S"
                             ),
