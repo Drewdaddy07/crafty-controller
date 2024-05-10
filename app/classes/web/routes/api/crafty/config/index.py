@@ -31,6 +31,7 @@ config_json_schema = {
         "monitored_mounts": {"type": "array"},
         "dir_size_poll_freq_minutes": {"type": "integer"},
         "crafty_logs_delete_after_days": {"type": "integer"},
+        "big_bucket_repo": {"type": "string"},
     },
     "additionalProperties": False,
     "minProperties": 1,

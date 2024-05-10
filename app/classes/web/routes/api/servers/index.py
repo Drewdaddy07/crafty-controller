@@ -139,7 +139,7 @@ new_server_schema = {
                     "category": {
                         "title": "Jar Category",
                         "type": "string",
-                        "examples": ["modded", "vanilla"],
+                        "examples": ["Mc_java_servers", "Mc_java_proxies"],
                     },
                     "properties": {
                         "type": {
