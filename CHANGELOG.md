@@ -3,8 +3,6 @@
 ### Refactor
 - Refactor API keys "super user" to "full access" ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/731))
 - Refactor SBuilder to use Big Bucket Svc ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/755))
-### New features
-TBD
 ### Bug fixes
 - Reset query arguments on login if `?next` is not available ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/750))
 - Fix child schedule failing to load after del parent ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/753))
