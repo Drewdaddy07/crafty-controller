@@ -123,6 +123,7 @@ class ManagementController:
         cron_string="* * * * *",
         parent=None,
         delay=0,
+        action_id=None,
     ):
         return HelpersManagement.create_scheduled_task(
             server_id,
@@ -137,6 +138,7 @@ class ManagementController:
             cron_string,
             parent,
             delay,
+            action_id,
         )
 
     @staticmethod

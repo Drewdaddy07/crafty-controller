@@ -337,6 +337,7 @@ class TasksManager:
             job_data["cron_string"],
             job_data["parent"],
             job_data["delay"],
+            job_data.get("action_id", None),
         )
 
         # Checks to make sure some doofus didn't actually make the newly

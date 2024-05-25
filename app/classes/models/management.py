@@ -89,6 +89,7 @@ class Schedules(BaseModel):
     interval_type = CharField()
     start_time = CharField(null=True)
     command = CharField(null=True)
+    action_id = CharField(null=True)
     name = CharField()
     one_time = BooleanField(default=False)
     cron_string = CharField(default="")
@@ -114,6 +115,7 @@ class Backups(BaseModel):
     shutdown = BooleanField(default=False)
     before = CharField(default="")
     after = CharField(default="")
+    enabled = BooleanField(default=True)
 
     class Meta:
         table_name = "backups"
@@ -268,6 +270,7 @@ class HelpersManagement:
         cron_string="* * * * *",
         parent=None,
         delay=0,
+        action_id=None,
     ):
         sch_id = Schedules.insert(
             {
@@ -278,6 +281,7 @@ class HelpersManagement:
                 Schedules.interval_type: interval_type,
                 Schedules.start_time: start_time,
                 Schedules.command: command,
+                Schedules.action_id: action_id,
                 Schedules.name: name,
                 Schedules.one_time: one_time,
                 Schedules.cron_string: cron_string,
