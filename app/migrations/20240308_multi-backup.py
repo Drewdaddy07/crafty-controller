@@ -98,10 +98,12 @@ def migrate(migrator: Migrator, database, **kwargs):
         # Fetch the related server entry from the Servers table
         server = Servers.get(Servers.server_id == backup.server_id)
 
-        # Create a new backup entry with data from the old backup entry and related server
+        # Create a new backup entry with data from the
+        # old backup entry and related server
         NewBackups.create(
             backup_name="Default",
-            backup_location=server.backup_path,  # Set backup_location equal to backup_path
+            # Set backup_location equal to backup_path
+            backup_location=server.backup_path,
             excluded_dirs=backup.excluded_dirs,
             max_backups=backup.max_backups,
             server_id=server.server_id,
