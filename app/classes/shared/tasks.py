@@ -240,6 +240,7 @@ class TasksManager:
                                         "system"
                                     ),
                                     "command": schedule.command,
+                                    "action_id": schedule.action_id,
                                 }
                             ],
                         )
@@ -268,6 +269,7 @@ class TasksManager:
                                         "system"
                                     ),
                                     "command": schedule.command,
+                                    "action_id": schedule.action_id,
                                 }
                             ],
                         )
@@ -284,6 +286,7 @@ class TasksManager:
                                         "system"
                                     ),
                                     "command": schedule.command,
+                                    "action_id": schedule.action_id,
                                 }
                             ],
                         )
@@ -303,6 +306,7 @@ class TasksManager:
                                         "system"
                                     ),
                                     "command": schedule.command,
+                                    "action_id": schedule.action_id,
                                 }
                             ],
                         )
@@ -337,7 +341,7 @@ class TasksManager:
             job_data["cron_string"],
             job_data["parent"],
             job_data["delay"],
-            job_data.get("action_id", None),
+            job_data["action_id"],
         )
 
         # Checks to make sure some doofus didn't actually make the newly
@@ -368,6 +372,7 @@ class TasksManager:
                                     "system"
                                 ),
                                 "command": job_data["command"],
+                                "action_id": job_data["action_id"],
                             }
                         ],
                     )
@@ -394,6 +399,7 @@ class TasksManager:
                                     "system"
                                 ),
                                 "command": job_data["command"],
+                                "action_id": job_data["action_id"],
                             }
                         ],
                     )
@@ -410,6 +416,7 @@ class TasksManager:
                                     "system"
                                 ),
                                 "command": job_data["command"],
+                                "action_id": job_data["action_id"],
                             }
                         ],
                     )
@@ -429,6 +436,7 @@ class TasksManager:
                                     "system"
                                 ),
                                 "command": job_data["command"],
+                                "action_id": job_data["action_id"],
                             }
                         ],
                     )
@@ -521,6 +529,7 @@ class TasksManager:
                                     "system"
                                 ),
                                 "command": job_data["command"],
+                                "action_id": job_data["action_id"],
                             }
                         ],
                     )
@@ -544,6 +553,7 @@ class TasksManager:
                                     "system"
                                 ),
                                 "command": job_data["command"],
+                                "action_id": job_data["action_id"],
                             }
                         ],
                     )
@@ -560,6 +570,7 @@ class TasksManager:
                                     "system"
                                 ),
                                 "command": job_data["command"],
+                                "action_id": job_data["action_id"],
                             }
                         ],
                     )
@@ -579,6 +590,7 @@ class TasksManager:
                                     "system"
                                 ),
                                 "command": job_data["command"],
+                                "action_id": job_data["action_id"],
                             }
                         ],
                     )
@@ -654,6 +666,7 @@ class TasksManager:
                                             "system"
                                         ),
                                         "command": schedule.command,
+                                        "action_id": schedule.action_id,
                                     }
                                 ],
                             )
