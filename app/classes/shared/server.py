@@ -1197,6 +1197,7 @@ class ServerInstance:
                 server_dir,
                 excluded_dirs,
                 self.server_id,
+                conf["backup_name"],
                 conf["compress"],
             )
 
