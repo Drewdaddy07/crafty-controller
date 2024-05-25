@@ -273,7 +273,7 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/servers/([a-z0-9-]+)/action/([a-z_]+)/?",
+            r"/api/v2/servers/([a-z0-9-]+)/action/([a-z_]+)/([a-z0-9-]+)/?",
             ApiServersServerActionHandler,
             handler_args,
         ),

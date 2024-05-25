@@ -140,7 +140,7 @@ class TasksManager:
                         )
 
                 elif command == "backup_server":
-                    svr.a_backup_server()
+                    svr.a_backup_server(cmd["action_id"])
 
                 elif command == "update_executable":
                     svr.jar_update()

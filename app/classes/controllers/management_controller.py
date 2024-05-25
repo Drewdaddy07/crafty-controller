@@ -75,7 +75,7 @@ class ManagementController:
     #                                   Commands Methods
     # **********************************************************************************
 
-    def send_command(self, user_id, server_id, remote_ip, command):
+    def send_command(self, user_id, server_id, remote_ip, command, action_id=None):
         server_name = HelperServers.get_server_friendly_name(server_id)
 
         # Example: Admin issued command start_server for server Survival
@@ -86,7 +86,12 @@ class ManagementController:
             remote_ip,
         )
         self.queue_command(
-            {"server_id": server_id, "user_id": user_id, "command": command}
+            {
+                "server_id": server_id,
+                "user_id": user_id,
+                "command": command,
+                "action_id": action_id,
+            }
         )
 
     def queue_command(self, command_data):

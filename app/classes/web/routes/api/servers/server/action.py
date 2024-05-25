@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class ApiServersServerActionHandler(BaseApiHandler):
-    def post(self, server_id: str, action: str):
+    def post(self, server_id: str, action: str, action_id=None):
         auth_data = self.authenticate_user()
         if not auth_data:
             return
@@ -54,7 +54,7 @@ class ApiServersServerActionHandler(BaseApiHandler):
             return self._agree_eula(server_id, auth_data[4]["user_id"])
 
         self.controller.management.send_command(
-            auth_data[4]["user_id"], server_id, self.get_remote_ip(), action
+            auth_data[4]["user_id"], server_id, self.get_remote_ip(), action, action_id
         )
 
         self.finish_json(
@@ -93,7 +93,6 @@ class ApiServersServerActionHandler(BaseApiHandler):
             new_server_name,
             new_server_id,
             new_server_path,
-            new_backup_path,
             new_server_command,
             server_data.get("executable"),
             new_server_log_path,

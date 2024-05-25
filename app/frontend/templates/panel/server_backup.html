@@ -101,8 +101,8 @@
                             </button>
                             <button data-backup={{ backup.backup_id }} data-toggle="tooltip"
                               title="{{ translate('serverBackups', 'run', data['lang']) }}"
-                              class="btn btn-outline-warning test-socket">
-                              <i class="fa-solid fa-vial"></i>
+                              class="btn btn-outline-warning run-backup backup_now_button">
+                              <i class="fa-solid fa-forward"></i>
                             </button>
                           </td>
                         </tr>
@@ -218,9 +218,10 @@
     return r ? r[1] : undefined;
   }
 
-  async function backup_started() {
+  async function backup_started(backup_id) {
     const token = getCookie("_xsrf")
-    let res = await fetch(`/api/v2/servers/${server_id}/action/backup_server`, {
+    console.log(backup_id)
+    let res = await fetch(`/api/v2/servers/${server_id}/action/backup_server/${backup_id}/`, {
       method: 'POST',
       headers: {
         'X-XSRFToken': token
@@ -322,53 +323,6 @@
   }
 
   $(document).ready(function () {
-    $("#backup-form").on("submit", async function (e) {
-      e.preventDefault();
-      const token = getCookie("_xsrf")
-      let backupForm = document.getElementById("backup-form");
-
-      let formData = new FormData(backupForm);
-      //Remove checks that we don't need in form data.
-      formData.delete("after-check");
-      formData.delete("before-check");
-      //Create an object from the form data entries
-      let formDataObject = Object.fromEntries(formData.entries());
-      //We need to make sure these are sent regardless of whether or not they're checked
-      formDataObject.compress = $("#compress").prop('checked');
-      formDataObject.shutdown = $("#shutdown").prop('checked');
-      let excluded = [];
-      $('input.excluded:checkbox:checked').each(function () {
-        excluded.push($(this).val());
-      });
-      if ($("#root_files_button").hasClass("clicked")) {
-        formDataObject.exclusions = excluded;
-      }
-      delete formDataObject.root_path
-      console.log(excluded);
-      console.log(formDataObject);
-      // Format the plain form data as JSON
-      let formDataJsonString = JSON.stringify(formDataObject, replacer);
-
-      console.log(formDataJsonString);
-
-      let res = await fetch(`/api/v2/servers/${server_id}/backups/`, {
-        method: 'PATCH',
-        headers: {
-          'X-XSRFToken': token
-        },
-        body: formDataJsonString,
-      });
-      let responseData = await res.json();
-      if (responseData.status === "ok") {
-        window.location.reload();
-      } else {
-
-        bootbox.alert({
-          title: responseData.error,
-          message: responseData.error_data
-        });
-      }
-    });
 
     try {
       if ($('#backup_path').val() == '') {
@@ -461,8 +415,8 @@
         }
       });
     });
-    $("#backup_now_button").click(function () {
-      backup_started();
+    $(".backup_now_button").click(function () {
+      backup_started($(this).data('backup'));
     });
 
   });
