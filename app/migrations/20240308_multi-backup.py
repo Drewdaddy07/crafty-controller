@@ -3,9 +3,11 @@ import uuid
 import peewee
 import logging
 
+
+from app.classes.models.management import Backups, Schedules
+from app.classes.shared.helpers import Helpers
 from app.classes.shared.console import Console
 from app.classes.shared.migration import Migrator, MigrateHistory
-from app.classes.models.management import Backups, Schedules
 
 logger = logging.getLogger(__name__)
 
@@ -15,11 +17,20 @@ def migrate(migrator: Migrator, database, **kwargs):
     Write your migrations here.
     """
     db = database
-
+    Console.info("Starting Backups migrations")
+    Console.info(
+        "Migrations: Adding columns [backup_id, "
+        "backup_name, backup_location, enabled, default, action_id, backup_status]"
+    )
     migrator.add_columns("backups", backup_id=peewee.UUIDField(default=uuid.uuid4))
     migrator.add_columns("backups", backup_name=peewee.CharField(default="Default"))
     migrator.add_columns("backups", backup_location=peewee.CharField(default=""))
     migrator.add_columns("backups", enabled=peewee.BooleanField(default=True))
+    migrator.add_columns("backups", default=peewee.BooleanField(default=False))
+    migrator.add_columns(
+        "backups",
+        status=peewee.CharField(default='{"status": "Standby", "message": ""}'),
+    )
     migrator.add_columns(
         "schedules", action_id=peewee.CharField(null=True, default=None)
     )
@@ -52,7 +63,7 @@ def migrate(migrator: Migrator, database, **kwargs):
             database = db
 
     class NewBackups(peewee.Model):
-        backup_id = peewee.UUIDField(primary_key=True, default=uuid.uuid4)
+        backup_id = peewee.CharField(primary_key=True, default=Helpers.create_uuid())
         backup_name = peewee.CharField(default="New Backup")
         backup_location = peewee.CharField(default="")
         excluded_dirs = peewee.CharField(null=True)
@@ -62,6 +73,8 @@ def migrate(migrator: Migrator, database, **kwargs):
         shutdown = peewee.BooleanField(default=False)
         before = peewee.CharField(default="")
         after = peewee.CharField(default="")
+        default = peewee.BooleanField(default=False)
+        status = peewee.CharField(default='{"status": "Standby", "message": ""}')
         enabled = peewee.BooleanField(default=True)
 
         class Meta:
@@ -97,11 +110,11 @@ def migrate(migrator: Migrator, database, **kwargs):
     for backup in Backups.select():
         # Fetch the related server entry from the Servers table
         server = Servers.get(Servers.server_id == backup.server_id)
-
+        Console.info(f"Migrations: Migrating backup for server {server.server_name}")
         # Create a new backup entry with data from the
         # old backup entry and related server
         NewBackups.create(
-            backup_name="Default",
+            backup_name=f"{server.server_name} Backup",
             # Set backup_location equal to backup_path
             backup_location=server.backup_path,
             excluded_dirs=backup.excluded_dirs,
@@ -111,19 +124,27 @@ def migrate(migrator: Migrator, database, **kwargs):
             shutdown=backup.shutdown,
             before=backup.before,
             after=backup.after,
+            default=True,
             enabled=True,
         )
 
+    Console.debug("Migrations: Dropping old backup table")
     # Drop the existing backups table
     migrator.drop_table("backups")
 
+    Console.debug("Migrations: Renaming new_backups to backups")
     # Rename the new table to backups
     migrator.rename_table("new_backups", "backups")
+
+    Console.debug("Migrations: Dropping backup_path from servers table")
     migrator.drop_columns("servers", ["backup_path"])
 
     for schedule in Schedules.select():
         action_id = None
         if schedule.command == "backup_server":
+            Console.info(
+                f"Migrations: Adding backup ID to task with name {schedule.name}"
+            )
             backup = NewBackups.get(NewBackups.server_id == schedule.server_id)
             action_id = backup.backup_id
         NewSchedules.create(
@@ -144,9 +165,11 @@ def migrate(migrator: Migrator, database, **kwargs):
             next_run=schedule.next_run,
         )
 
+    Console.debug("Migrations: dropping old schedules table")
     # Drop the existing backups table
     migrator.drop_table("schedules")
 
+    Console.debug("Migrations: renaming new_schedules to schedules")
     # Rename the new table to backups
     migrator.rename_table("new_schedules", "schedules")
 

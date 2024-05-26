@@ -124,6 +124,15 @@ class ApiServersServerBackupsBackupIndexHandler(BaseApiHandler):
             server_id,
             self.get_remote_ip(),
         )
+        if backup_conf["default"]:
+            return self.finish_json(
+                405,
+                {
+                    "status": "error",
+                    "error": "NOT_ALLOWED",
+                    "error_data": "Cannot delete default backup",
+                },
+            )
         self.controller.management.delete_backup_config(backup_id)
 
         return self.finish_json(200, {"status": "ok"})

@@ -10,7 +10,6 @@ from peewee import (
     TextField,
     AutoField,
     BooleanField,
-    UUIDField,
 )
 from playhouse.shortcuts import model_to_dict
 
@@ -18,6 +17,7 @@ from app.classes.models.base_model import BaseModel
 from app.classes.models.users import HelperUsers
 from app.classes.models.servers import Servers
 from app.classes.models.server_permissions import PermissionsServers
+from app.classes.shared.helpers import Helpers
 from app.classes.shared.websocket_manager import WebSocketManager
 
 logger = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ class Schedules(BaseModel):
 #                                   Backups Class
 # **********************************************************************************
 class Backups(BaseModel):
-    backup_id = UUIDField(primary_key=True, default=uuid.uuid4)
+    backup_id = CharField(primary_key=True, default=Helpers.create_uuid())
     backup_name = CharField(default="New Backup")
     backup_location = CharField(default="")
     excluded_dirs = CharField(null=True)
@@ -115,6 +115,8 @@ class Backups(BaseModel):
     shutdown = BooleanField(default=False)
     before = CharField(default="")
     after = CharField(default="")
+    default = BooleanField(default=False)
+    status = CharField(default='{"status": "Standby", "message": ""}')
     enabled = BooleanField(default=True)
 
     class Meta:
@@ -348,7 +350,7 @@ class HelpersManagement:
         return model_to_dict(Backups.get(Backups.backup_id == backup_id))
 
     @staticmethod
-    def get_backups_by_server(server_id, model):
+    def get_backups_by_server(server_id, model=False):
         if not model:
             data = {}
             for backup in (
@@ -365,10 +367,25 @@ class HelpersManagement:
                     "shutdown": backup.shutdown,
                     "before": backup.before,
                     "after": backup.after,
+                    "default": backup.default,
+                    "enabled": backup.enabled,
                 }
         else:
             data = Backups.select().where(Backups.server_id == server_id).execute()
         return data
+
+    @staticmethod
+    def get_default_server_backup(server_id: str) -> dict:
+        bu_query = Backups.select().where(
+            Backups.server_id == server_id & Backups.default == True
+        )
+
+        backup_model = bu_query.first()
+
+        if backup_model:
+            return model_to_dict(backup_model)
+        else:
+            raise IndexError
 
     @staticmethod
     def remove_backup_config(backup_id):

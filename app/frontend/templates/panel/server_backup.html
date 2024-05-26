@@ -70,7 +70,9 @@
                         <tr class="rounded">
                           <th scope="col" style="width: 15%; min-width: 10px;">{{ translate('serverBackups', 'name',
                             data['lang']) }} </th>
-                          <th scope="col" style="width: 60%; min-width: 50px;">{{ translate('serverBackups',
+                          <th scope="col" style="width: 5%; min-width: 10px;">{{ translate('serverBackups', 'status',
+                            data['lang']) }} </th>
+                          <th scope="col" style="width: 55%; min-width: 50px;">{{ translate('serverBackups',
                             'storageLocation', data['lang']) }}</th>
                           <th scope="col" style="width: 10%; min-width: 50px;">{{ translate('serverBackups',
                             'maxBackups', data['lang']) }}</th>
@@ -83,6 +85,19 @@
                         <tr>
                           <td id="{{backup.backup_name}}" class="id">
                             <p>{{backup.backup_name}}</p>
+                            <br>
+                            {% if backup.default %}
+                            <span class="badge-pill badge-outline-warning">{{ translate('serverBackups', 'default',
+                              data['lang']) }}</span><small><button class="badge-pill badge-outline-info backup-explain"
+                                data-explain="{{ translate('serverBackups', 'defaultExplain', data['lang'])}}"><i
+                                  class="fa-solid fa-question"></i></button></small>
+                            {% end %}
+                          </td>
+                          <td>
+                            <div id="{{backup.backup_id}}_status">
+                              <span class="badge-pill badge-outline-success backup-status"
+                                data-status="{{ backup.status }}"></span>
+                            </div>
                           </td>
                           <td id="{{backup.backup_location}}" class="type">
                             <p>{{backup.backup_location}}</p>
@@ -96,9 +111,11 @@
                               class="btn btn-info">
                               <i class="fas fa-pencil-alt"></i>
                             </button>
+                            {% if not backup.default %}
                             <button data-backup={{ backup.backup_id }} class="btn btn-danger del_button">
                               <i class="fas fa-trash" aria-hidden="true"></i>
                             </button>
+                            {% end %}
                             <button data-backup={{ backup.backup_id }} data-toggle="tooltip"
                               title="{{ translate('serverBackups', 'run', data['lang']) }}"
                               class="btn btn-outline-warning run-backup backup_now_button">
@@ -126,6 +143,13 @@
                         <tr>
                           <td id="{{backup.backup_name}}" class="id">
                             <p>{{backup.backup_name}}</p>
+                            <br>
+                            {% if backup.default %}
+                            <span class="badge-pill badge-outline-warning">{{ translate('serverBackups', 'default',
+                              data['lang']) }}</span><small><button class="badge-pill badge-outline-info backup-explain"
+                                data-explain="{{ translate('serverBackups', 'defaultExplain', data['lang'])}}"><i
+                                  class="fa-solid fa-question"></i></button></small>
+                            {% end %}
                           </td>
                           <td id="backup_edit" class="action">
                             <button
@@ -133,9 +157,11 @@
                               class="btn btn-info">
                               <i class="fas fa-pencil-alt"></i>
                             </button>
+                            {% if not backup.default %}
                             <button data-backup={{ backup.backup_id }} class="btn btn-danger del_button">
                               <i class="fas fa-trash" aria-hidden="true"></i>
                             </button>
+                            {% end %}
                             <button data-backup={{ backup.backup_id }} data-toggle="tooltip"
                               title="{{ translate('serverBackups', 'run', data['lang']) }}"
                               class="btn btn-outline-warning test-socket">
@@ -230,14 +256,7 @@
     let responseData = await res.json();
     if (responseData.status === "ok") {
       console.log(responseData);
-      $("#backup_button").html(`<div class="progress" style="height: 15px;">
-                  <div class="progress-bar progress-bar-striped progress-bar-animated" id="backup_progress_bar"
-                    role="progressbar" style="width:{{data['backup_stats']['percent']}}%;"
-                    aria-valuenow="{{data['backup_stats']['percent']}}" aria-valuemin="0" aria-valuemax="100">{{
-                    data['backup_stats']['percent'] }}%</div>
-                </div>
-                <p>Backing up <i class="fas fa-spin fa-spinner"></i> <span
-                    id="total_files">{{data['server_stats']['world_size']}}</span></p>`);
+      $("#backup_button").prop('disabled', true)
     } else {
 
       bootbox.alert({
@@ -269,6 +288,54 @@
 
   $(document).ready(function () {
     console.log("ready!");
+    $(".backup-explain").on("click", function () {
+      bootbox.alert($(this).data("explain"));
+    });
+
+    $('.backup-status').each(function () {
+      // Get the JSON string from the element's text
+      var data = $(this).data('status');
+
+      try {
+
+        console.log("DATA " + data)
+
+        // Update the element's text with the status value
+        $(this).text(data.status);
+
+        // Optionally, add classes based on status to style the element
+        if (data.status === 'Active') {
+          $(this).addClass('badge-pill badge-outline-success');
+        } else if (data.status === 'Failed') {
+          $(this).addClass('badge-pill badge-outline-danger');
+        } else if (data.status === 'Standby') {
+          $(this).addClass('badge-pill badge-outline-secondary');
+        }
+      } catch (e) {
+        console.error('Invalid JSON string:', jsonString);
+      }
+    });
+
+    if (webSocket) {
+      webSocket.on('backup_status', function (backup) {
+        console.log("PEEPEEPOOPOO")
+        text = ``;
+        console.log(backup)
+        if (backup.percent >= 100) {
+          $(`#${backup.backup_id}_status`).html(`<span class="badge-pill badge-outline-success backup-status"
+        >Completed</span>`);
+          setTimeout(function () {
+            window.location.reload(1);
+          }, 5000);
+        } else {
+          text = `<div class="progress-bar progress-bar-striped progress-bar-animated"
+          role="progressbar" style="width:${backup.percent}%;"
+          aria-valuenow="${backup.percent}" aria-valuemin="0" aria-valuemax="100">${backup.percent}%</div>`
+
+          $(`#${backup.backup_id}_status`).html(text);
+        }
+      });
+    }
 
     $('#backup_table').DataTable({
       "order": [[1, "desc"]],
@@ -378,21 +445,6 @@
       bootbox.alert("You must input a path before selecting this button");
     }
   });
-  if (webSocket) {
-    webSocket.on('backup_status', function (backup) {
-      if (backup.percent >= 100) {
-        document.getElementById('backup_progress_bar').innerHTML = '100%';
-        document.getElementById('backup_progress_bar').style.width = '100%';
-        setTimeout(function () {
-          window.location.reload(1);
-        }, 5000);
-      } else {
-        document.getElementById('backup_progress_bar').innerHTML = backup.percent + '%';
-        document.getElementById('backup_progress_bar').style.width = backup.percent + '%';
-        document.getElementById('total_files').innerHTML = backup.total_files;
-      }
-    });
-  }
 
   function getDirView(event) {
     let path = event.target.parentElement.getAttribute("data-path");

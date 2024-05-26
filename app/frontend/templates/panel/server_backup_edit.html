@@ -63,7 +63,14 @@
               {% end %}
               <form id="backup-form" class="forms-sample">
                 <div class="form-group">
-                  <label for="backup_name">{{ translate('serverBackups', 'name', data['lang']) }} </label>
+                  <label for="backup_name">{{ translate('serverBackups', 'name', data['lang']) }}
+                    {% if data["backup_config"]["default"] %}
+                    &nbsp;&nbsp; <span class="badge-pill badge-outline-warning">{{ translate('serverBackups', 'default',
+                      data['lang']) }}</span><small><button class="badge-pill badge-outline-info backup-explain"
+                        data-explain="{{ translate('serverBackups', 'defaultExplain', data['lang'])}}"><i
+                          class="fa-solid fa-question"></i></button></small>
+                    {% end %}
+                  </label>
                   {% if data["backup_config"].get("backup_id", None) %}
                   <input type="text" class="form-control" name="backup_name" id="backup_name"
                     value="{{ data['backup_config']['backup_name']  }}">
@@ -188,7 +195,8 @@
 
                 <button type="submit" class="btn btn-success mr-2">{{ translate('serverBackups', 'save', data['lang'])
                   }}</button>
-                <button type="reset" class="btn btn-light">{{ translate('serverBackups', 'cancel', data['lang'])
+                <button type="reset" class="btn btn-light cancel-button">{{ translate('serverBackups', 'cancel',
+                  data['lang'])
                   }}</button>
               </form>
             </div>
@@ -431,6 +439,13 @@
   }
 
   $(document).ready(function () {
+    $(".backup-explain").on("click", function (e) {
+      e.preventDefault();
+      bootbox.alert($(this).data("explain"));
+    });
+    $(".cancel-button").on("click", function () {
+      location.href = `/panel/server_detail?id=${server_id}&subpage=backup`
+    });
     $("#backup-form").on("submit", async function (e) {
       e.preventDefault();
       const token = getCookie("_xsrf")

@@ -1107,12 +1107,12 @@ class ServerInstance:
             f.write("eula=true")
         self.run_threaded_server(user_id)
 
-    def a_backup_server(self, backup_id):
+    def server_backup_threader(self, backup_id, update=False):
         backup_thread = threading.Thread(
             target=self.backup_server,
             daemon=True,
             name=f"backup_{self.name}",
-            args=[backup_id],
+            args=[backup_id, update],
         )
         logger.info(
             f"Starting Backup Thread for server {self.settings['server_name']}."
@@ -1140,7 +1140,7 @@ class ServerInstance:
         logger.info(f"Backup Thread started for server {self.settings['server_name']}.")
 
     @callback
-    def backup_server(self, backup_id):
+    def backup_server(self, backup_id, update):
         was_server_running = None
         logger.info(f"Starting server {self.name} (ID {self.server_id}) backup")
         server_users = PermissionsServers.get_server_user_list(self.server_id)
@@ -1174,9 +1174,12 @@ class ServerInstance:
                 "Found shutdown preference. Delaying"
                 + "backup start. Shutting down server."
             )
-            if self.check_running():
-                self.stop_server()
-                was_server_running = True
+            if not update:
+                if self.check_running():
+                    self.stop_server()
+                    was_server_running = True
+            else:
+                was_server_running = False
 
         self.helper.ensure_dir_exists(backup_location)
         try:
@@ -1318,7 +1321,7 @@ class ServerInstance:
     def jar_update(self):
         self.stats_helper.set_update(True)
         update_thread = threading.Thread(
-            target=self.a_jar_update, daemon=True, name=f"exe_update_{self.name}"
+            target=self.threaded_jar_update, daemon=True, name=f"exe_update_{self.name}"
         )
         update_thread.start()
 
@@ -1359,10 +1362,13 @@ class ServerInstance:
     def check_update(self):
         return self.stats_helper.get_server_stats()["updating"]
 
-    def a_jar_update(self):
+    def threaded_jar_update(self):
         server_users = PermissionsServers.get_server_user_list(self.server_id)
         was_started = "-1"
-        self.a_backup_server()
+        # Get default backup configuration
+        backup_config = HelpersManagement.get_default_server_backup(self.server_id)
+        # start threaded backup
+        self.server_backup_threader(backup_config["backup_id"], True)
         # checks if server is running. Calls shutdown if it is running.
         if self.check_running():
             was_started = True
@@ -1516,12 +1522,6 @@ class ServerInstance:
                 WebSocketManager().broadcast_user_page(
                     user, "/panel/dashboard", "send_start_reload", {}
                 )
-                WebSocketManager().broadcast_user(
-                    user,
-                    "notification",
-                    "Executable update finished for " + self.name,
-                )
-
             self.management_helper.add_to_audit_log_raw(
                 "Alert",
                 "-1",
