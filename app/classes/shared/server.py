@@ -1248,6 +1248,10 @@ class ServerInstance:
                     )
                     self.send_command(conf["after"])
             # pause to let people read message.
+            HelpersManagement.update_backup_config(
+                backup_id,
+                {"status": json.dumps({"status": "Standby", "message": ""})},
+            )
             time.sleep(5)
         except Exception as e:
             logger.exception(
