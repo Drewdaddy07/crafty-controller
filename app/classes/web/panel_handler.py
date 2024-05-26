@@ -767,20 +767,24 @@ class PanelHandler(BaseHandler):
 
         elif page == "download_backup":
             file = self.get_argument("file", "")
+            backup_id = self.get_argument("backup_id", "")
 
             server_id = self.check_server_id()
             if server_id is None:
                 return
-
+            backup_config = self.controller.management.get_backup_config(backup_id)
             server_info = self.controller.servers.get_server_data_by_id(server_id)
             backup_file = os.path.abspath(
                 os.path.join(
-                    Helpers.get_os_understandable_path(server_info["backup_path"]), file
+                    Helpers.get_os_understandable_path(
+                        backup_config["backup_location"]
+                    ),
+                    file,
                 )
             )
             if not self.helper.is_subdir(
                 backup_file,
-                Helpers.get_os_understandable_path(server_info["backup_path"]),
+                Helpers.get_os_understandable_path(backup_config["backup_location"]),
             ) or not os.path.isfile(backup_file):
                 self.redirect("/panel/error?error=Invalid path detected")
                 return

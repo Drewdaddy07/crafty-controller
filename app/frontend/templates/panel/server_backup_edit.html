@@ -209,7 +209,7 @@
                     {% for backup in data['backup_list'] %}
                     <tr>
                       <td>
-                        <a href="/panel/download_backup?file={{ backup['path'] }}&id={{ data['server_stats']['server_id']['server_id'] }}"
+                        <a href="/panel/download_backup?file={{ backup['path'] }}&id={{ data['server_stats']['server_id']['server_id'] }}&backup_id={{ data['backup_config']['backup_id']}}"
                           class="btn btn-primary">
                           <i class="fas fa-download" aria-hidden="true"></i>
                           {{ translate('serverBackups', 'download', data['lang']) }}
