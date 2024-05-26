@@ -503,6 +503,7 @@
     },
     "serverSchedules": {
         "action": "Action",
+        "actionId": "Select Action Child",
         "areYouSure": "Delete Scheduled Task?",
         "cancel": "Cancel",
         "cannotSee": "Not seeing everything?",

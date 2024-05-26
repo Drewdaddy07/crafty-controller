@@ -21,6 +21,9 @@ new_task_schema = {
         "action": {
             "type": "string",
         },
+        "action_id": {
+            "type": "string",
+        },
         "interval": {"type": "integer"},
         "interval_type": {
             "type": "string",

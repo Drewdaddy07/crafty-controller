@@ -1116,6 +1116,9 @@ class PanelHandler(BaseHandler):
             page_data["server_data"] = self.controller.servers.get_server_data_by_id(
                 server_id
             )
+            page_data["backups"] = self.controller.management.get_backups_by_server(
+                server_id, True
+            )
             page_data["server_stats"] = self.controller.servers.get_server_stats_by_id(
                 server_id
             )
@@ -1136,6 +1139,7 @@ class PanelHandler(BaseHandler):
             page_data["schedule"]["delay"] = 0
             page_data["schedule"]["time"] = ""
             page_data["schedule"]["interval"] = 1
+            page_data["schedule"]["action_id"] = ""
             # we don't need to check difficulty here.
             # We'll just default to basic for new schedules
             page_data["schedule"]["difficulty"] = "basic"
@@ -1181,6 +1185,9 @@ class PanelHandler(BaseHandler):
                     exec_user["user_id"], server_id
                 )
             )
+            page_data["backups"] = self.controller.management.get_backups_by_server(
+                server_id, True
+            )
             page_data["server_data"] = self.controller.servers.get_server_data_by_id(
                 server_id
             )
@@ -1195,6 +1202,7 @@ class PanelHandler(BaseHandler):
             page_data["schedule"]["server_id"] = server_id
             page_data["schedule"]["schedule_id"] = schedule.schedule_id
             page_data["schedule"]["action"] = schedule.action
+            page_data["schedule"]["action_id"] = schedule.action_id
             if schedule.name:
                 page_data["schedule"]["name"] = schedule.name
             else:
