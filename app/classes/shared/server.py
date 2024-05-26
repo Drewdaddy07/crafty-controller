@@ -1272,7 +1272,8 @@ class ServerInstance:
                 )
                 self.run_threaded_server(HelperUsers.get_user_id_by_name("system"))
             HelpersManagement.update_backup_config(
-                backup_id, {"status": json.dumps({"status": "Failed", "message": f"{e}"})}
+                backup_id,
+                {"status": json.dumps({"status": "Failed", "message": f"{e}"})},
             )
         self.set_backup_status()
 
@@ -1283,7 +1284,6 @@ class ServerInstance:
         backups = HelpersManagement.get_backups_by_server(self.server_id, True)
         alert = False
         for backup in backups:
-            print(backup.status)
             if json.loads(backup.status)["status"] == "Failed":
                 alert = True
         self.last_backup_failed = alert
