@@ -330,6 +330,7 @@
         "storageLocationDesc": "Where do you want to store backups?",
         "enabled": "Enabled",
         "name": "Name",
+        "no-backup": "No Backups. To  make a new backup configuration please press. New Backup",
         "storage": "Storage Location",
         "actions": "Actions",
         "newBackup": "Create New Backup",
