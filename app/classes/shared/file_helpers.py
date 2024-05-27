@@ -4,6 +4,8 @@ import logging
 import pathlib
 import tempfile
 import zipfile
+import hashlib
+import mimetypes
 from zipfile import ZipFile, ZIP_DEFLATED, ZIP_STORED
 import urllib.request
 import ssl
@@ -22,6 +24,7 @@ class FileHelpers:
 
     def __init__(self, helper):
         self.helper: Helpers = helper
+        self.mime_types = mimetypes.MimeTypes()
 
     @staticmethod
     def ssl_get_file(
@@ -141,6 +144,24 @@ class FileHelpers:
         except (FileNotFoundError, PermissionError) as e:
             logger.error(f"Path specified is not a file or does not exist. {path}")
             return e
+
+    def check_mime_types(self, file_path):
+        m_type, _value = self.mime_types.guess_type(file_path)
+        return m_type
+
+    @staticmethod
+    def calculate_file_hash(file_path):
+        sha256_hash = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest()
+
+    @staticmethod
+    def calculate_buffer_hash(buffer):
+        sha256_hash = hashlib.sha256()
+        sha256_hash.update(buffer)
+        return sha256_hash.hexdigest()
 
     @staticmethod
     def copy_dir(src_path, dest_path, dirs_exist_ok=False):

@@ -9,6 +9,32 @@ from app.classes.shared.helpers import Helpers
 from app.classes.shared.main_controller import WebSocketManager, Controller
 from app.classes.web.base_api_handler import BaseApiHandler
 
+IMAGE_MIME_TYPES = [
+    "image/bmp",
+    "image/cis-cod",
+    "image/gif",
+    "image/ief",
+    "image/jpeg",
+    "image/pipeg",
+    "image/svg+xml",
+    "image/tiff",
+    "image/x-cmu-raster",
+    "image/x-cmx",
+    "image/x-icon",
+    "image/x-portable-anymap",
+    "image/x-portable-bitmap",
+    "image/x-portable-graymap",
+    "image/x-portable-pixmap",
+    "image/x-rgb",
+    "image/x-xbitmap",
+    "image/x-xpixmap",
+    "image/x-xwindowdump",
+    "image/png",
+    "image/webp",
+]
+
+ARCHIVE_MIME_TYPES = ["application/zip"]
+
 
 class ApiFilesUploadHandler(BaseApiHandler):
     async def post(self, server_id=None):
@@ -17,6 +43,7 @@ class ApiFilesUploadHandler(BaseApiHandler):
             return
 
         upload_type = self.request.headers.get("type")
+        accepted_types = []
 
         if server_id:
             if server_id not in [str(x["server_id"]) for x in auth_data[0]]:
@@ -44,6 +71,7 @@ class ApiFilesUploadHandler(BaseApiHandler):
                 self.controller.project_root,
                 "app/frontend/static/assets/images/auth/custom",
             )
+            accepted_types = IMAGE_MIME_TYPES
         elif upload_type == "import":
             if (
                 not self.controller.crafty_perms.can_create_server(
@@ -63,6 +91,7 @@ class ApiFilesUploadHandler(BaseApiHandler):
                 self.controller.project_root, "import", "upload"
             )
             u_type = "server_import"
+            accepted_types = ARCHIVE_MIME_TYPES
         else:
             return self.finish_json(
                 400,
@@ -73,8 +102,8 @@ class ApiFilesUploadHandler(BaseApiHandler):
                 },
             )
         # Get the headers from the request
-        fileHash = self.request.headers.get("fileHash", 0)
-        chunkHash = self.request.headers.get("chunk-hash", 0)
+        self.file_hash = self.request.headers.get("fileHash", 0)
+        self.chunk_hash = self.request.headers.get("chunkHash", 0)
         self.file_id = self.request.headers.get("fileId")
         self.chunked = self.request.headers.get("chunked", True)
         self.filename = self.request.headers.get("filename", None)
@@ -108,6 +137,20 @@ class ApiFilesUploadHandler(BaseApiHandler):
                     },
                 )
 
+        if (
+            self.file_helper.check_mime_types(self.filename) not in accepted_types
+            and u_type != "server_upload"
+        ):
+            return self.finish_json(
+                422,
+                {
+                    "status": "error",
+                    "error": "INVALID FILE TYPE",
+                    "data": {
+                        "message": f"Invalid File Type only accepts {accepted_types}"
+                    },
+                },
+            )
         _total, _used, free = shutil.disk_usage(self.upload_dir)
 
         # Check to see if we have enough space
@@ -134,6 +177,24 @@ class ApiFilesUploadHandler(BaseApiHandler):
                     if not chunk:
                         break
                     file.write(chunk)
+            if (
+                self.file_helper.calculate_file_hash(
+                    os.path.join(self.upload_dir, self.filename)
+                )
+                != self.file_hash
+            ):
+                os.remove(os.path.join(self.upload_dir, self.filename))
+                return self.finish_json(
+                    400,
+                    {
+                        "status": "error",
+                        "error": "INVALID HASH",
+                        "data": {
+                            "message": "Hash recieved does not"
+                            " match reported sent hash.",
+                        },
+                    },
+                )
             self.finish_json(
                 200,
                 {
@@ -171,6 +232,20 @@ class ApiFilesUploadHandler(BaseApiHandler):
                 },
             )
 
+        calculated_hash = self.file_helper.calculate_buffer_hash(self.request.body)
+        if str(self.chunk_hash) != str(calculated_hash):
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "INVALID_HASH",
+                    "data": {
+                        "message": "Hash recieved does not match reported sent hash.",
+                        "chunk_id": self.chunk_index,
+                    },
+                },
+            )
+
         # File paths
         file_path = os.path.join(self.upload_dir, self.filename)
         chunk_path = os.path.join(
@@ -194,6 +269,20 @@ class ApiFilesUploadHandler(BaseApiHandler):
                     with open(chunk_file, "rb") as infile:
                         outfile.write(infile.read())
                     os.remove(chunk_file)
+            if self.file_helper.calculate_file_hash(file_path) != self.file_hash:
+                os.remove(file_path)
+                return self.finish_json(
+                    400,
+                    {
+                        "status": "error",
+                        "error": "INVALID HASH",
+                        "data": {
+                            "message": "Hash recieved does not"
+                            " match reported sent hash.",
+                            "chunk_id": self.file_id,
+                        },
+                    },
+                )
 
             self.finish_json(
                 200,
@@ -203,11 +292,10 @@ class ApiFilesUploadHandler(BaseApiHandler):
                 },
             )
         else:
-            self.write(
-                json.dumps(
-                    {
-                        "status": "partial",
-                        "message": f"Chunk {self.chunk_index} received",
-                    }
-                )
+            self.finish_json(
+                200,
+                {
+                    "status": "partial",
+                    "data": {"message": f"Chunk {self.chunk_index} received"},
+                },
             )
