@@ -1,14 +1,11 @@
 import os
 import logging
-import json
 import shutil
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.shared.helpers import Helpers
-from app.classes.shared.main_controller import WebSocketManager, Controller
 from app.classes.web.base_api_handler import BaseApiHandler
 
+logger = logging.getLogger(__name__)
 IMAGE_MIME_TYPES = [
     "image/bmp",
     "image/cis-cod",
@@ -184,6 +181,10 @@ class ApiFilesUploadHandler(BaseApiHandler):
                 != self.file_hash
             ):
                 os.remove(os.path.join(self.upload_dir, self.filename))
+                logger.error(
+                    f"File upload failed. Filename: {self.filename}"
+                    f"Type: {u_type} Error: INVALID HASH"
+                )
                 return self.finish_json(
                     400,
                     {
@@ -195,7 +196,10 @@ class ApiFilesUploadHandler(BaseApiHandler):
                         },
                     },
                 )
-            self.finish_json(
+            logger.info(
+                f"File upload completed. Filename: {self.filename}" f" Type: {u_type}"
+            )
+            return self.finish_json(
                 200,
                 {
                     "status": "completed",
@@ -210,6 +214,10 @@ class ApiFilesUploadHandler(BaseApiHandler):
         # Read headers and query parameters
         content_length = int(self.request.headers.get("Content-Length"))
         if content_length <= 0:
+            logger.error(
+                f"File upload failed. Filename: {self.filename}"
+                f"Type: {u_type} Error: INVALID CONTENT LENGTH"
+            )
             return self.finish_json(
                 400,
                 {
@@ -220,6 +228,10 @@ class ApiFilesUploadHandler(BaseApiHandler):
             )
 
         if not self.filename or self.chunk_index is None or total_chunks is None:
+            logger.error(
+                f"File upload failed. Filename: {self.filename}"
+                f"Type: {u_type} Error: CHUNK INDEX NOT FOUND"
+            )
             return self.finish_json(
                 400,
                 {
@@ -234,6 +246,10 @@ class ApiFilesUploadHandler(BaseApiHandler):
 
         calculated_hash = self.file_helper.calculate_buffer_hash(self.request.body)
         if str(self.chunk_hash) != str(calculated_hash):
+            logger.error(
+                f"File upload failed. Filename: {self.filename}"
+                f"Type: {u_type} Error: INVALID HASH"
+            )
             return self.finish_json(
                 400,
                 {
@@ -283,7 +299,16 @@ class ApiFilesUploadHandler(BaseApiHandler):
                         },
                     },
                 )
-
+            logger.info(
+                f"File upload completed. Filename: {self.filename}"
+                f" Path: {file_path} Type: {u_type}"
+            )
+            self.controller.management.add_to_audit_log(
+                auth_data[4]["user_id"],
+                f"Uploaded file {self.filename}",
+                server_id,
+                self.request.remote_ip,
+            )
             self.finish_json(
                 200,
                 {
