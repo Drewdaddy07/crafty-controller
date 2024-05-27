@@ -723,131 +723,7 @@
     }
   }
 
-  async function uploadFile(file, path, file_num, onProgress) {
-    const fileId = uuidv4();
-    const token = getCookie("_xsrf")
-    if (!file) {
-      alert("Please select a file first.");
-      return;
-    }
-
-    const chunkSize = 1024 * 1024; // 1MB
-    const totalChunks = Math.ceil(file.size / chunkSize);
-
-    const uploadPromises = [];
-    let res = await fetch(`/api/v2/servers/${serverId}/files/upload/`, {
-      method: 'POST',
-      headers: {
-        'X-XSRFToken': token,
-        'chunked': true,
-        'type': "server_upload",
-        'fileSize': file.size,
-        'total_chunks': totalChunks,
-        'location': path,
-        'filename': file.name,
-        'fileId': fileId,
-      },
-      body: null,
-    });
-
-    let responseData = await res.json();
-
-    let file_id = ""
-    if (responseData.status === "ok") {
-      file_id = responseData.data["file-id"]
-    }
-    for (let i = 0; i < totalChunks; i++) {
-      const start = i * chunkSize;
-      const end = Math.min(start + chunkSize, file.size);
-      const chunk = file.slice(start, end);
-
-      const uploadPromise = fetch(`/api/v2/servers/${serverId}/files/upload/`, {
-        method: 'POST',
-        body: chunk,
-        headers: {
-          'Content-Range': `bytes ${start}-${end - 1}/${file.size}`,
-          'Content-Length': chunk.size,
-          'chunked': true,
-          'type': "server_upload",
-          'fileSize': file.size,
-          'total_chunks': totalChunks,
-          'filename': file.name,
-          'location': path,
-          'fileId': fileId,
-          'chunkId': i,
-        },
-      }).then(response => response.json())
-        .then(data => {
-          if (data.status === "completed") {
-            let caught = false;
-            try {
-              if (document.getElementById(path).classList.contains("clicked")) {
-                var expanded = true;
-              }
-            } catch {
-              var expanded = false;
-            }
-
-            try {
-              var par_el = document.getElementById(path + "ul");
-              var items = par_el.children;
-            } catch (err) {
-              console.log(err)
-              caught = true;
-              var par_el = document.getElementById("files-tree");
-              var items = par_el.children;
-            }
-            let name = file.name;
-            console.log(par_el)
-            let full_path = path + '/' + name
-            let flag = false;
-            for (var k = 0; k < items.length; ++k) {
-              if ($(items[k]).attr("data-name") == name) {
-                flag = true;
-              }
-            }
-            if (!flag) {
-              if (caught && expanded == false) {
-                $(par_el).append('<li id=' + '"' + full_path.toString() + 'li' + '"' + 'class="d-block tree-ctx-item tree-file tree-item" data-path=' + '"' + full_path.toString() + '"' + ' data-name=' + '"' + name.toString() + '"' + ' onclick="clickOnFile(event)" ><span style="margin-right: 6px;"><i class="far fa-file"></i></span>' + name + '</li>');
-              } else if (expanded == true) {
-                $(par_el).append('<li id=' + '"' + full_path.toString() + 'li' + '"' + 'class="tree-ctx-item tree-file tree-item" data-path=' + '"' + full_path.toString() + '"' + ' data-name=' + '"' + name.toString() + '"' + ' onclick="clickOnFile(event)" ><span style="margin-right: 6px;"><i class="far fa-file"></i></span>' + name + '</li>');
-              }
-              setTreeViewContext();
-            }
-            $(`#upload-progress-bar-${i + 1}`).removeClass("progress-bar-striped");
-            $(`#upload-progress-bar-${i + 1}`).addClass("bg-success");
-            $(`#upload-progress-bar-${i + 1}`).html('<i style="color: black;" class="fas fa-box-check"></i>')
-          } else if (data.status !== "partial") {
-            throw new Error(data.message);
-          }
-          // Update progress bar
-          const progress = (i + 1) / totalChunks * 100;
-          updateProgressBar(Math.round(progress), file_num);
-        });
-
-      uploadPromises.push(uploadPromise);
-    }
-
-    try {
-      await Promise.all(uploadPromises);
-    } catch (error) {
-      alert("Error uploading file: " + error.message);
-    }
-  }
-  function updateProgressBar(progress, i) {
-    $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%');
-    $(`#upload-progress-bar-${i + 1}`).html(progress + '%');
-  }
-  function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = Math.random() * 16 | 0,
-        v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-
   let uploadWaitDialog;
-  let doUpload = true;
 
   async function uploadFilesE(event) {
     path = event.target.parentElement.getAttribute('data-path');
@@ -907,24 +783,31 @@
 
                 $('#upload-progress-bar-parent').append(progressHtml);
 
-                const uploadPromise = uploadFile(file, path, i, (progress) => {
+                const uploadPromise = uploadFile("server_upload", file, path, i, (progress) => {
                   $(`#upload-progress-bar-${i + 1}`).attr('aria-valuenow', progress)
                   $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%');
                 });
                 uploadPromises.push(uploadPromise);
               }
 
-              try {
-                await Promise.all(uploadPromises);
-                hideUploadBox();
-              } catch (error) {
-                alert("Error uploading file: " + error.message);
-              }
+
+              await Promise.all(uploadPromises);
+              hideUploadBox();
+
             }
           }
         }
       });
     });
+  }
+
+  async function calculateFileHash(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    return hashHex;
   }
 
   function getDirView(event) {
@@ -1232,5 +1115,5 @@
 
 
 </script>
-
+<script src="../../static/assets/js/shared/upload.js"></script>
 {% end %}

@@ -1,90 +1,207 @@
-async function uploadFile(type) {
-    file = $("#file")[0].files[0]
+async function uploadFile(type, file = null, path = null, file_num = 0, _onProgress) {
+    if (file == null) {
+        try {
+            file = $("#file")[0].files[0];
+        } catch {
+            bootbox.alert("Please select a file first.")
+            return;
+        }
+
+    }
     const fileId = uuidv4();
-    const token = getCookie("_xsrf")
-    document.getElementById("upload_input").innerHTML = '<div class="progress" style="width: 100%;"><div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">&nbsp;<i class="fa-solid fa-spinner"></i></div></div>'
-    if (!file) {
-        alert("Please select a file first.");
-        return;
+    const token = getCookie("_xsrf");
+    if (type !== "server_upload") {
+        document.getElementById("upload_input").innerHTML = '<div class="progress" style="width: 100%;"><div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">&nbsp;<i class="fa-solid fa-spinner"></i></div></div>';
     }
 
+    let url = ``
+    if (type === "server_upload") {
+        url = `/api/v2/servers/${serverId}/files/upload/`;
+    } else if (type === "background") {
+        url = `/api/v2/crafty/admin/upload/`
+    } else if (type === "import") {
+        url = `/api/v2/servers/import/upload/`
+    }
+    console.log(url)
     const chunkSize = 1024 * 1024; // 1MB
     const totalChunks = Math.ceil(file.size / chunkSize);
+    const file_hash = await calculateFileHash(file);
 
     const uploadPromises = [];
-    let res = await fetch(`/api/v2/servers/import/upload/`, {
-        method: 'POST',
-        headers: {
-            'X-XSRFToken': token,
-            'chunked': true,
-            'fileSize': file.size,
-            'type': type,
-            'total_chunks': totalChunks,
-            'filename': file.name,
-            'fileId': fileId,
-        },
-        body: null,
-    });
-
-    let responseData = await res.json();
-
-    let file_id = ""
-    if (responseData.status === "ok") {
-        file_id = responseData.data["file-id"]
-    }
-    for (let i = 0; i < totalChunks; i++) {
-        const start = i * chunkSize;
-        const end = Math.min(start + chunkSize, file.size);
-        const chunk = file.slice(start, end);
-
-        const uploadPromise = fetch(`/api/v2/servers/import/upload/`, {
+    let errors = []; // Array to store errors
+    try {
+        let res = await fetch(url, {
             method: 'POST',
-            body: chunk,
             headers: {
-                'Content-Range': `bytes ${start}-${end - 1}/${file.size}`,
-                'Content-Length': chunk.size,
-                'fileSize': file.size,
+                'X-XSRFToken': token,
                 'chunked': true,
+                'fileHash': file_hash,
+                'fileSize': file.size,
                 'type': type,
                 'total_chunks': totalChunks,
                 'filename': file.name,
+                'location': path,
                 'fileId': fileId,
-                'chunkId': i,
             },
-        }).then(response => response.json())
-            .then(data => {
-                if (data.status === "completed") {
-                    $("#upload_input").html(`<div class="card-header header-sm d-flex justify-content-between align-items-center" style="width: 100%;"><input value="${file.name}" type="text" id="file-uploaded" disabled></input> 🔒</div>`);
-                    if (type === "import") {
-                        document.getElementById("lower_half").style.visibility = "visible";
-                        document.getElementById("lower_half").hidden = false;
-                    } else if (type === "background") {
-                        setTimeout(function () {
-                            location.href = `/panel/custom_login`
-                        }, 2000)
+            body: null,
+        });
 
+        if (!res.ok) {
+            let errorResponse = await res.json();
+            throw new Error(JSON.stringify(errorResponse));
+        }
+
+        let responseData = await res.json();
+
+        if (responseData.status !== "ok") {
+            throw new Error(JSON.stringify(responseData));
+        }
+
+        for (let i = 0; i < totalChunks; i++) {
+            const start = i * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            const chunk = file.slice(start, end);
+            const chunk_hash = await calculateFileHash(chunk);
+
+            const uploadPromise = fetch(url, {
+                method: 'POST',
+                body: chunk,
+                headers: {
+                    'Content-Range': `bytes ${start}-${end - 1}/${file.size}`,
+                    'Content-Length': chunk.size,
+                    'fileSize': file.size,
+                    'fileHash': file_hash,
+                    'chunkHash': chunk_hash,
+                    'chunked': true,
+                    'type': type,
+                    'total_chunks': totalChunks,
+                    'filename': file.name,
+                    'location': path,
+                    'fileId': fileId,
+                    'chunkId': i,
+                },
+            })
+                .then(async response => {
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(JSON.stringify(errorData) || 'Unknown error occurred');
                     }
-                } else if (data.status !== "partial") {
-                    throw new Error(data.message);
-                }
-                // Update progress bar
-                const progress = (i + 1) / totalChunks * 100;
-                updateProgressBar(Math.round(progress));
-            });
+                    return response.json(); // Return the JSON data
+                })
+                .then(data => {
+                    if (data.status !== "completed" && data.status !== "partial") {
+                        throw new Error(data.message || 'Unknown error occurred');
+                    }
+                    // Update progress bar
+                    const progress = (i + 1) / totalChunks * 100;
+                    updateProgressBar(Math.round(progress), type, file_num);
+                })
+                .catch(error => {
+                    errors.push(error); // Store the error
+                });
 
-        uploadPromises.push(uploadPromise);
-    }
+            uploadPromises.push(uploadPromise);
+        }
 
-    try {
         await Promise.all(uploadPromises);
     } catch (error) {
-        bootbox.alert("Error uploading file: " + error.message);
+        errors.push(error); // Store the error
+    }
+
+    if (errors.length > 0) {
+        const errorMessage = errors.map(error => JSON.parse(error.message).data.message || 'Unknown error occurred').join('<br>');
+        console.log(errorMessage)
+        bootbox.alert({
+            title: 'Error',
+            message: errorMessage,
+            callback: function () {
+                window.location.reload();
+            },
+        });
+    } else {
+        if (type !== "server_upload") {
+            // All promises resolved successfully
+            $("#upload_input").html(`<div class="card-header header-sm d-flex justify-content-between align-items-center" style="width: 100%;"><input value="${file.name}" type="text" id="file-uploaded" disabled></input> 🔒</div>`);
+            if (type === "import") {
+                document.getElementById("lower_half").style.visibility = "visible";
+                document.getElementById("lower_half").hidden = false;
+            } else if (type === "background") {
+                setTimeout(function () {
+                    location.href = `/panel/custom_login`;
+                }, 2000);
+            }
+        } else {
+            let caught = false;
+            let expanded = false;
+            try {
+                expanded = document.getElementById(path).classList.contains("clicked");
+            } catch { }
+
+            let par_el;
+            let items;
+            try {
+                par_el = document.getElementById(path + "ul");
+                items = par_el.children;
+            } catch (err) {
+                console.log(err);
+                caught = true;
+                par_el = document.getElementById("files-tree");
+                items = par_el.children;
+            }
+
+            let name = file.name;
+            let full_path = path + '/' + name;
+            let flag = false;
+
+            for (let k = 0; k < items.length; ++k) {
+                if ($(items[k]).attr("data-name") == name) {
+                    flag = true;
+                }
+            }
+
+            if (!flag) {
+                if (caught && !expanded) {
+                    $(par_el).append(`<li id="${full_path}li" class="d-block tree-ctx-item tree-file tree-item" data-path="${full_path}" data-name="${name}" onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>${name}</li>`);
+                } else if (expanded) {
+                    $(par_el).append(`<li id="${full_path}li" class="tree-ctx-item tree-file tree-item" data-path="${full_path}" data-name="${name}" onclick="clickOnFile(event)"><span style="margin-right: 6px;"><i class="far fa-file"></i></span>${name}</li>`);
+                }
+                setTreeViewContext();
+            }
+
+            $(`#upload-progress-bar-${file_num + 1}`).removeClass("progress-bar-striped");
+            $(`#upload-progress-bar-${file_num + 1}`).addClass("bg-success");
+            $(`#upload-progress-bar-${file_num + 1}`).html('<i style="color: black;" class="fas fa-box-check"></i>');
+        }
     }
 }
 
-function updateProgressBar(progress) {
-    $(`#upload-progress-bar`).css('width', progress + '%');
-    $(`#upload-progress-bar`).html(progress + '%');
+async function calculateFileHash(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    return hashHex;
+}
+
+function updateProgressBar(progress, type, i) {
+    if (type !== "server_upload") {
+        if (progress === 100) {
+            $(`#upload-progress-bar`).removeClass("progress-bar-striped")
+
+            $(`#upload-progress-bar`).removeClass("progress-bar-animated")
+        }
+        $(`#upload-progress-bar`).css('width', progress + '%');
+        $(`#upload-progress-bar`).html(progress + '%');
+    } else {
+        if (progress === 100) {
+            $(`#upload-progress-bar-${i + 1}`).removeClass("progress-bar-striped")
+
+            $(`#upload-progress-bar-${i + 1}`).removeClass("progress-bar-animated")
+        }
+        $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%');
+        $(`#upload-progress-bar-${i + 1}`).html(progress + '%');
+    }
 }
 
 function uuidv4() {
