@@ -37,7 +37,7 @@ class ApiFilesUploadHandler(BaseApiHandler):
                     400, {"status": "error", "error": "NOT_AUTHORIZED"}
                 )
             u_type = "server_upload"
-        elif auth_data[4]["superuser"] and upload_type != "import":
+        elif auth_data[4]["superuser"] and upload_type == "background":
             u_type = "admin_config"
             self.upload_dir = os.path.join(
                 self.controller.project_root,
@@ -62,6 +62,15 @@ class ApiFilesUploadHandler(BaseApiHandler):
                 self.controller.project_root, "import", "upload"
             )
             u_type = "server_import"
+        else:
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "NOT_AUTHORIZED",
+                    "data": {"message": ""},
+                },
+            )
         # Get the headers from the request
         fileHash = self.request.headers.get("fileHash", 0)
         chunkHash = self.request.headers.get("chunk-hash", 0)
@@ -145,7 +154,6 @@ class ApiFilesUploadHandler(BaseApiHandler):
 
         # File paths
         file_path = os.path.join(self.upload_dir, self.filename)
-        print(file_path)
         chunk_path = os.path.join(
             self.temp_dir, f"{self.filename}.part{self.chunk_index}"
         )
