@@ -24,7 +24,7 @@ def migrate(migrator: Migrator, database, **kwargs):
     )
     migrator.add_columns(
         "backups",
-        backup_id=peewee.CharField(primary_key=True, default=Helpers.create_uuid),
+        backup_id=peewee.CharField(default=Helpers.create_uuid),
     )
     migrator.add_columns("backups", backup_name=peewee.CharField(default="Default"))
     migrator.add_columns("backups", backup_location=peewee.CharField(default=""))
