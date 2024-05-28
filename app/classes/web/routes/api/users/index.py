@@ -153,7 +153,11 @@ class ApiUsersIndexHandler(BaseApiHandler):
 
         for role in roles:
             role = self.controller.roles.get_role(role)
-            if int(role["manager"]) != int(auth_data[4]["user_id"]) and not superuser:
+            if (
+                str(role.get("manager", "no manager found"))
+                != str(auth_data[4]["user_id"])
+                and not superuser
+            ):
                 return self.finish_json(
                     400, {"status": "error", "error": "INVALID_ROLES_CREATE"}
                 )
