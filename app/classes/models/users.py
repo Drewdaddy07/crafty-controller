@@ -38,7 +38,7 @@ class Users(BaseModel):
     superuser = BooleanField(default=False)
     lang = CharField(default="en_EN")
     support_logs = CharField(default="")
-    valid_tokens_from = DateTimeField(default=datetime.datetime.now)
+    valid_tokens_from = DateTimeField(default=Helpers.get_utc_now)
     server_order = CharField(default="")
     preparing = BooleanField(default=False)
     hints = BooleanField(default=True)
@@ -261,6 +261,8 @@ class HelperUsers:
 
     @staticmethod
     def update_user(user_id, up_data=None):
+        for item in up_data:
+            print(item, type(item))
         if up_data is None:
             up_data = {}
         if up_data:

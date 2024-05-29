@@ -1,5 +1,6 @@
 import logging
 import time
+from datetime import datetime
 from typing import Optional, Dict, Any, Tuple
 import jwt
 from jwt import PyJWTError
@@ -62,7 +63,14 @@ class Authentication:
         user = HelperUsers.get_user(user_id)
         # TODO: Have a cache or something so we don't constantly
         # have to query the database
-        if int(user.get("valid_tokens_from").timestamp()) < iat:
+
+        valid_tokens_from_str = user.get("valid_tokens_from")
+
+        # Convert the string to a datetime object
+        valid_tokens_from_dt = datetime.strptime(
+            valid_tokens_from_str, "%Y-%m-%d %H:%M:%S.%f%z"
+        )
+        if int(valid_tokens_from_dt.timestamp()) < iat:
             # Success!
             return key, data, user
         return None
