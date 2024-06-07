@@ -1150,6 +1150,9 @@ class ServerInstance:
             )
         time.sleep(3)
         conf = HelpersManagement.get_backup_config(backup_id)
+        conf["backup_location"] = os.path.join(
+            conf["backup_location"], conf["backup_id"]
+        )
         backup_location = conf["backup_location"]
         if not backup_location:
             Console.critical("No backup path found. Canceling")
@@ -1201,10 +1204,10 @@ class ServerInstance:
             )
 
             while (
-                len(self.list_backups(backup_location)) > conf["max_backups"]
+                len(self.list_backups(conf)) > conf["max_backups"]
                 and conf["max_backups"] > 0
             ):
-                backup_list = self.list_backups(conf["backup_location"])
+                backup_list = self.list_backups(conf)
                 oldfile = backup_list[0]
                 oldfile_path = f"{backup_location}/{oldfile['path']}"
                 logger.info(f"Removing old backup '{oldfile['path']}'")
@@ -1292,12 +1295,15 @@ class ServerInstance:
                 alert = True
         self.last_backup_failed = alert
 
-    def list_backups(self, backup_location):
-        if not backup_location:
+    def list_backups(self, backup_config: dict) -> list:
+        if not backup_config:
             logger.info(
                 f"Error putting backup file list for server with ID: {self.server_id}"
             )
             return []
+        backup_location = os.path.join(
+            backup_config["backup_location"], backup_config["backup_id"]
+        )
         if not Helpers.check_path_exists(
             Helpers.get_os_understandable_path(backup_location)
         ):

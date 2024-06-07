@@ -1,3 +1,4 @@
+import os
 import datetime
 import uuid
 import peewee
@@ -8,6 +9,7 @@ from app.classes.models.management import Backups, Schedules
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.console import Console
 from app.classes.shared.migration import Migrator, MigrateHistory
+from app.classes.shared.file_helpers import FileHelpers
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +118,7 @@ def migrate(migrator: Migrator, database, **kwargs):
         Console.info(f"Migrations: Migrating backup for server {server.server_name}")
         # Create a new backup entry with data from the
         # old backup entry and related server
-        NewBackups.create(
+        new_backup = NewBackups.create(
             backup_name=f"{server.server_name} Backup",
             # Set backup_location equal to backup_path
             backup_location=server.backup_path,
@@ -130,6 +132,15 @@ def migrate(migrator: Migrator, database, **kwargs):
             default=True,
             enabled=True,
         )
+        Helpers.ensure_dir_exists(
+            os.path.join(server.backup_path, new_backup.backup_id)
+        )
+        for file in os.listdir(server.backup_path):
+            if not os.path.isdir(os.path.join(os.path.join(server.backup_path, file))):
+                FileHelpers.move_file(
+                    os.path.join(server.backup_path, file),
+                    os.path.join(server.backup_path, new_backup.backup_id, file),
+                )
 
     Console.debug("Migrations: Dropping old backup table")
     # Drop the existing backups table
