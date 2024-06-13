@@ -1150,10 +1150,7 @@ class ServerInstance:
             )
         time.sleep(3)
         conf = HelpersManagement.get_backup_config(backup_id)
-        conf["backup_location"] = os.path.join(
-            conf["backup_location"], conf["backup_id"]
-        )
-        backup_location = conf["backup_location"]
+        backup_location = os.path.join(conf["backup_location"], conf["backup_id"])
         if not backup_location:
             Console.critical("No backup path found. Canceling")
             return None

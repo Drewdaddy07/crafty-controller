@@ -208,7 +208,7 @@ class ManagementController:
     def add_default_backup_config(self, server_id, backup_path):
         return self.management_helper.add_backup_config(
             {
-                "backup_name": "afdgahah",
+                "backup_name": "Default Backup",
                 "backup_location": Helpers.wtol_path(backup_path),
                 "max_backups": 0,
                 "before": "",
@@ -217,6 +217,7 @@ class ManagementController:
                 "shutdown": False,
                 "server_id": server_id,
                 "excluded_dirs": [],
+                "default": True,
             }
         )
 
