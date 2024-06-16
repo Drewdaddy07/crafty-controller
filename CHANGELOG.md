@@ -1,5 +1,5 @@
 # Changelog
-## --- [4.3.3] - 2024/TBD
+## --- [4.4.1] - 2024/TBD
 ### New features
 TBD
 ### Bug fixes
@@ -8,6 +8,20 @@ TBD
 TBD
 ### Lang
 TBD
+<br><br>
+
+## --- [4.4.0] - 2024/05/11
+### Refactor
+- Refactor API keys "super user" to "full access" ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/731) | [Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/759))
+- Refactor SBuilder to use Big Bucket Svc ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/755))
+### Bug fixes
+- Reset query arguments on login if `?next` is not available ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/750))
+- Fix child schedule failing to load after del parent ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/753))
+### Tweaks
+- Add link to go back to dashboard on error page ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/743))
+- Set audit logging to logfile instead of DB ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/751))
+### Lang
+- Changes of phrase in `cs_CS` translation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/749))
 <br><br>
 
 ## --- [4.3.2] - 2024/04/07
