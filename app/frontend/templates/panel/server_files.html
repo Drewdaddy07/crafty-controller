@@ -746,6 +746,9 @@
             label: "{{ translate('serverFiles', 'upload', data['lang']) }}",
             className: "btn-default",
             callback: async function () {
+              if ($("#files").get(0).files.length === 0) {
+                return hideUploadBox();
+              }
               var height = files.files.length * 50;
 
               var waitMessage = '<p class="text-center mb-0">' +
