@@ -688,116 +688,97 @@ class Helpers:
         # ASCII color codes
         # Regex to match the escape sequence
         regex = "(\\x1b\[.+?m)"
-        matches = re.findall(regex, line)
+        matches = list(re.finditer(regex, line))
         print(matches)
 
-        # Find the color coresponding to the escape sequence
-        colors = []
-        for match in matches:
-            color = self.interpret_ansi_colors(match)
-            colors.append(color)
-
-        # Find the text between the current and next escape sequence
-        res = ""
-        print("matches ", len(matches))
-        for i in range(len(matches)):
-
-            if i < len(matches) - 1:
-                sub1 = matches[i]
-                sub2 = matches[i + 1]
-
-                idx1 = line.index(sub1)
-                idx2 = line.index(sub2, idx1 + 1)
-
-                res += line[:idx1]  # Add text before the escape sequence
-                res += (
-                    "<span class='"
-                    + colors[i]
-                    + "'"
-                    + self.gen_ansi_style(colors[i], matches[i])
-                    + ">"
-                )  # Open the span
-                res += line[
-                    idx1 + len(sub1) : idx2
-                ]  # Add text within the escape sequence
-                res += "</span>"  # Close the span
-                line = line[idx2:]  # Remove processed part from line
-
-            else:  # There is no second substring for the end part
-                idx = line.index(matches[i])
-
-                res += line[:idx]  # Add text before the escape sequence
-                res += (
-                    "<span class='"
-                    + colors[i]
-                    + "'"
-                    + self.gen_ansi_style(colors[i], matches[i])
-                    + "'>"
-                )  # Open the span
-                res += line[
-                    idx + len(matches[i]) :
-                ]  # Add text within the escape sequence
-                res += "</span>"  # Close the span
-
-                # Add a space if the last character is not a space
-                if line[-1] != " ":
-                    res += " "
-
-        if len(matches) == 0:
+        # Only do all the extra work if we have matches
+        if len(list(matches)) == 0:
             return line
         else:
-            return res
+            print(self.ansi_color(line, matches))
+            return self.ansi_color(line, matches)
 
-    def gen_ansi_style(self, color, code):
+    def ansi_color(self, line, matches):
+        # [0] is the class and [1] is the style tag
+        match_styles = [self.gen_ansi_style(match.group()) for match in matches]
+
+        # (start, end)
+        match_locations = [match.span() for match in matches]
+
+        current_match = 0
+        open_spans = 0
+        result = ""
+        print(len(line))
+        for i in range(len(line)):
+            print(i)
+            if current_match < len(match_locations):
+                # If i is at the start of the match add the span for styling
+                if i == match_locations[current_match][0]:
+                    if (
+                        match_styles[current_match][0] == "ansi-reset"
+                        and open_spans > 0
+                    ):
+                        for _ in range(open_spans):
+                            result += "</span>"
+                            open_spans -= 1
+                    else:
+                        result += (
+                            "<span class='"
+                            + match_styles[current_match][0]
+                            + "'"
+                            + match_styles[current_match][1]
+                            + ">"
+                        )
+                        open_spans += 1
+                    current_match += 1
+                # If i is in the middle or at the end of a match do nothing
+                # current_match -1 because we already incremented
+                if current_match > 0 and i < match_locations[current_match - 1][1]:
+                    continue
+                # otherwise just push the character to the result
+                else:
+                    result += line[i]
+            else:
+                # No more matches to process
+                # Push the rest of the line to the result
+                # result += line[i]
+                print(result)
+                return result
+
+    def gen_ansi_style(self, code):
         term_bg = (39.536, 42.082, 63.618)  # card-banner-bg
         # TODO: 48;2 38;5 48;5
         # Verify that colors has enough contrast
-        if color == "ansi-rgb" and code.find("\x1b[38;2;") > -1:
-            print("rgb values")
+        if code.find("\x1b[38;2;") > -1:
             # Format: \x1b[38;2;85;255;255m
-            regex = "(\d{1,3})[;,m]"
+            regex = r"(\d{1,3})[;,m]"
             matches = re.findall(regex, code)
-            rgb = []
-            for match in matches:
-                rgb.append(match[:-1])  # Get rid of the semicolons
-            print(rgb)
-            print(matches)
+
             return (
+                "ansi-rgb",
                 "style='color: rgb("
                 + matches[2]
                 + ","
                 + matches[3]
                 + ","
                 + matches[4]
-                + ")'"
+                + ")'",
             )
-        elif color == "ansi-bg-rgb":
-            # Format: \x1b[38;2;85;255;255m
-            regex = "(\d{1,3})[;,m]"
+        elif code.find("\x1b[48;2;") > -1:
+            # Format: \x1b[48;2;85;255;255m
+            regex = r"(\d{1,3})[;,m]"
             matches = re.findall(regex, code)
-            rgb = []
-            for match in matches:
-                rgb.append(match[:-1])  # Get rid of the semicolons
-            print(rgb)
-            print(matches)
-            # TODO: Determine if white or black has higher contrast
 
+            # Determine if white or black has higher contrast
             textColor = "white"
 
             if self.get_contrast(
-                (255, 255, 255), (rgb[2], rgb[3], rgb[4])
-            ) > self.get_contrast((0, 0, 0), (rgb[2], rgb[3], rgb[4])):
-                print(
-                    "white ",
-                    self.get_contrast((255, 255, 255), (rgb[2], rgb[3], rgb[4])),
-                )
-                print(
-                    "black ",
-                    self.get_contrast((0, 0, 0), (rgb[2], rgb[3], rgb[4])),
-                )
+                (255, 255, 255), (matches[2], matches[3], matches[4])
+            ) < self.get_contrast((0, 0, 0), (matches[2], matches[3], matches[4])):
                 textColor = "black"
 
             return (
+                "ansi-bg-rgb",
                 "style='background-color: rgb("
                 + matches[2]
                 + ","
@@ -806,116 +787,113 @@ class Helpers:
                 + matches[4]
                 + "); color: "
                 + textColor
-                + "'"
+                + "'",
             )
-        if color == "ansi-black":
-            return "style='color: black'"
-        elif color == "ansi-red":
-            return "style='color: var(--red)'"
-        elif color == "ansi-green":
-            return "style='color: var(--green)'"
-        elif color == "ansi-yellow":
-            return "style='color: var(--yellow)'"
-        elif color == "ansi-blue":
-            return "style='color: var(--blue)'"
-        elif color == "ansi-purple":
-            return "style='color: var(--purple)'"
-        elif color == "ansi-cyan":
-            return "style='color: var(--cyan)'"
-        elif color == "ansi-white":
-            return "style='color: var(--white)'"
-        elif color == "ansi-bg-black":
-            return "style='background-color: black'"
-        elif color == "ansi-bg-red":
-            return "style='background-color: var(--red); color: black'"
-        elif color == "ansi-bg-green":
-            return "style='background-color: var(--green); color: black'"
-        elif color == "ansi-bg-yellow":
-            return "style='background-color: var(--yellow); color: black'"
-        elif color == "ansi-bg-blue":
-            return "style='background-color: var(--blue); color: black'"
-        elif color == "ansi-bg-purple":
-            return "style='background-color: var(--purple); color: black'"
-        elif color == "ansi-bg-cyan":
-            return "style='background-color: var(--cyan); color: black'"
-        elif color == "ansi-bg-white":
-            return "style='background-color: var(--white); color: black'"
-        else:
-            return ""
 
-    @staticmethod
-    def interpret_ansi_colors(code):
-        if code == "\x1b[0m":
-            return "ansi-reset"
         if code == "\x1b[30m":
-            return "ansi-black"
+            return ("ansi-black", "style='color: black'")
         if code == "\x1b[31m":
-            return "ansi-red"
+            return ("ansi-red", "style='color: var(--red)'")
         if code == "\x1b[32m":
-            return "ansi-green"
+            return ("ansi-green", "style='color: var(--green)'")
         if code == "\x1b[33m":
-            return "ansi-yellow"
+            return ("ansi-yellow", "style='color: var(--yellow)'")
         if code == "\x1b[34m":
-            return "ansi-blue"
+            return ("ansi-blue", "style='color: var(--blue)'")
         if code == "\x1b[35m":
-            return "ansi-purple"
+            return ("ansi-purple", "style='color: var(--purple)'")
         if code == "\x1b[36m":
-            return "ansi-cyan"
+            return ("ansi-cyan", "style='color: var(--cyan)'")
         if code == "\x1b[37m":
-            return "ansi-white"
+            return ("ansi-white", "style='color: var(--white)'")
         if code == "\x1b[40m":
-            return "ansi-bg-black"
+            return ("ansi-bg-black", "style='background-color: black'")
         if code == "\x1b[41m":
-            return "ansi-bg-red"
+            return ("ansi-bg-red", "style='background-color: var(--red); color: black'")
         if code == "\x1b[42m":
-            return "ansi-bg-green"
+            return (
+                "ansi-bg-green",
+                "style='background-color: var(--green); color: black'",
+            )
         if code == "\x1b[43m":
-            return "ansi-bg-yellow"
+            return (
+                "ansi-bg-yellow",
+                "style='background-color: var(--yellow); color: black'",
+            )
         if code == "\x1b[44m":
-            return "ansi-bg-blue"
+            return (
+                "ansi-bg-blue",
+                "style='background-color: var(--blue); color: black'",
+            )
         if code == "\x1b[45m":
-            return "ansi-bg-purple"
+            return (
+                "ansi-bg-purple",
+                "style='background-color: var(--purple); color: black'",
+            )
         if code == "\x1b[46m":
-            return "ansi-bg-cyan"
+            return (
+                "ansi-bg-cyan",
+                "style='background-color: var(--cyan); color: black'",
+            )
         if code == "\x1b[47m":
-            return "ansi-bg-white"
+            return (
+                "ansi-bg-white",
+                "style='background-color: var(--white); color: black'",
+            )
         if code == "\x1b[90m":
-            return "ansi-light-grey"
+            return ("ansi-light-grey", "style='color: var(--grey)'")
         if code == "\x1b[91m":
-            return "ansi-light-red"
+            return ("ansi-light-red", "style='color: var(--red)'")
         if code == "\x1b[92m":
-            return "ansi-light-green"
+            return ("ansi-light-green", "style='color: var(--green)'")
         if code == "\x1b[93m":
-            return "ansi-light-yellow"
+            return ("ansi-light-yellow", "style='color: var(--yellow)'")
         if code == "\x1b[94m":
-            return "ansi-light-blue"
+            return ("ansi-light-blue", "style='color: var(--blue)'")
         if code == "\x1b[95m":
-            return "ansi-light-purple"
+            return ("ansi-light-purple", "style='color: var(--purple)'")
         if code == "\x1b[96m":
-            return "ansi-light-cyan"
+            return ("ansi-light-cyan", "style='color: var(--cyan)'")
         if code == "\x1b[97m":
-            return "ansi-light-white"
+            return ("ansi-light-white", "style='color: var(--white)'")
         if code == "\x1b[100m":
-            return "ansi-bg-light-grey"
+            return ("ansi-bg-light-grey", "style='background-color: var(--grey-light)'")
         if code == "\x1b[101m":
-            return "ansi-bg-light-red"
+            return (
+                "ansi-bg-light-red",
+                "style='background-color: var(--red); color: black'",
+            )
         if code == "\x1b[102m":
-            return "ansi-bg-light-green"
+            return (
+                "ansi-bg-light-green",
+                "style='background-color: var(--green); color: black'",
+            )
         if code == "\x1b[103m":
-            return "ansi-bg-light-yellow"
+            return (
+                "ansi-bg-light-yellow",
+                "style='background-color: var(--yellow); color: black'",
+            )
         if code == "\x1b[104m":
-            return "ansi-bg-light-blue"
+            return (
+                "ansi-bg-light-blue",
+                "style='background-color: var(--blue); color: black'",
+            )
         if code == "\x1b[105m":
-            return "ansi-bg-light-purple"
+            return (
+                "ansi-bg-light-purple",
+                "style='background-color: var(--purple); color: black'",
+            )
         if code == "\x1b[106m":
-            return "ansi-bg-light-cyan"
+            return (
+                "ansi-bg-light-cyan",
+                "style='background-color: var(--cyan); color: black'",
+            )
         if code == "\x1b[107m":
-            return "ansi-bg-light-white"
-        if "\x1b[38;2;" in code:
-            return "ansi-rgb"
-        if "\x1b[48;2;" in code:
-            return "ansi-bg-rgb"
-        return "reset"
+            return (
+                "ansi-bg-light-white",
+                "style='background-color: var(--white); color: black'",
+            )
+        return ("ansi-reset", "")
 
     @staticmethod
     def get_contrast(color1, color2):
