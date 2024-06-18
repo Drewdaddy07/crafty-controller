@@ -651,7 +651,6 @@ class Helpers:
             return False
 
     def log_colors(self, line):
-        print(line)
         # our regex replacements
         # note these are in a tuple
 
@@ -687,9 +686,8 @@ class Helpers:
 
         # ASCII color codes
         # Regex to match the escape sequence
-        regex = r"(\\x1b\[.+?m)"
+        regex = r"(\x1b\[.+?m)"
         matches = list(re.finditer(regex, line))
-        print(matches)
 
         # Only do all the extra work if we have matches
         if len(list(matches)) == 0:
@@ -707,7 +705,7 @@ class Helpers:
         current_match = 0
         open_spans = 0
         result = ""
-        for i in enumerate(line):
+        for i, char in enumerate(line):
             if current_match < len(match_locations):
                 # If i is at the start of the match add the span for styling
                 if i == match_locations[current_match][0]:
@@ -733,12 +731,11 @@ class Helpers:
                 if current_match > 0 and i < match_locations[current_match - 1][1]:
                     continue
                 # otherwise just push the character to the result
-                result += line[i]
+                result += char
             else:
                 # No more matches to process
                 # Push the rest of the line to the result
                 # result += line[i]
-                print(result)
                 return result
 
     def gen_ansi_style(self, code):
