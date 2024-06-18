@@ -687,16 +687,15 @@ class Helpers:
 
         # ASCII color codes
         # Regex to match the escape sequence
-        regex = "(\\x1b\[.+?m)"
+        regex = r"(\\x1b\[.+?m)"
         matches = list(re.finditer(regex, line))
         print(matches)
 
         # Only do all the extra work if we have matches
         if len(list(matches)) == 0:
             return line
-        else:
-            print(self.ansi_color(line, matches))
-            return self.ansi_color(line, matches)
+
+        return self.ansi_color(line, matches)
 
     def ansi_color(self, line, matches):
         # [0] is the class and [1] is the style tag
@@ -708,9 +707,7 @@ class Helpers:
         current_match = 0
         open_spans = 0
         result = ""
-        print(len(line))
-        for i in range(len(line)):
-            print(i)
+        for i in enumerate(line):
             if current_match < len(match_locations):
                 # If i is at the start of the match add the span for styling
                 if i == match_locations[current_match][0]:
@@ -736,8 +733,7 @@ class Helpers:
                 if current_match > 0 and i < match_locations[current_match - 1][1]:
                     continue
                 # otherwise just push the character to the result
-                else:
-                    result += line[i]
+                result += line[i]
             else:
                 # No more matches to process
                 # Push the rest of the line to the result
@@ -764,18 +760,18 @@ class Helpers:
                 + matches[4]
                 + ")'",
             )
-        elif code.find("\x1b[48;2;") > -1:
+        if code.find("\x1b[48;2;") > -1:
             # Format: \x1b[48;2;85;255;255m
             regex = r"(\d{1,3})[;,m]"
             matches = re.findall(regex, code)
 
             # Determine if white or black has higher contrast
-            textColor = "white"
+            text_color = "white"
 
             if self.get_contrast(
                 (255, 255, 255), (matches[2], matches[3], matches[4])
             ) < self.get_contrast((0, 0, 0), (matches[2], matches[3], matches[4])):
-                textColor = "black"
+                text_color = "black"
 
             return (
                 "ansi-bg-rgb",
@@ -786,7 +782,7 @@ class Helpers:
                 + ","
                 + matches[4]
                 + "); color: "
-                + textColor
+                + text_color
                 + "'",
             )
 
@@ -915,8 +911,8 @@ class Helpers:
 
         if lum1 > lum2:
             return (lum1 + 0.05) / (lum2 + 0.05)
-        else:
-            return (lum2 + 0.05) / (lum1 + 0.05)
+
+        return (lum2 + 0.05) / (lum1 + 0.05)
 
     @staticmethod
     def validate_traversal(base_path, filename):
