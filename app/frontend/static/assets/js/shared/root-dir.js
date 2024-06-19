@@ -137,9 +137,3 @@ function getToggleMain(event) {
     document.getElementById(path + "span").classList.toggle("tree-caret-down");
     document.getElementById(path + "span").classList.toggle("tree-caret");
 }
-
-function printFormData() {
-    let myForm = document.getElementById("import-upload");
-    let formObj = new FormData(myForm);
-    console.log(Object.fromEntries(formObj));
-}
