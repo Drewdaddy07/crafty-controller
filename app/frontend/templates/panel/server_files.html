@@ -795,7 +795,9 @@
 
 
               await Promise.all(uploadPromises);
-              hideUploadBox();
+              setTimeout(() => {
+                hideUploadBox();
+              }, 2000);
 
             }
           }
