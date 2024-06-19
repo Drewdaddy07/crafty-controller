@@ -46,12 +46,10 @@
               {% if server['stats']['desc'] != 'False' %}
               <div class="row">
                 <div class="col-auto">
-                  <img src="/static/assets/images/pack.png" alt="icon"
-                    style="-webkit-filter:grayscale(100%); filter:grayscale(100%)" />
+                  <img src="/static/assets/images/pack.png" alt="icon" style="-webkit-filter:grayscale(100%); filter:grayscale(100%)" />
                 </div>
                 <div class="col-auto">
-                  <span id="input_motd_{{ server['stats']['server_id']['server_id'] }}" class="input_motd">{{
-                    translate('serverStats', 'loadingMotd', data['lang']) }}</span>
+                  <span id="input_motd_{{ server['stats']['server_id']['server_id'] }}" class="input_motd">{{ translate('serverStats', 'loadingMotd', data['lang']) }}</span>
                 </div>
               </div>
               {% end %}
@@ -103,17 +101,13 @@
           <h2 class="mb-0 container overflow-hidden">
             <div class="row">
               <div class="col-8 mx-0 px-0">
-                <a id="m_server_name_{{ server['stats']['server_id']['server_id'] }}"
-                  class="btn btn-link d-flex justify-content-center" type="button" data-toggle="collapse"
-                  data-target="#collapse-{{server['server_data']['server_id']}}" aria-expanded="false"
-                  aria-controls="collapse-{{server['server_data']['server_id']}}">
+                <a id="m_server_name_{{ server['stats']['server_id']['server_id'] }}" class="btn btn-link d-flex justify-content-center" type="button" data-toggle="collapse" data-target="#collapse-{{server['server_data']['server_id']}}" aria-expanded="false" aria-controls="collapse-{{server['server_data']['server_id']}}">
                   <i class="fas fa-server"></i>
                   {{ server['server_data']['server_name'] }}
                 </a>
               </div>
               <div class="col-4 mx-0 px-0">
-                <a id="m_server_online_status_{{ server['stats']['server_id']['server_id'] }}"
-                  class="btn btn-link d-flex justify-content-center" type="button">
+                <a id="m_server_online_status_{{ server['stats']['server_id']['server_id'] }}" class="btn btn-link d-flex justify-content-center" type="button">
                   {% if server['stats']['running'] %}
                   <div id="m_server_players_{{ server['stats']['server_id']['server_id'] }}">
                     <span class="text-success"><i class="fas fa-signal"></i> {{ server['stats']['online'] }} / {{
@@ -129,20 +123,17 @@
           </h2>
         </div>
 
-        <div id="collapse-{{server['server_data']['server_id']}}" class="collapse"
-          aria-labelledby="heading-{{server['server_data']['server_id']}}" data-parent="#accordionServers">
+        <div id="collapse-{{server['server_data']['server_id']}}" class="collapse" aria-labelledby="heading-{{server['server_data']['server_id']}}" data-parent="#accordionServers">
           <div class="card-body">
             {% if server['stats']['int_ping_results'] != 'False' %}
             <div id="m_server_motd_{{ server['stats']['server_id']['server_id'] }}" class="media">
               {% if server['stats']['desc'] != 'False' %}
-              <img src="/static/assets/images/pack.png" class="w-25 mr-3" alt="icon"
-                style="-webkit-filter:grayscale(100%); filter:grayscale(100%);" />
+              <img src="/static/assets/images/pack.png" class="w-25 mr-3" alt="icon" style="-webkit-filter:grayscale(100%); filter:grayscale(100%);" />
               {% end %}
               <div class="media-body">
                 {% if server['stats']['desc'] != 'False' %}
                 <div id="m_server_motd_{{ server['stats']['server_id']['server_id'] }}">
-                  <span id="m_input_motd_{{ server['stats']['server_id']['server_id'] }}" class="input_motd">{{
-                    translate('serverStats', 'loadingMotd', data['lang']) }}</span> <br />
+                  <span id="m_input_motd_{{ server['stats']['server_id']['server_id'] }}" class="input_motd">{{ translate('serverStats', 'loadingMotd', data['lang']) }}</span> <br />
                 </div>
                 {% end %}
               </div>
