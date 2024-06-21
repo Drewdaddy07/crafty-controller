@@ -566,6 +566,8 @@
         "minMem": "Minimum Memory",
         "myNewServer": "My New Server",
         "newServer": "Create New Server",
+        "noneRoles": "No Roles Selected",
+        "noRole": "No role found with current search parameter",
         "quickSettings": "Quick Settings",
         "quickSettingsDescription": "Don't worry, you can change these later",
         "resetForm": "Reset Form",
