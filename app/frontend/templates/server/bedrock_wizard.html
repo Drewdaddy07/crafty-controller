@@ -574,7 +574,7 @@
         message: '<p class="text-center mb-0"><i class="fa fa-spin fa-cog"></i> Please wait while we gather your files...</p>',
         closeButton: false
       });
-      setTimeout(function(){
+      setTimeout(function () {
         getDirView();
       }, 2000);
     } else {
@@ -623,7 +623,7 @@
         message: '<p class="text-center mb-0"><i class="fa fa-spin fa-cog"></i> Please wait while we gather your files...</p>',
         closeButton: false
       });
-      setTimeout(function(){
+      setTimeout(function () {
         getDirView();
       }, 2000);
     } else {
@@ -633,17 +633,6 @@
 </script>
 
 <script>
-  function dropDown(event) {
-    event.target.parentElement.children[1].classList.remove("d-none");
-    document.getElementById("overlay").classList.remove("d-none");
-  }
-  function hide(event) {
-    var items = document.getElementsByClassName('menu');
-    for (let i = 0; i < items.length; i++) {
-      items[i].classList.add("d-none");
-    }
-    document.getElementById("overlay").classList.add("d-none");
-  }
 
   function wait_msg(importing) {
     bootbox.alert({
