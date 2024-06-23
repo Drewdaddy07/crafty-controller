@@ -41,6 +41,8 @@ SUBPAGE_PERMS = {
     "webhooks": EnumPermissionsServer.CONFIG,
 }
 
+SCHEDULE_AUTH_ERROR_URL = "/panel/error?error=Unauthorized access To Schedules"
+
 
 class PanelHandler(BaseHandler):
     def get_user_roles(self) -> t.Dict[str, list]:
@@ -1147,7 +1149,7 @@ class PanelHandler(BaseHandler):
 
             if not EnumPermissionsServer.SCHEDULE in page_data["user_permissions"]:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access To Schedules")
+                    self.redirect(SCHEDULE_AUTH_ERROR_URL)
                     return
 
             template = "panel/server_schedule_edit.html"
@@ -1245,7 +1247,7 @@ class PanelHandler(BaseHandler):
 
             if not EnumPermissionsServer.SCHEDULE in page_data["user_permissions"]:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access To Schedules")
+                    self.redirect(SCHEDULE_AUTH_ERROR_URL)
                     return
 
             template = "panel/server_schedule_edit.html"
@@ -1317,7 +1319,7 @@ class PanelHandler(BaseHandler):
 
             if EnumPermissionsServer.BACKUP not in page_data["user_permissions"]:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access To Schedules")
+                    self.redirect(SCHEDULE_AUTH_ERROR_URL)
                     return
             template = "panel/server_backup_edit.html"
 
@@ -1376,7 +1378,7 @@ class PanelHandler(BaseHandler):
 
             if EnumPermissionsServer.BACKUP not in page_data["user_permissions"]:
                 if not superuser:
-                    self.redirect("/panel/error?error=Unauthorized access To Schedules")
+                    self.redirect(SCHEDULE_AUTH_ERROR_URL)
                     return
             template = "panel/server_backup_edit.html"
 
