@@ -1,3 +1,4 @@
+import os
 import logging
 import json
 from jsonschema import validate
@@ -97,6 +98,10 @@ class ApiServersServerBackupsIndexHandler(BaseApiHandler):
         if EnumPermissionsServer.BACKUP not in server_permissions:
             # if the user doesn't have Schedule permission, return an error
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
+        # Set the backup location automatically for non-super users. We should probably
+        # make the default location configurable for SU eventually
+        if not auth_data[4]["superuser"]:
+            data["backup_location"] = os.path.join(self.helper.backup_path, server_id)
         data["server_id"] = server_id
         if not data.get("excluded_dirs", None):
             data["excluded_dirs"] = []
