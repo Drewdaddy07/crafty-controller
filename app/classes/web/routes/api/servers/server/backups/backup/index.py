@@ -414,6 +414,14 @@ class ApiServersServerBackupsBackupFilesIndexHandler(BaseApiHandler):
                     "error_data": str(e),
                 },
             )
+        self.helper.validate_traversal(
+            os.path.join(backup_conf["backup_location"], backup_conf["backup_id"]),
+            os.path.join(
+                backup_conf["backup_location"],
+                backup_conf["backup_id"],
+                data["filename"],
+            ),
+        )
         try:
             FileHelpers.del_file(
                 os.path.join(
