@@ -508,7 +508,6 @@ class Helpers:
             "max_log_lines": 700,
             "max_audit_entries": 300,
             "disabled_language_files": [],
-            "stream_size_GB": 1,
             "keywords": ["help", "chunk"],
             "allow_nsfw_profile_pictures": False,
             "enable_user_self_delete": False,
