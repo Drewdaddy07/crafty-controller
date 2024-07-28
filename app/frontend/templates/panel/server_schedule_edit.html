@@ -72,7 +72,7 @@
                       <option id="command" value="command">{{ translate('serverScheduleConfig', 'custom' , data['lang'])
                         }}</option>
                     </select>
-                    <div id="ifBackup" style="display: none;">
+                    <div id="ifBackup" class="d-none">
                       <br>
                       <label for="action_id">{{ translate('serverSchedules', 'actionId' , data['lang']) }}<small class="text-muted ml-1"></small> </label><br>
                       <select id="action_id" name="action_id" class="form-control form-control-lg select-css" value="{{ data['schedule']['action_id']  }}">
@@ -192,10 +192,11 @@
             </div>
             <div class="col-sm-4 grid-margin">
               <h4>{{ translate('serverScheduleConfig', 'children' , data['lang']) }}</h4>
-              <ul>
+              <ul class="list-group">
                 {% for schedule in data['schedule']['children'] %}
-                <li style="overflow: auto;"><a href="/panel/edit_schedule?id={{schedule.server_id}}&sch_id={{schedule.schedule_id}}">{{schedule.name}}
-                    | {{schedule.schedule_id}}</a></li>
+                <li class="list-group-item">
+                  <a href="/panel/edit_schedule?id={{schedule.server_id}}&sch_id={{schedule.schedule_id}}">{{schedule.name}} | {{schedule.schedule_id}}</a>
+                </li>
                 {% end %}
               </ul>
             </div>
@@ -355,10 +356,12 @@
         document.getElementById("command_input").required = false;
       }
       if (document.getElementById('action').value == "backup") {
-        document.getElementById("ifBackup").style.display = "block";
+        document.getElementById("ifBackup").classList.add("d-block");
+        document.getElementById("ifBackup").classList.remove("d-none");
         document.getElementById("action_id").required = true;
       } else {
-        document.getElementById("ifBackup").style.display = "none";
+        document.getElementById("ifBackup").classList.remove("d-block");
+        document.getElementById("ifBackup").classList.add("d-none");
         document.getElementById("action_id").required = false;
         $("#action_id").val(null);
       }
