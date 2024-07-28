@@ -253,6 +253,7 @@ div>.input-group>.form-control {
     /* IE and Edge */
     scrollbar-width: none;
     /* Firefox */
+    overflow: scroll;
 }
 
 .no-scroll::-webkit-scrollbar {
@@ -277,6 +278,10 @@ div>.input-group>.form-control {
 
 .custom-switch .custom-control-label::after {
     top: calc(-0.125rem + 1px);
+}
+
+.custom-radio .custom-control-label::after {
+    top: calc(-0.175rem);
 }
 
 a.btn-primary {

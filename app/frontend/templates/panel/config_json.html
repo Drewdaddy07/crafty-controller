@@ -49,17 +49,16 @@
           </div>
           <!-- Page Title Header Ends-->
 
-          <form id="config-form" class="forms-sample" method="post" action="/panel/config_json">
-
+          <form id="config-form" method="post" action="/panel/config_json">
             {% for item in data['config-json'].items() %}
             {% if item[0] == "reset_secrets_on_next_boot" %}
             <div class="form-group reset-secret">
               {% else %}
               <div class="form-group">
                 {% end %}
-                <label class="form" for="{{item[0]}}">{{item[0]}}
-                  <small class="text-muted ml-1">
-                  </small> </label><br />
+                <label class="form" for="{{item[0]}}">
+                  {{item[0]}}
+                </label>
                 {% if item[0] == 'language' %}
                 <select name="{{item[0]}}" class="form-control">
                   {% for lang in data['availables_languages'] %}
@@ -103,19 +102,31 @@
                 {% elif isinstance(item[1], list) %}
                 <textarea id="{{item[0]}}" value="{{','.join(item[1])}}" type="text" name="{{item[0]}}" class="form-control list">{{','.join(item[1])}}</textarea>
                 {% elif isinstance(item[1], bool) %}
-                <div style="margin-left: 30px;">
-                  {% if item[1] == True %}
-                  <input type="radio" class="form-check-input" name="{{item[0]}}" id="True" value="True" checked>
-                   <label for="True">True</label><br>
-                  <input type="radio" class="form-check-input" name="{{item[0]}}" id="False" value="False">
-                   <label for="False">False</label>
-                  {% else %}
-                  <input type="radio" class="form-check-input" name="{{item[0]}}" id="True" value="True">
-                   <label for="True">True</label><br>
-                  <input type="radio" class="form-check-input" name="{{item[0]}}" id="False" value="False" checked>
-                   <label for="False">False</label>
-                  {% end %}
+
+                {% if item[1] == True %}
+                <div class="custom-control custom-radio">
+                  <input class="custom-control-input" type="radio" name="{{item[0]}}" id="{{item[0]}}_True" value="True" checked>
+                  <label class="custom-control-label" for="{{item[0]}}_True">
+                    True
+                  </label>
                 </div>
+                <div class="custom-control custom-radio">
+                  <input class="custom-control-input" type="radio" name="{{item[0]}}" id="{{item[0]}}_False" value="False">
+                  <label class="custom-control-label" for="{{item[0]}}_False">False</label>
+                </div>
+                {% else %}
+                <div class="custom-control custom-radio">
+                  <input class="custom-control-input" type="radio" name="{{item[0]}}" id="{{item[0]}}_True" value="True">
+                  <label class="custom-control-label" for="{{item[0]}}_True">True</label>
+                </div>
+                <div class="custom-control custom-radio">
+                  <input class="custom-control-input" type="radio" name="{{item[0]}}" id="{{item[0]}}_False" value="False" checked>
+                  <label class="custom-control-label" for="{{item[0]}}_False">
+                    False
+                  </label>
+                </div>
+                {% end %}
+
                 {% elif isinstance(item[1], int) %}
                 <input type="number" class="form-control" name="{{item[0]}}" id="{{item[0]}}" value="{{ item[1]  }}" step="1" min="0" required>
                 {% else %}
@@ -129,23 +140,7 @@
       </div>
     </div>
   </div>
-
-
 </div>
-
-<style>
-  .dropdown-menu.inner {
-    display: inline-block !important;
-  }
-
-  input[type="radio"] {
-    -ms-transform: scale(1.5);
-    /* IE 9 */
-    -webkit-transform: scale(1.5);
-    /* Chrome, Safari, Opera */
-    transform: scale(1.5);
-  }
-</style>
 <!-- content-wrapper ends -->
 
 {% end %}
