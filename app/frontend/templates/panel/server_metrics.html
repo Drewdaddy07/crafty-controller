@@ -48,7 +48,7 @@
               </select>
             </div>
           </div>
-          <button style="float: right; visibility: hidden;" class="btn btn-outline-success reset-button" id="reset-button"><i class="fas fa-undo"></i>&nbsp;{{ translate('serverMetrics', 'resetZoom', data['lang'])
+          <button class="btn btn-outline-success reset-button float-right d-none" id="reset-button" hidden><i class="fas fa-undo"></i>&nbsp;{{ translate('serverMetrics', 'resetZoom', data['lang'])
             }}</button>
           {% if data['user_data']['hints'] %}
           <span data-html="true" class="hints text-center" title="<i class='fa fa-info-circle'></i> " , data-content="{{
@@ -128,7 +128,8 @@
           zoom: {
             onZoom({ hist_chart }) {
               console.log("zooming");
-              document.getElementById("reset-button").style.visibility = "visible";
+              document.getElementById("reset-button").classList.remove("d-none");
+              document.getElementById("reset-button").classList.add("d-block");
               zoomed = true;
             },
             wheel: {
@@ -225,7 +226,8 @@
       console.log("resetting zoom");
       zoomed = false;
       hist_chart.resetZoom();
-      document.getElementById("reset-button").style.visibility = "hidden";
+      document.getElementById("reset-button").classList.add("d-none");
+      document.getElementById("reset-button").classList.remove("d-block");
     });
   });
 </script>
