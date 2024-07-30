@@ -1373,6 +1373,19 @@ class ServerInstance:
 
     def threaded_jar_update(self):
         server_users = PermissionsServers.get_server_user_list(self.server_id)
+        # check to make sure a backup config actually exists before starting the update
+        if len(self.management_helper.get_backups_by_server(self.server_id, True)) <= 0:
+            for user in server_users:
+                WebSocketManager().broadcast_user(
+                    user,
+                    "notification",
+                    "Backup config does not exist for "
+                    + self.name
+                    + ". canceling update.",
+                )
+            logger.error(f"Back config does not exist for {self.name}. Update Failed.")
+            self.stats_helper.set_update(False)
+            return False
         was_started = "-1"
         # Get default backup configuration
         backup_config = HelpersManagement.get_default_server_backup(self.server_id)
@@ -1428,6 +1441,7 @@ class ServerInstance:
                     "notification",
                     "Backup failed for " + self.name + ". canceling update.",
                 )
+            self.stats_helper.set_update(False)
             return False
 
         # lets download the files
