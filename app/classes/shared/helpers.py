@@ -957,7 +957,7 @@ class Helpers:
             ]
             return colors[ansi_code]
 
-        elif 8 <= ansi_code <= 15:
+        if 8 <= ansi_code <= 15:
             # High-intensity colors
             colors = [
                 (128, 128, 128),  # Bright Black (Gray)
