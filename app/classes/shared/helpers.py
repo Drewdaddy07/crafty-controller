@@ -971,7 +971,7 @@ class Helpers:
             ]
             return colors[ansi_code - 8]
 
-        elif 16 <= ansi_code <= 231:
+        if 16 <= ansi_code <= 231:
             # 216 color cube
             ansi_code -= 16
             r = (ansi_code // 36) % 6 * 51
@@ -979,17 +979,16 @@ class Helpers:
             b = (ansi_code % 6) * 51
             return (r, g, b)
 
-        elif 232 <= ansi_code <= 255:
+        if 232 <= ansi_code <= 255:
             # Grayscale colors
             level = (ansi_code - 232) * 10 + 8
             return (level, level, level)
 
-        else:
-            return (
-                0,
-                0,
-                0,
-            )  # Default to black
+        return (
+            0,
+            0,
+            0,
+        )  # Default to black
 
     @staticmethod
     def validate_traversal(base_path, filename):
