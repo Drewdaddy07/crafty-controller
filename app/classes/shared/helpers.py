@@ -742,9 +742,6 @@ class Helpers:
                 return result
 
     def gen_ansi_style(self, code):
-        term_bg = (39.536, 42.082, 63.618)  # card-banner-bg
-        # TODO: 48;2 38;5 48;5
-        # Verify that colors has enough contrast
         if code.find("\x1b[38;2;") > -1:
             # Format: \x1b[38;2;85;255;255m
             regex = r"(\d{1,3})[;,m]"
@@ -785,7 +782,36 @@ class Helpers:
                 + text_color
                 + "'",
             )
+        if code.find("\x1b[38;5;") > -1:
+            # Format: \x1b[38;5m
+            regex = r"(\d{1,3})[;,m]"
+            matches = re.findall(regex, code)
 
+            return (
+                "ansi-8bit",
+                "style='color: rgb" + str(self.ansi_8bit_to_rgb(int(matches[2]))) + "'",
+            )
+        if code.find("\x1b[48;5") > -1:
+            # Format: \x1b[48;5m
+            regex = r"(\d{1,3})[;,m]"
+            matches = re.findall(regex, code)
+
+            # Determine if white or black has higher contrast
+            text_color = "white"
+
+            if self.get_contrast(
+                (255, 255, 255), self.ansi_8bit_to_rgb(int(matches[2]))
+            ) < self.get_contrast((0, 0, 0), self.ansi_8bit_to_rgb(int(matches[2]))):
+                text_color = "black"
+
+            return (
+                "ansi-bg-8bit",
+                "style='background-color: rgb"
+                + str(self.ansi_8bit_to_rgb(int(matches[2])))
+                + "; color: "
+                + text_color
+                + "'",
+            )
         if code == "\x1b[30m":
             return ("ansi-black", "style='color: black'")
         if code == "\x1b[31m":
@@ -891,6 +917,7 @@ class Helpers:
             )
         return ("ansi-reset", "")
 
+    # Once browser support is there we should use color: color-contrast() instead of this.
     @staticmethod
     def get_contrast(color1, color2):
         def get_luminence(color):
@@ -913,6 +940,56 @@ class Helpers:
             return (lum1 + 0.05) / (lum2 + 0.05)
 
         return (lum2 + 0.05) / (lum1 + 0.05)
+
+    @staticmethod
+    def ansi_8bit_to_rgb(ansi_code):
+        if 0 <= ansi_code <= 7:
+            # Standard colors
+            colors = [
+                (0, 0, 0),  # Black
+                (128, 0, 0),  # Red
+                (0, 128, 0),  # Green
+                (128, 128, 0),  # Yellow
+                (0, 0, 128),  # Blue
+                (128, 0, 128),  # Magenta
+                (0, 128, 128),  # Cyan
+                (192, 192, 192),  # White
+            ]
+            return colors[ansi_code]
+
+        elif 8 <= ansi_code <= 15:
+            # High-intensity colors
+            colors = [
+                (128, 128, 128),  # Bright Black (Gray)
+                (255, 0, 0),  # Bright Red
+                (0, 255, 0),  # Bright Green
+                (255, 255, 0),  # Bright Yellow
+                (0, 0, 255),  # Bright Blue
+                (255, 0, 255),  # Bright Magenta
+                (0, 255, 255),  # Bright Cyan
+                (255, 255, 255),  # Bright White
+            ]
+            return colors[ansi_code - 8]
+
+        elif 16 <= ansi_code <= 231:
+            # 216 color cube
+            ansi_code -= 16
+            r = (ansi_code // 36) % 6 * 51
+            g = (ansi_code // 6) % 6 * 51
+            b = (ansi_code % 6) * 51
+            return (r, g, b)
+
+        elif 232 <= ansi_code <= 255:
+            # Grayscale colors
+            level = (ansi_code - 232) * 10 + 8
+            return (level, level, level)
+
+        else:
+            return (
+                0,
+                0,
+                0,
+            )  # Default to black
 
     @staticmethod
     def validate_traversal(base_path, filename):
