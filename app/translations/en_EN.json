@@ -680,11 +680,12 @@
         "serverExeCommand": "Server execution command must be a string with a minimum length of 1.",
         "serverLogPath": "Server log path must be a string with a minimum length of 1",
         "taskIntervalType": "Task Interval Type must be one of the following: ",
-        "typeBool": "Type error: True or False required",
-        "typeInteger": "Type error: Integer required",
-        "typeIntMinVal0": "must be an integer with a minimum value of 0",
-        "typeList": "Type error: List required ",
-        "typeString": "Type error: String required"
+        "typeBool": "must be true or false (type boolean)",
+        "typeEmail": "must be of type email.",
+        "typeInteger": "must be a number.",
+        "typeIntMinVal0": "must be an integer with a minimum value of 0.",
+        "typeList": "must be of type list/array ",
+        "typeString": "must be of type string."
     },
     "webhooks": {
         "areYouSureDel": "Are you sure you want to delete this webhook?",
