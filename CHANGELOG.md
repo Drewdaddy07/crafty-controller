@@ -1,6 +1,16 @@
 # Changelog
-## --- [4.4.1] - 2024/08/06
+## --- [4.4.2] - 2024/TBD
+### New features
+TBD
+### Bug fixes
+TBD
+### Tweaks
+TBD
+### Lang
+TBD
+<br><br>
 
+## --- [4.4.1] - 2024/08/06
 ### Patch Fixes
 - Migrations | Fix orphan backup configurations crashing migration operation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/785))
 - Migrations | Fix missing default configuration if no server backup config exists during the migration ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/785))
