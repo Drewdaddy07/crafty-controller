@@ -100,18 +100,19 @@ class ApiCraftyConfigIndexHandler(BaseApiHandler):
 
         try:
             data = orjson.loads(self.request.body)
-        except orjson.JSONDecodeError as e:
+        except orjson.JSONDecodeError as why:
             return self.finish_json(
-                400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
+                400,
+                {"status": "error", "error": "INVALID_JSON", "error_data": str(why)},
             )
 
         try:
             validate(data, config_json_schema)
-        except ValidationError as e:
-            offending_key = e.path[0] if e.path else None
+        except ValidationError as why:
+            offending_key = why.path[0] if why.path else None
             err = f"""{self.translator.translate(
                 "validators",
-                e.schema.get("error"),
+                why.schema.get("error"),
                 self.controller.users.get_user_lang_by_id(auth_data[4]["user_id"]),
             )} {offending_key}"""
             return self.finish_json(
