@@ -1,12 +1,16 @@
 # Changelog
-## --- [4.4.1] - 2024/TBD
+## --- [4.4.1] - 2024/08/06
+
+### Patch Fixes
+- Migrations | Fix orphan backup configurations crashing migration operation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/785))
+- Migrations | Fix missing default configuration if no server backup config exists during the migration ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/785))
+- Migrations | Fix extended runtime on move procedure during migration ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/785))
 
 **-----------------------------------------------------------------------------**
 
-**Initial release was reverted for patching (See Merge Request: [!784](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/784))**
+**Initial release was reverted for patching (See Merge Request: [!784](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/784))** *2024/07/28*
 
-**-----------------------------------------------------------------------------**
-### Refactor
+**-----------------------------------------------------------------------------**### Refactor
 - Backups | Allow multiple backup configurations ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/711))
 - UploadAPI | Use Crafty's JWT authentication for file uploads ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/762))
 - UploadAPI | Splice files on the frontend to allow chunked uploads as well as bulk uploads ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/762))
