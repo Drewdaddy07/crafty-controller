@@ -1385,7 +1385,7 @@ class ServerInstance:
                 )
             logger.error(f"Back config does not exist for {self.name}. Update Failed.")
             self.stats_helper.set_update(False)
-            return False
+            return
         was_started = "-1"
         # Get default backup configuration
         backup_config = HelpersManagement.get_default_server_backup(self.server_id)
@@ -1442,7 +1442,7 @@ class ServerInstance:
                     "Backup failed for " + self.name + ". canceling update.",
                 )
             self.stats_helper.set_update(False)
-            return False
+            return
 
         # lets download the files
         if HelperServers.get_server_type_by_id(self.server_id) != "minecraft-bedrock":
