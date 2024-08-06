@@ -20,6 +20,7 @@
         "created": "Creado",
         "deleteKeyConfirmation": "¿Quieres eliminar esta clave de API? Esto no se puede deshacer.",
         "deleteKeyConfirmationTitle": "¿Eliminar la clave API ${keyId}?",
+        "fullAccess": "Acceso completo",
         "getToken": "Conseguir un Token",
         "name": "Nombre",
         "nameDesc": "¿Como te gustaría llamar a este Token de API? ",
@@ -111,6 +112,7 @@
         "starting": "Inicio-retrasado",
         "status": "Estado",
         "stop": "Detener",
+        "storage": "Almacenamiento",
         "version": "Versión",
         "welcome": "Bienvenido a Crafty Controller"
     },
@@ -176,11 +178,14 @@
             },
             "thousands": ",",
             "zeroRecords": "No se encontraron registros que coincidan"
-        }
+        },
+        "loadingRecords": "Cargando..."
     },
     "error": {
         "agree": "Aceptar",
         "bedrockError": "Descargas de Bedrock no disponibles. por favor, compruebe",
+        "bigBucket1": "La verificación de estado de Big Bucket ha fallado. Por favor, verifica",
+        "bigBucket2": "para obtener la información más actualizada.",
         "cancel": "Cancelar",
         "contact": "Contacta el soporte de Crafty Control desde Discord",
         "craftyStatus": "Página de estados de Crafty",
@@ -202,6 +207,8 @@
         "not-downloaded": "No podemos encontrar el archivo ejecutable. ¿Ha terminado de descargarse? ¿Están los permisos puestos como ejecutable?",
         "portReminder": "Detectamos que es la primera vez que se inicia {}. Asegúrese de configurar el puerto {} a través de su router/firewall para hacer el servidor accesible por Internet.",
         "privMsg": "y el ",
+        "return": "Volver al panel de control",
+        "selfHost": "Si estás autoalojando este repositorio, revisa tu dirección o consulta nuestra guía de solución de problemas.",
         "serverJars1": "API de Servidor JAR no disponible. por favor, compruebe",
         "serverJars2": "para la información más actualizada.",
         "start-error": "Servidor {} fallo al iniciar con código de error: {}",
@@ -214,11 +221,14 @@
         "version": "Versión"
     },
     "login": {
+        "defaultPath": "La contraseña introducida es la ruta default de las credenciales, no la contraseña. Busca la contraseña accediendo a la carpeta de la ruta",
+        "disabled": "Cuenta del usuario desactivada. Porfavor contacta al administrador para mas informacion.",
         "forgotPassword": "Olvidé mi contraseña",
+        "incorrect": "El nombre de usuario o contraseña es incorrecto",
         "login": "Iniciar Sesión",
         "password": "Contraseña",
         "username": "Usuario",
-        "viewStatus": "View Public Status Page"
+        "viewStatus": "Ver página de estado público"
     },
     "notify": {
         "activityLog": "Registros de actividad",
@@ -291,10 +301,12 @@
         "serversDesc": "Servidores a los que este grupo puede acceder"
     },
     "serverBackups": {
+        "actions": "Acciones",
         "after": "Comando ejecutado después del respaldo",
         "backupAtMidnight": "¿Copia de seguridad automática a medianoche?",
         "backupNow": "¡Respalde ahora!",
         "backupTask": "Se ha iniciado una tarea de copia de seguridad.",
+        "backups": "Copias de seguridad del servidor",
         "before": "Comando ejecutado antes del respaldo",
         "cancel": "Cancelar",
         "clickExclude": "Click para seleccionar las Exclusiones",
@@ -303,21 +315,34 @@
         "confirmDelete": "¿Quieres eliminar esta copia de seguridad? Esto no se puede deshacer.",
         "confirmRestore": "¿Seguro que quiere restaurar desde este respaldo?. Todos los archivos del servidor actuales serán cambiados al estado del respaldo y serán irrecuperables.",
         "currentBackups": "Copias de seguridad actuales",
+        "default": "Copia de seguridad predeterminada",
+        "defaultExplain": "La copia de seguridad que Crafty usará antes de actualizar. No se puede cambiar ni eliminar.",
         "delete": "Eliminar",
         "destroyBackup": "¿Destruir copia de seguridad \" + file_to_del + \"?",
         "download": "Descargar",
+        "edit": "Editar",
+        "enabled": "Habilitado",
         "excludedBackups": "Rutas Excluidas: ",
         "excludedChoose": "Elige las rutas que desea excluir de los respaldos",
         "exclusionsTitle": "Exclusiones en respaldos.",
+        "failed": "Fallido",
         "maxBackups": "Cantidad máxima de respaldos",
         "maxBackupsDesc": "Crafty no almacenará más de N copias de seguridad, eliminando la más antigua. (Sin límite: 0)",
+        "myBackup": "Mi Nueva Copia",
+        "name": "Nombre",
+        "newBackup": "Crear Nueva Copia de Seguridad",
+        "no-backup": "No hay copias de seguridad. Para crear una nueva configuración de copias de seguridad, presiona Crear nueva copia",
         "options": "Opciones",
         "path": "Ruta",
         "restore": "Restaurar",
         "restoring": "Restaurando copia de seguridad. Esto puede tomar un tiempo. Sea paciente.",
+        "run": "Ejecutar Copia de seguridad",
         "save": "Guardar",
         "shutdown": "Apagar el servidor durante la duración de la copia del respaldo.",
         "size": "Tamaño",
+        "standby": "En espera",
+        "status": "Estado",
+        "storage": "Ubicación del almacenamiento",
         "storageLocation": "Ubicación de almacenamiento",
         "storageLocationDesc": "¿Dónde quieres almacenar las copias de seguridad?"
     },
@@ -326,6 +351,7 @@
         "bePatientDeleteFiles": "Tenga paciencia mientras eliminamos su servidor del panel de Crafty y eliminamos todos los archivos. Esta pantalla se cerrará en unos momentos.",
         "bePatientUpdate": "Tenga paciencia mientras actualizamos el servidor. El tiempo de descarga puede variar según la velocidad del Internet...<br /> Esta pantalla se actualizará en unos momentos.",
         "cancel": "Cancelar",
+        "countPlayers": "Incluir el servidor en la cuenta total de jugadores",
         "crashTime": "Tiempo de espera por crasheo",
         "crashTimeDesc": "¿Cuanto tiempo esperar para considerar el servidor como crasheado?",
         "deleteFilesQuestion": "¿Eliminar archivos del servidor del host?",
@@ -481,6 +507,7 @@
     },
     "serverSchedules": {
         "action": "Acción",
+        "actionId": "Seleccionar acción secundaria",
         "areYouSure": "¿Borrar tarea programada?",
         "cancel": "Cancelar",
         "cannotSee": "¿No puede ver todo?",
@@ -510,6 +537,7 @@
         "cpuUsage": "Uso de CPU",
         "description": "Descripción",
         "errorCalculatingUptime": "Error calculando tiempo de actividad",
+        "loadingMotd": "Cargando MOTD",
         "memUsage": "Uso de memoria",
         "offline": "Desconectado",
         "online": "En línea",
@@ -558,6 +586,8 @@
         "minMem": "Memoria mínima",
         "myNewServer": "Mi nuevo Servidor",
         "newServer": "Crear Servidor",
+        "noRole": "No se encontró ningún rol con el parámetro de búsqueda actual",
+        "noneRoles": "No hay roles seleccionados",
         "quickSettings": "Ajustes rápidos",
         "quickSettingsDescription": "No te preocupes, puedes cambiarlos más tarde.",
         "resetForm": "Limpiar formulario",
@@ -577,6 +607,7 @@
         "serverUpload": "Subir servidor comprimido",
         "serverVersion": "Versión del servidor",
         "sizeInGB": "Tamaño en GB",
+        "unsupported": "Versiones de Minecraft inferiores a la 1.8 no estan soportadas por Crafty. Es posible instalarlas. Resultados pueden variar.",
         "uploadButton": "Subir",
         "uploadZip": "Subir archivo Zip para importar servidor",
         "zipPath": "Ruta del servidor"
@@ -587,9 +618,18 @@
         "dashboard": "Panel de control",
         "documentation": "Documentación",
         "inApp": "Documentación de la Aplicación",
-        "navigation": "Navegación",
         "newServer": "Crear nuevo Servidor",
         "servers": "Servidores"
+    },
+    "startup": {
+        "almost": "Terminando. Espera un momento...",
+        "cache": "Actualizando el archivo de caché de Big Bucket",
+        "internals": "Configurando e inicializando los componentes internos de Crafty",
+        "internet": "Verificando conexion a internet",
+        "server": "Inicializando ",
+        "serverInit": "Inicializando Servidores",
+        "starting": "Crafty esta iniciando...",
+        "tasks": "Iniciando el programador de tareas"
     },
     "userConfig": {
         "apiKey": "Claves API",
@@ -630,6 +670,9 @@
         "userSettings": "Configuración de Usuario.",
         "userTheme": "Tema de Interfaz",
         "uses": "Número de usos permitidos. (Sin límite: -1)"
+    },
+    "validators": {
+        "passLength": "Contraseña demasiado corta. Longitud mínima: 8"
     },
     "webhooks": {
         "areYouSureDel": "¿Estás seguro de que quieres eliminar este webhook?",

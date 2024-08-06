@@ -1,4 +1,5 @@
 import os
+import sys
 import pathlib
 from pathlib import Path
 from datetime import datetime
@@ -32,7 +33,7 @@ from app.classes.shared.console import Console
 from app.classes.shared.helpers import Helpers
 from app.classes.shared.file_helpers import FileHelpers
 from app.classes.shared.import_helper import ImportHelpers
-from app.classes.minecraft.serverjars import ServerJars
+from app.classes.minecraft.bigbucket import BigBucket
 from app.classes.shared.websocket_manager import WebSocketManager
 from app.classes.steamcmd.serverapps import SteamApps
 
@@ -45,8 +46,10 @@ class Controller:
         self.helper: Helpers = helper
         self.file_helper: FileHelpers = file_helper
         self.import_helper: ImportHelpers = import_helper
-        self.server_jars: ServerJars = ServerJars(helper)
+        
+        self.big_bucket: BigBucket = BigBucket(helper)
         self.steam_apps: SteamApps = SteamApps(helper)
+
         self.users_helper: HelperUsers = HelperUsers(database, self.helper)
         self.roles_helper: HelperRoles = HelperRoles(database)
         self.servers_helper: HelperServers = HelperServers(database)
@@ -242,7 +245,7 @@ class Controller:
             try:
                 os.mkdir(final_path)
             except FileExistsError:
-                final_path += "_" + server["server_uuid"]
+                final_path += "_" + server["server_id"]
                 os.mkdir(final_path)
             try:
                 FileHelpers.copy_file(
@@ -254,6 +257,19 @@ class Controller:
         # Copy crafty logs to archive dir
         full_log_name = os.path.join(crafty_path, "logs")
         FileHelpers.copy_dir(os.path.join(self.project_root, "logs"), full_log_name)
+        thread_dump = ""
+        for thread in threading.enumerate():
+            if sys.version_info >= (3, 8):
+                thread_dump += (
+                    f"Name: {thread.name}\tIdentifier:"
+                    f" {thread.ident}\tTID/PID: {thread.native_id}\n"
+                )
+            else:
+                print(f"Name: {thread.name}\tIdentifier: {thread.ident}")
+        with open(
+            os.path.join(temp_dir, "crafty_thread_dump.txt"), "a", encoding="utf-8"
+        ) as f:
+            f.write(thread_dump)
         self.support_scheduler.add_job(
             self.log_status,
             "interval",
@@ -439,7 +455,7 @@ class Controller:
             if root_create_data["create_type"] == "download_jar":
                 if Helpers.is_os_windows():
                     # Let's check for and setup for install server commands
-                    if create_data["type"] == "forge":
+                    if create_data["type"] == "forge-installer":
                         server_command = (
                             f"java -Xms{Helpers.float_to_string(min_mem)}M "
                             f"-Xmx{Helpers.float_to_string(max_mem)}M "
@@ -452,7 +468,7 @@ class Controller:
                             f'-jar "{server_file}" nogui'
                         )
                 else:
-                    if create_data["type"] == "forge":
+                    if create_data["type"] == "forge-installer":
                         server_command = (
                             f"java -Xms{Helpers.float_to_string(min_mem)}M "
                             f"-Xmx{Helpers.float_to_string(max_mem)}M "
@@ -565,7 +581,6 @@ class Controller:
             name=data["name"],
             server_uuid=server_fs_uuid,
             server_dir=new_server_path,
-            backup_path=backup_path,
             server_command=server_command,
             server_file=server_file,
             server_log_file=log_location,
@@ -575,26 +590,23 @@ class Controller:
             server_host=monitoring_host,
             server_type=monitoring_type,
         )
-        self.management.set_backup_config(
+        self.management.add_default_backup_config(
             new_server_id,
             backup_path,
         )
         if data["create_type"] == "minecraft_java":
             if root_create_data["create_type"] == "download_jar":
                 # modded update urls from server jars will only update the installer
-                if (
-                    create_data["category"] != "modded"
-                    and create_data["type"] not in ServerJars.get_paper_jars()
-                ):
+                if create_data["type"] != "forge-installer":
                     server_obj = self.servers.get_server_obj(new_server_id)
-                    url = (
-                        "https://serverjars.com/api/fetchJar/"
-                        f"{create_data['category']}"
-                        f"/{create_data['type']}/{create_data['version']}"
+                    url = self.big_bucket.get_fetch_url(
+                        create_data["category"],
+                        create_data["type"],
+                        create_data["version"],
                     )
                     server_obj.executable_update_url = url
                     self.servers.update_server(server_obj)
-                self.server_jars.download_jar(
+                self.big_bucket.download_jar(
                     create_data["category"],
                     create_data["type"],
                     create_data["version"],
@@ -654,11 +666,11 @@ class Controller:
         # and add the user to it if he's not a superuser
         if len(captured_roles) == 0:
             if not exec_user["superuser"]:
-                new_server_uuid = self.servers.get_server_data_by_id(new_server_id).get(
-                    "server_uuid"
+                new_server_id = self.servers.get_server_data_by_id(new_server_id).get(
+                    "server_id"
                 )
                 role_id = self.roles.add_role(
-                    f"Creator of Server with uuid={new_server_uuid}",
+                    f"Creator of Server with id={new_server_id}",
                     exec_user["user_id"],
                 )
                 self.server_perms.add_role_server(new_server_id, role_id, "11111111")
@@ -669,7 +681,7 @@ class Controller:
                 role_id = role
                 self.server_perms.add_role_server(new_server_id, role_id, "11111111")
 
-        return new_server_id, server_fs_uuid
+        return new_server_id
 
     @staticmethod
     def verify_jar_server(server_path: str, server_jar: str):
@@ -733,7 +745,6 @@ class Controller:
             server_name,
             server_id,
             new_server_dir,
-            backup_path,
             server_command,
             server_jar,
             server_log_file,
@@ -787,7 +798,6 @@ class Controller:
             server_name,
             server_id,
             new_server_dir,
-            backup_path,
             server_command,
             server_exe,
             server_log_file,
@@ -832,7 +842,6 @@ class Controller:
             server_name,
             server_id,
             new_server_dir,
-            backup_path,
             server_command,
             server_exe,
             server_log_file,
@@ -880,7 +889,6 @@ class Controller:
             server_name,
             server_id,
             new_server_dir,
-            backup_path,
             server_command,
             server_exe,
             server_log_file,
@@ -904,16 +912,13 @@ class Controller:
     # **********************************************************************************
 
     def rename_backup_dir(self, old_server_id, new_server_id, new_uuid):
-        server_data = self.servers.get_server_data_by_id(old_server_id)
         server_obj = self.servers.get_server_obj(new_server_id)
-        old_bu_path = server_data["backup_path"]
         ServerPermsController.backup_role_swap(old_server_id, new_server_id)
-        backup_path = old_bu_path
+        backup_path = os.path.join(self.helper.backup_path, old_server_id)
         backup_path = Path(backup_path)
         backup_path_components = list(backup_path.parts)
         backup_path_components[-1] = new_uuid
         new_bu_path = pathlib.PurePath(os.path.join(*backup_path_components))
-        server_obj.backup_path = new_bu_path
         default_backup_dir = os.path.join(self.helper.backup_path, new_uuid)
         try:
             os.rmdir(default_backup_dir)
@@ -927,7 +932,6 @@ class Controller:
         name: str,
         server_uuid: str,
         server_dir: str,
-        backup_path: str,
         server_command: str,
         server_file: str,
         server_log_file: str,
@@ -943,7 +947,6 @@ class Controller:
             name,
             server_uuid,
             server_dir,
-            backup_path,
             server_command,
             server_file,
             server_log_file,
@@ -1009,16 +1012,16 @@ class Controller:
                             f"Unable to delete server files for server with ID: "
                             f"{server_id} with error logged: {e}"
                         )
-                    if Helpers.check_path_exists(
-                        self.servers.get_server_data_by_id(server_id)["backup_path"]
-                    ):
-                        FileHelpers.del_dirs(
-                            Helpers.get_os_understandable_path(
-                                self.servers.get_server_data_by_id(server_id)[
-                                    "backup_path"
-                                ]
+                    backup_configs = HelpersManagement.get_backups_by_server(
+                        server_id, True
+                    )
+                    for config in backup_configs:
+                        if Helpers.check_path_exists(config.backup_location):
+                            FileHelpers.del_dirs(
+                                Helpers.get_os_understandable_path(
+                                    config.backup_location
+                                )
                             )
-                        )
 
                 # Cleanup scheduled tasks
                 try:
@@ -1119,7 +1122,7 @@ class Controller:
         for server in servers:
             server_path = server.get("path")
             new_local_server_path = os.path.join(
-                new_server_path, server.get("server_uuid")
+                new_server_path, server.get("server_id")
             )
             if os.path.isdir(server_path):
                 WebSocketManager().broadcast_page(
@@ -1155,7 +1158,7 @@ class Controller:
             server_obj.path = new_local_server_path
             failed = False
             for s in self.servers.failed_servers:
-                if int(s["server_id"]) == int(server.get("server_id")):
+                if s["server_id"] == server.get("server_id"):
                     failed = True
             if not failed:
                 self.servers.update_server(server_obj)

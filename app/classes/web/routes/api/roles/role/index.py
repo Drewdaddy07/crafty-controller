@@ -1,6 +1,7 @@
 from jsonschema import ValidationError, validate
 import orjson
-from peewee import DoesNotExist
+from peewee import DoesNotExist, IntegrityError
+from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.web.base_api_handler import BaseApiHandler
 
 modify_role_schema = {
@@ -9,6 +10,7 @@ modify_role_schema = {
         "name": {
             "type": "string",
             "minLength": 1,
+            "pattern": r"^[^,\[\]]*$",
         },
         "servers": {
             "type": "array",
@@ -16,12 +18,12 @@ modify_role_schema = {
                 "type": "object",
                 "properties": {
                     "server_id": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 1,
                     },
                     "permissions": {
                         "type": "string",
-                        "pattern": "^[01]{8}$",  # 8 bits, see EnumPermissionsServer
+                        "pattern": r"^[01]{8}$",  # 8 bits, see EnumPermissionsServer
                     },
                 },
                 "required": ["server_id", "permissions"],
@@ -46,7 +48,7 @@ basic_modify_role_schema = {
                 "type": "object",
                 "properties": {
                     "server_id": {
-                        "type": "integer",
+                        "type": "string",
                         "minimum": 1,
                     },
                     "permissions": {
@@ -70,13 +72,17 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
             return
         (
             _,
-            _,
+            exec_user_permissions_crafty,
             _,
             superuser,
             _,
+            _,
         ) = auth_data
 
-        if not superuser:
+        if (
+            not superuser
+            and EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_permissions_crafty
+        ):
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
 
         try:
@@ -97,9 +103,13 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
             _,
             superuser,
             user,
+            _,
         ) = auth_data
-
-        if not superuser:
+        role = self.controller.roles.get_role(role_id)
+        if (
+            str(role.get("manager", "no manager found")) != str(auth_data[4]["user_id"])
+            and not superuser
+        ):
             return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
 
         self.controller.roles.remove_role(role_id)
@@ -112,7 +122,7 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
         self.controller.management.add_to_audit_log(
             user["user_id"],
             f"deleted role with ID {role_id}",
-            server_id=0,
+            server_id=None,
             source_ip=self.get_remote_ip(),
         )
 
@@ -122,18 +132,30 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
             return
         (
             _,
-            _,
+            exec_user_permissions_crafty,
             _,
             superuser,
             user,
+            _,
         ) = auth_data
 
-        if not superuser:
-            return self.finish_json(400, {"status": "error", "error": "NOT_AUTHORIZED"})
+        role = self.controller.roles.get_role(role_id)
+        if not superuser and (
+            user["user_id"] != role["manager"]
+            or EnumPermissionsCrafty.ROLES_CONFIG not in exec_user_permissions_crafty
+        ):
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "NOT_AUTHORIZED",
+                    "error_data": "Not Authorized",
+                },
+            )
 
         try:
             data = orjson.loads(self.request.body)
-        except orjson.decoder.JSONDecodeError as e:
+        except orjson.JSONDecodeError as e:
             return self.finish_json(
                 400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
             )
@@ -168,11 +190,14 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
             )
         except DoesNotExist:
             return self.finish_json(404, {"status": "error", "error": "ROLE_NOT_FOUND"})
-
+        except IntegrityError:
+            return self.finish_json(
+                404, {"status": "error", "error": "ROLE_NAME_EXISTS"}
+            )
         self.controller.management.add_to_audit_log(
             user["user_id"],
             f"modified role with ID {role_id}",
-            server_id=0,
+            server_id=None,
             source_ip=self.get_remote_ip(),
         )
 

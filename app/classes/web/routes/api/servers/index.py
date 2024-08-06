@@ -23,6 +23,7 @@ new_server_schema = {
             "type": "string",
             "examples": ["My Server"],
             "minLength": 2,
+            "pattern": "^[^/\\\\]*$",
         },
         "roles": {"title": "Roles to add", "type": "array", "examples": [1, 2, 3]},
         "stop_command": {
@@ -139,7 +140,7 @@ new_server_schema = {
                     "category": {
                         "title": "Jar Category",
                         "type": "string",
-                        "examples": ["modded", "vanilla"],
+                        "examples": ["Mc_java_servers", "Mc_java_proxies"],
                     },
                     "properties": {
                         "type": {
@@ -743,6 +744,7 @@ class ApiServersIndexHandler(BaseApiHandler):
             _,
             _superuser,
             user,
+            _,
         ) = auth_data
 
         if EnumPermissionsCrafty.SERVER_CREATION not in exec_user_crafty_permissions:
@@ -782,9 +784,7 @@ class ApiServersIndexHandler(BaseApiHandler):
                 405, {"status": "error", "error": "DATA CONSTRAINT FAILED"}
             )
             return
-        new_server_id, new_server_uuid = self.controller.create_api_server(
-            data, user["user_id"]
-        )
+        new_server_id = self.controller.create_api_server(data, user["user_id"])
 
         self.controller.servers.stats.record_stats()
 
@@ -793,7 +793,7 @@ class ApiServersIndexHandler(BaseApiHandler):
             (
                 f"created server {data['name']}"
                 f" (ID: {new_server_id})"
-                f" (UUID: {new_server_uuid})"
+                f" (UUID: {new_server_id})"
             ),
             server_id=new_server_id,
             source_ip=self.get_remote_ip(),
@@ -805,7 +805,7 @@ class ApiServersIndexHandler(BaseApiHandler):
                 "status": "ok",
                 "data": {
                     "new_server_id": str(new_server_id),
-                    "new_server_uuid": new_server_uuid,
+                    "new_server_uuid": new_server_id,
                 },
             },
         )

@@ -48,7 +48,6 @@ class ServersController(metaclass=Singleton):
         name: str,
         server_uuid: str,
         server_dir: str,
-        backup_path: str,
         server_command: str,
         server_file: str,
         server_log_file: str,
@@ -81,10 +80,9 @@ class ServersController(metaclass=Singleton):
             PeeweeException: If the server already exists
         """
         return HelperServers.create_server(
-            name,
             server_uuid,
+            name,
             server_dir,
-            backup_path,
             server_command,
             server_file,
             server_log_file,
@@ -150,8 +148,7 @@ class ServersController(metaclass=Singleton):
             PermissionsServers.delete_roles_permissions(role_id, role_data["servers"])
         # Remove roles from server
         PermissionsServers.remove_roles_of_server(server_id)
-        # Remove backup configs tied to server
-        self.management_helper.remove_backup_config(server_id)
+        self.management_helper.remove_all_server_backups(server_id)
         # Finally remove server
         self.servers_helper.remove_server(server_id)
 
@@ -163,9 +160,9 @@ class ServersController(metaclass=Singleton):
     #                                     Servers Methods
     # **********************************************************************************
 
-    def get_server_instance_by_id(self, server_id: t.Union[str, int]) -> ServerInstance:
+    def get_server_instance_by_id(self, server_id: t.Union[str, str]) -> ServerInstance:
         for server in self.servers_list:
-            if int(server["server_id"]) == int(server_id):
+            if server["server_id"] == server_id:
                 return server["server_obj"]
 
         logger.warning(f"Unable to find server object for server id {server_id}")

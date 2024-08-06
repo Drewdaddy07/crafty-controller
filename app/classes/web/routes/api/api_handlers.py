@@ -38,12 +38,14 @@ from app.classes.web.routes.api.servers.server.backups.index import (
 )
 from app.classes.web.routes.api.servers.server.backups.backup.index import (
     ApiServersServerBackupsBackupIndexHandler,
+    ApiServersServerBackupsBackupFilesIndexHandler,
 )
 from app.classes.web.routes.api.servers.server.files import (
     ApiServersServerFilesIndexHandler,
     ApiServersServerFilesCreateHandler,
     ApiServersServerFilesZipHandler,
 )
+from app.classes.web.routes.api.crafty.upload.index import ApiFilesUploadHandler
 from app.classes.web.routes.api.servers.server.tasks.task.children import (
     ApiServersServerTasksTaskChildrenHandler,
 )
@@ -221,92 +223,113 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/?",
+            r"/api/v2/servers/([a-z0-9-]+)/?",
             ApiServersServerIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/backups/?",
+            r"/api/v2/servers/([a-z0-9-]+)/backups/?",
             ApiServersServerBackupsIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/backups/backup/?",
+            r"/api/v2/servers/([a-z0-9-]+)/backups/backup/([a-z0-9-]+)/?",
             ApiServersServerBackupsBackupIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/files/?",
-            ApiServersServerFilesIndexHandler,
+            r"/api/v2/servers/([a-z0-9-]+)/backups/backup/([a-z0-9-]+)/files/?",
+            ApiServersServerBackupsBackupFilesIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/files/create/?",
+            r"/api/v2/servers/([a-z0-9-]+)/files/create/?",
             ApiServersServerFilesCreateHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/files/zip/?",
+            r"/api/v2/servers/([a-z0-9-]+)/files/zip/?",
             ApiServersServerFilesZipHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/tasks/?",
+            r"/api/v2/crafty/admin/upload/?",
+            ApiFilesUploadHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/servers/import/upload/?",
+            ApiFilesUploadHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/servers/([a-z0-9-]+)/files/upload/?",
+            ApiFilesUploadHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/servers/([a-z0-9-]+)/files(?:/([a-zA-Z0-9-]+))?/?",
+            ApiServersServerFilesIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/servers/([a-z0-9-]+)/tasks/?",
             ApiServersServerTasksIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/tasks/([0-9]+)/?",
+            r"/api/v2/servers/([a-z0-9-]+)/tasks/([0-9]+)/?",
             ApiServersServerTasksTaskIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/tasks/([0-9]+)/children/?",
+            r"/api/v2/servers/([a-z0-9-]+)/tasks/([0-9]+)/children/?",
             ApiServersServerTasksTaskChildrenHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/stats/?",
+            r"/api/v2/servers/([a-z0-9-]+)/stats/?",
             ApiServersServerStatsHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/history/?",
+            r"/api/v2/servers/([a-z0-9-]+)/history/?",
             ApiServersServerHistoryHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/webhook/([0-9]+)/?",
+            r"/api/v2/servers/([a-z0-9-]+)/webhook/([0-9]+)/?",
             ApiServersServerWebhooksManagementIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/webhook/?",
+            r"/api/v2/servers/([a-z0-9-]+)/webhook/?",
             ApiServersServerWebhooksIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/action/([a-z_]+)/?",
+            # optional third argument when we need a action ID
+            r"/api/v2/servers/([a-z0-9-]+)/action/([a-z_]+)(?:/([a-z0-9-]+))?/?",
             ApiServersServerActionHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/logs/?",
+            r"/api/v2/servers/([a-z0-9-]+)/logs/?",
             ApiServersServerLogsHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/users/?",
+            r"/api/v2/servers/([a-z0-9-]+)/users/?",
             ApiServersServerUsersHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/public/?",
+            r"/api/v2/servers/([a-z0-9-]+)/public/?",
             ApiServersServerPublicHandler,
             handler_args,
         ),
         (
-            r"/api/v2/servers/([0-9]+)/stdin/?",
+            r"/api/v2/servers/([a-z0-9-]+)/stdin/?",
             ApiServersServerStdinHandler,
             handler_args,
         ),

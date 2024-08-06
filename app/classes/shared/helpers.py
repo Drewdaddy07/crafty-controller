@@ -19,7 +19,7 @@ import shutil
 import shlex
 import subprocess
 import itertools
-from datetime import datetime
+from datetime import datetime, timezone
 from socket import gethostname
 from contextlib import redirect_stderr, suppress
 import libgravatar
@@ -72,9 +72,10 @@ class Helpers:
         self.db_path = os.path.join(
             self.root_dir, "app", "config", "db", "crafty.sqlite"
         )
-        self.serverjar_cache = os.path.join(self.config_dir, "serverjars.json")
+        self.big_bucket_cache = os.path.join(self.config_dir, "bigbucket.json")
         self.steamapps_cache = os.path.join(self.config_dir, "steamapps.json")
         self.credits_cache = os.path.join(self.config_dir, "credits.json")
+
         self.passhasher = PasswordHasher()
         self.exiting = False
 
@@ -82,6 +83,7 @@ class Helpers:
         self.update_available = False
         self.ignored_names = ["crafty_managed.txt", "db_stats"]
         self.crafty_starting = False
+        self.minimum_password_length = 8
 
     @staticmethod
     def auto_installer_fix(ex):
@@ -118,7 +120,7 @@ class Helpers:
         Get latest bedrock executable url \n\n
         returns url if successful, False if not
         """
-        url = "https://minecraft.net/en-us/download/server/bedrock/"
+        url = "https://www.minecraft.net/en-us/download/server/bedrock/"
         headers = {
             "Accept-Encoding": "identity",
             "Accept-Language": "en",
@@ -496,7 +498,6 @@ class Helpers:
         # Config.json was removed from the repo to make it easier for users
         # To make non-breaking changes to the file.
         return {
-            "http_port": 8000,
             "https_port": 8443,
             "language": "en_EN",
             "cookie_expire": 30,
@@ -509,7 +510,6 @@ class Helpers:
             "max_log_lines": 700,
             "max_audit_entries": 300,
             "disabled_language_files": [],
-            "stream_size_GB": 1,
             "keywords": ["help", "chunk"],
             "allow_nsfw_profile_pictures": False,
             "enable_user_self_delete": False,
@@ -517,6 +517,7 @@ class Helpers:
             "monitored_mounts": mounts,
             "dir_size_poll_freq_minutes": 5,
             "crafty_logs_delete_after_days": 0,
+            "big_bucket_repo": "https://jars.arcadiatech.org",
         }
 
     def get_all_settings(self):
@@ -639,6 +640,10 @@ class Helpers:
         # set some defaults if we don't get version_data from our helper
         version = f"{major}.{minor}.{sub}"
         return str(version)
+
+    @staticmethod
+    def get_utc_now() -> datetime:
+        return datetime.fromtimestamp(time.time(), tz=timezone.utc)
 
     def encode_pass(self, password):
         return self.passhasher.hash(password)
@@ -1005,6 +1010,11 @@ class Helpers:
             return True
         except PermissionError as e:
             logger.critical(f"Check generated exception due to permssion error: {e}")
+            return False
+        except FileNotFoundError as e:
+            logger.critical(
+                f"Check generated exception due to file does not exist error: {e}"
+            )
             return False
 
     def create_self_signed_cert(self, cert_dir=None):
