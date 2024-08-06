@@ -16,6 +16,7 @@ modify_role_schema = {
         "servers": {
             "type": "array",
             "error": "typeList",
+            "fill": True,
             "items": {
                 "type": "object",
                 "properties": {
@@ -50,6 +51,7 @@ basic_modify_role_schema = {
         "servers": {
             "type": "array",
             "error": "typeList",
+            "fill": True,
             "items": {
                 "type": "object",
                 "properties": {
@@ -173,13 +175,21 @@ class ApiRolesRoleIndexHandler(BaseApiHandler):
                 validate(data, modify_role_schema)
             else:
                 validate(data, basic_modify_role_schema)
-        except ValidationError as e:
+        except ValidationError as why:
+            offending_key = None
+            if why.get("fill", None):
+                offending_key = why.path[0] if why.path else None
+            err = f"""{self.translator.translate(
+                "validators",
+                why.schema.get("error"),
+                self.controller.users.get_user_lang_by_id(auth_data[4]["user_id"]),
+            )} {offending_key}"""
             return self.finish_json(
                 400,
                 {
                     "status": "error",
                     "error": "INVALID_JSON_SCHEMA",
-                    "error_data": str(e),
+                    "error_data": f"{str(err)}",
                 },
             )
 

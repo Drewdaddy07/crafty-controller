@@ -17,10 +17,21 @@ files_get_schema = {
             "type": "string",
             "minLength": 1,
             "error": "filesPageLen",
+            "fill": True,
         },
-        "folder": {"type": "string", "error": "typeString"},
-        "upload": {"type": "boolean", "default": "False", "error": "typeBool"},
-        "unzip": {"type": "boolean", "default": "True", "error": "typeBool"},
+        "folder": {"type": "string", "error": "typeString", "fill": True},
+        "upload": {
+            "type": "boolean",
+            "default": "False",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "unzip": {
+            "type": "boolean",
+            "default": "True",
+            "error": "typeBool",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,
@@ -52,7 +63,9 @@ class ApiImportFilesIndexHandler(BaseApiHandler):
         try:
             validate(data, files_get_schema)
         except ValidationError as why:
-            offending_key = why.path[0] if why.path else None
+            offending_key = None
+            if why.get("fill", None):
+                offending_key = why.path[0] if why.path else None
             err = f"""{self.translator.translate(
                 "validators",
                 why.schema.get("error"),

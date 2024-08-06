@@ -9,27 +9,111 @@ from app.classes.web.base_api_handler import BaseApiHandler
 config_json_schema = {
     "type": "object",
     "properties": {
-        "https_port": {"type": "integer", "error": "typeInteger"},
-        "language": {"type": "string", "error": "typeString"},
-        "cookie_expire": {"type": "integer", "error": "typeInteger"},
-        "show_errors": {"type": "boolean", "error": "typeBool"},
-        "history_max_age": {"type": "integer", "error": "typeInteger"},
-        "stats_update_frequency_seconds": {"type": "integer", "error": "typeInteger"},
-        "delete_default_json": {"type": "boolean", "error": "typeBool"},
-        "show_contribute_link": {"type": "boolean", "error": "typeBool"},
-        "virtual_terminal_lines": {"type": "integer", "error": "typeInteger"},
-        "max_log_lines": {"type": "integer", "error": "typeInteger"},
-        "max_audit_entries": {"type": "integer", "error": "typeInteger"},
-        "disabled_language_files": {"type": "array", "error": "typeList"},
-        "stream_size_GB": {"type": "integer", "error": "typeInteger"},
-        "keywords": {"type": "array", "error": "typeList"},
-        "allow_nsfw_profile_pictures": {"type": "boolean", "error": "typeBool"},
-        "enable_user_self_delete": {"type": "boolean", "error": "typeBool"},
-        "reset_secrets_on_next_boot": {"type": "boolean", "error": "typeBool"},
-        "monitored_mounts": {"type": "array", "error": "typeList"},
-        "dir_size_poll_freq_minutes": {"type": "integer", "error": "typeInteger"},
-        "crafty_logs_delete_after_days": {"type": "integer", "error": "typeInteger"},
-        "big_bucket_repo": {"type": "string", "error": "typeString"},
+        "https_port": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "language": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
+        "cookie_expire": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "show_errors": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "history_max_age": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "stats_update_frequency_seconds": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "delete_default_json": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "show_contribute_link": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "virtual_terminal_lines": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "max_log_lines": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "max_audit_entries": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "disabled_language_files": {
+            "type": "array",
+            "error": "typeList",
+            "fill": True,
+        },
+        "stream_size_GB": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "keywords": {
+            "type": "array",
+            "error": "typeList",
+            "fill": True,
+        },
+        "allow_nsfw_profile_pictures": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "enable_user_self_delete": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "reset_secrets_on_next_boot": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "monitored_mounts": {
+            "type": "array",
+            "error": "typeList",
+            "fill": True,
+        },
+        "dir_size_poll_freq_minutes": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "crafty_logs_delete_after_days": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "big_bucket_repo": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,
@@ -37,8 +121,16 @@ config_json_schema = {
 customize_json_schema = {
     "type": "object",
     "properties": {
-        "photo": {"type": "string", "error": "typeString"},
-        "opacity": {"type": "string", "error": "typeString"},
+        "photo": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
+        "opacity": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,
@@ -47,7 +139,11 @@ customize_json_schema = {
 photo_delete_schema = {
     "type": "object",
     "properties": {
-        "photo": {"type": "string", "error": "typeString"},
+        "photo": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,
@@ -109,7 +205,9 @@ class ApiCraftyConfigIndexHandler(BaseApiHandler):
         try:
             validate(data, config_json_schema)
         except ValidationError as why:
-            offending_key = why.path[0] if why.path else None
+            offending_key = None
+            if why.get("fill", None):
+                offending_key = why.path[0] if why.path else None
             err = f"""{self.translator.translate(
                 "validators",
                 why.schema.get("error"),
