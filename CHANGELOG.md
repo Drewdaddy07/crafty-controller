@@ -1,7 +1,8 @@
 # Changelog
-## --- [4.4.2] - 2024/TBD
+## --- [4.4.2] - 2024/08/07
 ### Bug fixes
 - Migrations | Fix exception message on file not found for backups migration ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/789))
+- UploadAPI | Upload chunks in batches to avoid overloading browser cache ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/788))
 <br><br>
 
 ## --- [4.4.1] - 2024/08/06
