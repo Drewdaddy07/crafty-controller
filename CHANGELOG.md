@@ -3,7 +3,7 @@
 ### New features
 TBD
 ### Bug fixes
-TBD
+- Fix schedules creation fail due to missing action ID ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/791))
 ### Tweaks
 TBD
 ### Lang
