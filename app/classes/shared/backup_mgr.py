@@ -68,7 +68,9 @@ class BackupManager:
         try:
             backup_filename = (
                 f"{backup_location}/"
-                f"{datetime.datetime.now().astimezone(self.tz).strftime('%Y-%m-%d_%H-%M-%S')}"  # pylint: disable=line-too-long
+                f"""{datetime.datetime.now()
+                   .astimezone(self.tz)
+                   .strftime('%Y-%m-%d_%H-%M-%S')}"""
             )
             logger.info(
                 f"Creating backup of server {server.name}"
