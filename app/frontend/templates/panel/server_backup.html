@@ -73,8 +73,7 @@
                             data['lang']) }} </th>
                           <th scope="col" style="width: 50%; min-width: 50px;">{{ translate('serverBackups',
                             'storageLocation', data['lang']) }}</th>
-                          <th scope="col" style="width: 10%; min-width: 50px;">{{ translate('serverBackups',
-                            'maxBackups', data['lang']) }}</th>
+                          <th scope="col" style="width: 10%; min-width: 50px;">Backup Type</th>
                           <th scope="col" style="width: 10%; min-width: 50px;">{{ translate('serverBackups', 'actions',
                             data['lang']) }}</th>
                         </tr>
@@ -102,8 +101,8 @@
                           <td id="{{backup.backup_location}}" class="type">
                             <p style="overflow: scroll;" class="no-scroll">{{backup.backup_location}}</p>
                           </td>
-                          <td id="{{backup.max_backups}}" class="trigger" style="overflow: scroll; max-width: 30px;">
-                            <p>{{backup.max_backups}}</p>
+                          <td id="{{backup.max_backups}}_{{backup.backup_id}}" class="trigger" style="overflow: scroll; max-width: 30px;">
+                            <p>{{backup.backup_type}}</p>
                           </td>
                           <td id="backup_edit" class="action">
                             <button

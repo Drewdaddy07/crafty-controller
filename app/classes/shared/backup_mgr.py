@@ -3,6 +3,7 @@ import time
 import datetime
 import json
 import logging
+import pathlib
 
 from zoneinfo import ZoneInfo
 
@@ -35,11 +36,13 @@ class BackupManager:
             self.tz = ZoneInfo("Europe/London")
 
     def backup_starter(self, backup_config, server):
-        if backup_config.get("type", "zip_vault") == "zip_vault":
-            self.zip_vault(backup_config, server)
+        """Notify users of backup starting, and start the backup.
 
-    def zip_vault(self, backup_config, server):
-
+        Args:
+            backup_config (_type_): _description_
+            server (_type_): Server object to backup
+        """
+        # Notify users of backup starting
         logger.info(f"Starting server {server.name}" f" (ID {server.server_id}) backup")
         server_users = PermissionsServers.get_server_user_list(server.server_id)
         # Alert the start of the backup to the authorized users.
@@ -52,6 +55,14 @@ class BackupManager:
                 ).format(server.name),
             )
         time.sleep(3)
+
+        # Start the backup
+        if backup_config.get("backup_type", "zip_vault") == "zip_vault":
+            self.zip_vault(backup_config, server)
+        else:
+            self.snapshot_backup(backup_config, server)
+
+    def zip_vault(self, backup_config, server):
 
         # Adjust the location to include the backup ID for destination.
         backup_location = os.path.join(
@@ -126,30 +137,33 @@ class BackupManager:
             )
             time.sleep(5)
         except Exception as e:
-            logger.exception(
-                "Failed to create backup of server"
-                f" {server.name} (ID {server.server_id})"
-            )
-            results = {
-                "percent": 100,
-                "total_files": 0,
-                "current_file": 0,
-                "backup_id": backup_config["backup_id"],
-            }
-            if len(WebSocketManager().clients) > 0:
-                WebSocketManager().broadcast_page_params(
-                    "/panel/server_detail",
-                    {"id": str(server.server_id)},
-                    "backup_status",
-                    results,
-                )
-
-            HelpersManagement.update_backup_config(
-                backup_config["backup_id"],
-                {"status": json.dumps({"status": "Failed", "message": f"{e}"})},
-            )
+            self.fail_backup(e, backup_config, server)
         server.backup_server(
             backup_config,
+        )
+
+    def fail_backup(self, why: Exception, backup_config: dict, server):
+        logger.exception(
+            "Failed to create backup of server"
+            f" {server.name} (ID {server.server_id})"
+        )
+        results = {
+            "percent": 100,
+            "total_files": 0,
+            "current_file": 0,
+            "backup_id": backup_config["backup_id"],
+        }
+        if len(WebSocketManager().clients) > 0:
+            WebSocketManager().broadcast_page_params(
+                "/panel/server_detail",
+                {"id": str(server.server_id)},
+                "backup_status",
+                results,
+            )
+
+        HelpersManagement.update_backup_config(
+            backup_config["backup_id"],
+            {"status": json.dumps({"status": "Failed", "message": f"{why}"})},
         )
 
     def list_backups(self, backup_config: dict, server_id) -> list:
@@ -197,3 +211,37 @@ class BackupManager:
             )
             logger.info(f"Removing old backup '{oldfile['path']}'")
             os.remove(Helpers.get_os_understandable_path(oldfile_path))
+
+    def snapshot_backup(self, backup_config, server):
+
+        logger.info(f"Starting snapshot style backup for {server.name}")
+
+        # Adjust the location to include the backup ID for destination.
+        backup_location = os.path.join(
+            pathlib.Path(backup_config["backup_location"]), "snapshot_backups"
+        )
+        try:
+            self.ensure_snapshot_directory_is_valid(backup_location)
+        except PermissionError as why:
+            self.fail_backup(why, backup_config, server)
+
+    def ensure_snapshot_directory_is_valid(self, backup_path: pathlib.Path) -> bool:
+        backup_path.mkdir(exist_ok=True)
+        backup_readme_path = backup_path / "README.txt"
+
+        if not backup_readme_path.exists():
+            logger.info("Is this doing anything?")
+            try:
+                logger.info("Attempting to make snapshot storage directory.")
+                with open(backup_readme_path, "w", encoding="UTF-8") as f:
+                    f.write(
+                        "Crafty snapshot backup storage dir. Please do not touch"
+                        "these files."
+                    )
+
+            except PermissionError as why:
+                raise PermissionError(
+                    f"Unable to write to snapshot backup storage path"
+                    f": {backup_readme_path}"
+                ) from why
+        return True

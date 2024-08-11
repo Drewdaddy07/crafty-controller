@@ -117,6 +117,7 @@ class Backups(BaseModel):
     default = BooleanField(default=False)
     status = CharField(default='{"status": "Standby", "message": ""}')
     enabled = BooleanField(default=True)
+    backup_type = CharField(default="zip_archive")
 
     class Meta:
         table_name = "backups"
@@ -368,6 +369,7 @@ class HelpersManagement:
                     "after": backup.after,
                     "default": backup.default,
                     "enabled": backup.enabled,
+                    "backup_type": backup.backup_type,
                 }
         else:
             data = Backups.select().where(Backups.server_id == server_id).execute()
@@ -375,13 +377,10 @@ class HelpersManagement:
 
     @staticmethod
     def get_default_server_backup(server_id: str) -> dict:
-        print(server_id)
         bu_query = Backups.select().where(
             Backups.server_id == server_id,
             Backups.default == True,  # pylint: disable=singleton-comparison
         )
-        for item in bu_query:
-            print("HI", item)
         backup_model = bu_query.first()
 
         if backup_model:

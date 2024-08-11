@@ -76,6 +76,10 @@
                     placeholder="{{ translate('serverBackups', 'myBackup', data['lang']) }}">
                   {% end %}
                   <br>
+                  <input type="radio" class="form-check-input" name="backup_type" id="zip_archive" value="zip_archive" checked>
+                   <label for="True">Full Zip Archive</label><br>
+                  <input type="radio" class="form-check-input" name="backup_type" id="zip_archive" value="snapshot">
+                   <label for="True">Snapshot</label><br>
                   <br>
                   {% if data['super_user'] %}
                   <label for="server_name">{{ translate('serverBackups', 'storageLocation', data['lang']) }} <small
