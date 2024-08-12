@@ -17,6 +17,7 @@ from app.classes.models.server_permissions import PermissionsServers
 from app.classes.shared.console import Console
 from app.classes.helpers.helpers import Helpers
 from app.classes.shared.websocket_manager import WebSocketManager
+from app.classes.helpers.file_helpers import FileHelpers
 
 logger = logging.getLogger(__name__)
 
@@ -217,14 +218,16 @@ class BackupManager:
         logger.info(f"Starting snapshot style backup for {server.name}")
 
         # Adjust the location to include the backup ID for destination.
-        backup_location = os.path.join(
-            pathlib.Path(backup_config["backup_location"]), "snapshot_backups"
+        backup_location = (
+            pathlib.Path(backup_config["backup_location"]) / "snapshot_backups"
         )
+
         try:
             self.ensure_snapshot_directory_is_valid(backup_location)
         except PermissionError as why:
             self.fail_backup(why, backup_config, server)
 
+    @staticmethod
     def ensure_snapshot_directory_is_valid(self, backup_path: pathlib.Path) -> bool:
         backup_path.mkdir(exist_ok=True)
         backup_readme_path = backup_path / "README.txt"
@@ -245,3 +248,44 @@ class BackupManager:
                     f": {backup_readme_path}"
                 ) from why
         return True
+
+    @staticmethod
+    def get_local_path_with_base(desired_path: pathlib.Path, base: pathlib.Path) -> str:
+        """Takes a given path with a given base, and removes the base from the path.
+
+        Example:
+
+        """
+        # Check that path is contained in base
+        if base not in desired_path.parents:
+            raise ValueError(
+                f"{base} does not appear to be a base directory of {desired_path}."
+            )
+
+        # Return path with base remove
+        return str(desired_path)[len(str(base.absolute())) + 1 :]
+
+    def create_snapshot_backup_manifest(self, backup_dir: pathlib.Path) -> dict:
+        """
+        Creates dict showing all directories in backup source as a relative path, and
+        all files with their hashes as a relative path. All returned paths are relative
+        to the root of the server.
+
+        Args:
+            backup_dir: Path to files that need to be backed up.
+
+        Returns: Dict {directories: [], "files": [()]}
+
+        """
+        output = {"directories": [], "files": []}
+        for p in backup_dir.rglob("*"):
+            if p.is_dir():
+                output["directories"].append(
+                    str(self.get_local_path_with_base(p, backup_dir))
+                )
+            else:
+                file_hash = FileHelpers.calculate_file_hash_blake2b(p)
+                output["files"].append(
+                    (file_hash, str(self.get_local_path_with_base(p, backup_dir)))
+                )
+        return output
