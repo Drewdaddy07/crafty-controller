@@ -136,9 +136,9 @@
         </div>
         </fieldset>
         {% if not data["server_api"] and data["online"] %}
-        <div class="api-alert" style="position: absolute; top: -5px; z-index: 100; opacity: .99;">
-          <p style="color: white !important;"><i class="fas fa-exclamation-triangle" style="color: red;"></i>&nbsp;{{
-            translate('error', 'bigBucket1', data['lang']) }}<a style="color: red;" ; href="https://status.craftycontrol.com/status/craftycontrol" target="_blank" rel="noopener">&nbsp;{{
+        <div class="api-alert">
+          <p><i class="fas fa-exclamation-triangle"></i>&nbsp;{{
+            translate('error', 'bigBucket1', data['lang']) }}<a href="https://status.craftycontrol.com/status/craftycontrol" target="_blank" rel="noopener">&nbsp;{{
               translate('error',
               'craftyStatus', data['lang']) }}</a>
             &nbsp;{{ translate('error', 'bigBucket2', data['lang']) }}</br></br><small>{{ translate('error', 'selfHost',
@@ -146,9 +146,8 @@
         </div>
         {% end %}
         {% if not data["online"] %}
-        <div class="api-alert" style="position: absolute; top: -5px; z-index: 100; opacity: .99;">
-          <p style="color: white !important;"><i class="fas fa-exclamation-triangle" style="color: red;"></i>&nbsp;{{
-            translate('error', 'noInternet', data['lang']) }}</p>
+        <div class="api-alert">
+          <p><i class="fas fa-exclamation-triangle"></i>&nbsp;{{ translate('error', 'noInternet', data['lang']) }}</p>
         </div>
         {% end %}
       </div>
