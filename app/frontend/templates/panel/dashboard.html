@@ -815,7 +815,7 @@
         for (i = 0; i < hostStats.disk_usage.length; i++) {
           if (hostStats.mounts.includes(hostStats.disk_usage[i].mount)) {
             storage_html += `<div id="host_storage" class="col-xl-3 col-lg-3 col-md-4 col-12">
-                        <h4 class="mb-0 font-weight-semibold d-inline-block text-truncate storage-heading" id="title_host_storage" data-toggle="tooltip" data-placement="bottom" title="${hostStats.disk_usage[i].mount}" style="max-width: 100%;"><i class="fas fa-hdd"></i> ${hostStats.disk_usage[i].mount}</h4>
+                        <h4 class="mb-0 font-weight-semibold d-inline-block text-truncate storage-heading mw-100" id="title_host_storage" data-toggle="tooltip" data-placement="bottom" title="${hostStats.disk_usage[i].mount}"><i class="fas fa-hdd"></i> ${hostStats.disk_usage[i].mount}</h4>
                         <div class="progress d-inline-block disk-usage">
                           <div class="progress-bar`;
             if (hostStats.disk_usage[i].percent_used <= 58) {

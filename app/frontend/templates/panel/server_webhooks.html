@@ -41,7 +41,7 @@
           </span>
 
           <div class="row">
-            <div class="col-md-12 col-sm-12" style="overflow-x:auto;">
+            <div class="col-md-12 col-sm-12 overflow-x-auto">
               <div class="card">
                 <div class="card-header header-sm d-flex justify-content-between align-items-center">
                   <h4 class="card-title"><i class="fa-regular fa-bell"></i> {{ translate('webhooks', 'webhooks', data['lang']) }} </h4>
@@ -82,7 +82,7 @@
                           <td id="{{webhook.webhook_type}}" class="type">
                             <p>{{webhook.webhook_type}}</p>
                           </td>
-                          <td id="{{webhook.trigger}}" class="trigger" style="overflow: scroll; max-width: 30px;">
+                          <td id="{{webhook.trigger}}" class="trigger overflow-scroll" style="max-width: 30px;">
                             <ul>
                               {% for trigger in webhook.trigger.split(",") %}
                               {% if trigger in data["triggers"] %}
