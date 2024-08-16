@@ -544,7 +544,8 @@ class Helpers:
 
         return mounts
 
-    def is_subdir(self, child_path: str, parent_path: str) -> bool:
+    @staticmethod
+    def is_subdir(child_path: str, parent_path: str) -> bool:
         """
         Checks if given child_path is a subdirectory of given parent_path. Returns True
         or False.
@@ -560,19 +561,18 @@ class Helpers:
         server_path = os.path.realpath(child_path)
         root_dir = os.path.realpath(parent_path)
 
-        if self.is_os_windows():
-            try:
-                relative = os.path.relpath(server_path, root_dir)
-            except ValueError:
-                # Windows will crash out if two paths are on different
-                # Drives We can happily return false if this is the case.
-                # Since two different drives will not be relative to each-other.
-                return False
-        else:
+        try:
             relative = os.path.relpath(server_path, root_dir)
+            if relative.startswith(os.pardir):
+                return False
 
-        if relative.startswith(os.pardir):
+        except ValueError:
+            # Windows will crash out if two paths are on different Drives We can happily
+            # return false if this is the case. Since two different drives will not be
+            # relative to each-other.
             return False
+
+        # If all checks pass, child path must be a child of parent.
         return True
 
     def set_setting(self, key, new_value):
