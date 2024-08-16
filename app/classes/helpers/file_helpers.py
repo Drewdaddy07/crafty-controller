@@ -395,17 +395,35 @@ class FileHelpers:
 
     @staticmethod
     def move_item_file_or_dir(old_dir, new_dir, item) -> None:
+        """
+        Move item to new location if it is either a file or a dir. Will raise
+        shutil.Error for any errors encountered.
+
+        Args:
+            old_dir: Old location.
+            new_dir: New location.
+            item: File or directory name.
+
+        Returns: None
+
+        """
         try:
+            # Check if source item is a directory or a file.
             if os.path.isdir(os.path.join(old_dir, item)):
+                # Source item is a directory
                 FileHelpers.move_dir_exist(
                     os.path.join(old_dir, item),
                     os.path.join(new_dir, item),
                 )
             else:
+                # Source item is a file.
                 FileHelpers.move_file(
                     os.path.join(old_dir, item),
                     os.path.join(new_dir, item),
                 )
+
+        # Error raised by shutil if an error is encountered. Raising the same error if
+        # encountered.
         except shutil.Error as why:
             raise RuntimeError(
                 f"Error moving {old_dir} to {new_dir} with information: {why}"
