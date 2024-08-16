@@ -345,7 +345,6 @@ class BackupManager:
         Returns: None
 
         """
-        print(manifest)
         # Create file path for depends file
         depends_file_path = (
             backup_repository / "manifest_files" / f"{backup_id}.depends"
@@ -408,4 +407,6 @@ class BackupManager:
         # Repo path: /path/to/backup/repo/
         # Hash: 1234...890
         # Example: /path/to/backup/repo/data/12/34...890
-        return repository / "data" / str(file_hash[:2]) / str(file_hash[-126:])
+        file_hash = helper.crypto_helper.b64_to_bytes(file_hash)
+        file_hash = helper.crypto_helper.bytes_to_hex(file_hash)
+        return repository / "data" / file_hash[:2] / str(file_hash[-126:])
