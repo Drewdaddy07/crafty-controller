@@ -45,7 +45,7 @@ class BackupManager:
             server (_type_): Server object to backup
         """
         # Notify users of backup starting
-        logger.info(f"Starting server {server.name}" f" (ID {server.server_id}) backup")
+        logger.info(f"Starting server {server.name} (ID {server.server_id}) backup")
         server_users = PermissionsServers.get_server_user_list(server.server_id)
         # Alert the start of the backup to the authorized users.
         for user in server_users:
