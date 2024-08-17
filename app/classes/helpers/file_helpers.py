@@ -510,3 +510,19 @@ class FileHelpers:
             bytes: Decompressed bytes.
         """
         return zlib.decompress(bytes_to_decompress)
+
+    @staticmethod
+    def read_path_as_bytes(path_to_file: pathlib.Path) -> bytes:
+        """Reads file at path and returns contents as bytes.
+
+        Args:
+            path_to_file: Path to file to read
+
+        Returns: Bytes in file.
+
+        """
+        try:
+            with path_to_file.open("rb") as f:
+                return f.read()
+        except (FileNotFoundError, PermissionError) as why:
+            raise RuntimeError(f"Unable to read file: {path_to_file}.") from why

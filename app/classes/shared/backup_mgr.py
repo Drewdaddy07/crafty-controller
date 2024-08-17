@@ -230,6 +230,8 @@ class BackupManager:
 
         logger.info(f"Starting snapshot style backup for {server.name}")
 
+        server_path = pathlib.Path(server.server_path)
+
         # Adjust the location to include the backup ID for destination.
         backup_target_location = (
             pathlib.Path(backup_config["backup_location"]) / "snapshot_backups"
@@ -241,12 +243,17 @@ class BackupManager:
 
         # Create backup manifest for server files.
         backup_manifest, count_of_files = self.create_snapshot_backup_manifest(
-            pathlib.Path(server.server_path)
+            server_path
         )
 
         # Generate depends file for this backup.
         self.create_depends_file_from_backup_manifest(
             backup_manifest, backup_target_location, backup_config["backup_id"]
+        )
+
+        # Save chunks to disk.
+        self.save_chunks_from_manifest(
+            backup_manifest, backup_target_location, server_path, True
         )
 
     @staticmethod
@@ -390,7 +397,9 @@ class BackupManager:
 
         # If file does not exist add it array.
         for file_tuple in backup_manifest["files"]:
-            file_path = self.get_path_from_hash(file_tuple[0], backup_repository)
+            file_path = self.get_path_from_hash(
+                helper.crypto_helper.bytes_to_hex(file_tuple[0]), backup_repository
+            )
             if not file_path.exists():
                 output.append(file_tuple)
         return output
@@ -412,21 +421,33 @@ class BackupManager:
         # Repo path: /path/to/backup/repo/
         # Hash: 1234...890
         # Example: /path/to/backup/repo/data/12/34...890
-        file_hash = helper.crypto_helper.bytes_to_hex(file_hash)
         return repository / "data" / file_hash[:2] / str(file_hash[-126:])
 
     # TODO: Implement this function to save all new chunks using save_chunk.
-    # @staticmethod
-    # def save_chunks_from_manifest(
-    #     self, backup_manifest: dict, backup_repository: pathlib.Path
-    # ):
-    #
-    #     files_to_save = self.find_files_not_in_repository(
-    #         backup_manifest, backup_repository
-    #     )
-    #
-    #     for file_tuple in files_to_save:
-    #         save_chunk(file_tuple[0], file_tuple[1])
+    def save_chunks_from_manifest(
+        self,
+        backup_manifest: dict,
+        backup_repository: pathlib.Path,
+        files_source: pathlib.Path,
+        use_compression: bool,
+    ):
+
+        files_to_save = self.find_files_not_in_repository(
+            backup_manifest, backup_repository
+        )
+
+        # Ensure snapshot data directory exists.
+        backup_repository_data_folder = backup_repository / "data"
+        backup_repository_data_folder.mkdir(exist_ok=True)
+
+        for file_tuple in files_to_save:
+            file_path = files_source / file_tuple[1]
+            self.save_chunk(
+                self.file_helper.read_path_as_bytes(file_path),
+                backup_repository,
+                file_tuple[0],
+                use_compression,
+            )
 
     def save_chunk(
         self,
@@ -434,7 +455,22 @@ class BackupManager:
         repository_location: pathlib.Path,
         file_hash: str,
         use_compression: bool = False,
-    ):
+    ) -> None:
+        """Main save chunk file, saves the individual chunks and performs compression.
+        Function will also perform encryption when applied. Max size that will work with
+        this file is ~2 GB due to the bytes being held in memory. Larger chunks must be
+        split before this function.
+
+        Args:
+            file: Bytes/chunk of file to be saved.
+            repository_location: Location of snapshot repository.
+            file_hash: File has of file in bytes.
+            use_compression: Boolean if the chunk should be compressed before saving.
+            Uses zlib default compression option.
+
+        Returns: None
+
+        """
         # Chunk Schema version
         output = bytes.fromhex("00")
 
@@ -445,7 +481,7 @@ class BackupManager:
         # Compress chunk if set
         # Append compression byte to output bytes.
         if use_compression:
-            file = helper.file_helper.zlib_compress_bytes(file)
+            file = self.file_helper.zlib_compress_bytes(file)
             output += bytes.fromhex("01")
         else:
             output += bytes.fromhex("00")
@@ -457,10 +493,15 @@ class BackupManager:
         file = output + file
 
         # Get file location and save to location
-        file_hash = helper.crypto_helper.bytes_to_hex(file_hash)
-        file_location = self.get_path_from_hash(file_hash, repository_location)
+        file_location = self.get_path_from_hash(
+            helper.crypto_helper.bytes_to_hex(file_hash), repository_location
+        )
 
         # Saves file, double check it does not already exist.
         if not file_location.exists():
+            # Make folder to chunk.
+            file_location.parent.mkdir(exist_ok=True)
+
+            # Write file to path.
             with file_location.open("wb") as f:
                 f.write(file)
