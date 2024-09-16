@@ -58,6 +58,7 @@ class Helpers:
 
     def __init__(self):
         self.root_dir = os.path.abspath(os.path.curdir)
+        self.read_annc = False
         self.config_dir = os.path.join(self.root_dir, "app", "config")
         self.webroot = os.path.join(self.root_dir, "app", "frontend")
         self.servers_dir = os.path.join(self.root_dir, "servers")
@@ -615,12 +616,49 @@ class Helpers:
 
         return version_data
 
-    def get_announcements(self):
+    def check_migrations(self) -> None:
+        if self.read_annc == False:
+            self.read_annc = True
+            for file in os.listdir(
+                os.path.join(self.root_dir, "app", "migrations", "status")
+            ):
+                with open(
+                    os.path.join(self.root_dir, "app", "migrations", "status", file),
+                    "r",
+                    encoding="utf-8",
+                ) as notif_file:
+                    file_json = json.load(notif_file)
+                    for notif in file_json:
+                        if not file_json[notif].get("status"):
+                            self.migration_notifications.append(file_json[notif])
+
+    def get_announcements(self, lang=None):
         try:
             data = []
             response = requests.get("https://craftycontrol.com/notify", timeout=2)
             data = json.loads(response.content)
-            data.extend(self.migration_notifications)
+            if not lang:
+                lang = self.get_setting("language")
+            self.check_migrations()
+            for migration_warning in self.migration_notifications:
+                if not migration_warning.get("status"):
+                    data.append(
+                        {
+                            "id": migration_warning.get("pid"),
+                            "title": self.translation.translate(
+                                "notify",
+                                f"{migration_warning.get('type')}_title",
+                                lang,
+                            ),
+                            "date": "",
+                            "desc": self.translation.translate(
+                                "notify",
+                                f"{migration_warning.get('type')}_desc",
+                                lang,
+                            ),
+                            "link": "",
+                        }
+                    )
             if self.update_available:
                 data.append(self.update_available)
             return data

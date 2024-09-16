@@ -25,6 +25,8 @@ def migrate(migrator: Migrator, database, **kwargs):
     """
     Write your migrations here.
     """
+    backup_migration_status = True
+    schedule_migration_status = True
     db = database
     Console.info("Starting Backups migrations")
     Console.info(
@@ -241,6 +243,7 @@ def migrate(migrator: Migrator, database, **kwargs):
             try:
                 backup = NewBackups.get(NewBackups.server_id == schedule.server_id)
             except:
+                schedule_migration_status = False
                 Console.error(
                     "Could not find backup with selected server ID. Omitting from register."
                 )
@@ -272,17 +275,29 @@ def migrate(migrator: Migrator, database, **kwargs):
     # Rename the new table to backups
     migrator.rename_table("new_schedules", "schedules")
 
-    with open("status/20240308_multi-backup.json", "w", encoding="utf-8") as file:
+    with open(
+        os.path.join(
+            os.path.abspath(os.path.curdir),
+            "app",
+            "migrations",
+            "status",
+            "20240308_multi-backup.json",
+        ),
+        "w",
+        encoding="utf-8",
+    ) as file:
         file.write(
             json.dumps(
                 {
                     "backup_migration": {
+                        "type": "backup",
                         "status": backup_migration_status,
-                        "pid": uuid.uuid4(),
+                        "pid": str(uuid.uuid4()),
                     },
                     "schedule_migration": {
+                        "type": "schedule",
                         "status": schedule_migration_status,
-                        "pid": uuid.uuid4(),
+                        "pid": str(uuid.uuid4()),
                     },
                 }
             )
