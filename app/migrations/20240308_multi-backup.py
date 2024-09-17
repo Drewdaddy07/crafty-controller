@@ -176,7 +176,7 @@ def migrate(migrator: Migrator, database, **kwargs):
     valid_schedules = [
         schedule for schedule in all_schedules if is_valid_entry(schedule, all_servers)
     ]
-    if len(valid_schedules) > len(all_schedules):
+    if len(valid_schedules) < len(all_schedules):
         schedule_migration_status = False
     # Copy data from the existing backups table to the new one
     for backup in valid_backups:
