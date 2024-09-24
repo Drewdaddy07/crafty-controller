@@ -128,8 +128,10 @@ class Helpers:
                 "Chrome/104.0.0.0 Safari/537.36"
             ),
         }
-        target_win = 'https://minecraft.azureedge.net/bin-win/[^"]*'
-        target_linux = 'https://minecraft.azureedge.net/bin-linux/[^"]*'
+        target_win = 'https://www.minecraft.net/bedrockdedicatedserver/bin-win/[^"]*'
+        target_linux = (
+            'https://www.minecraft.net/bedrockdedicatedserver/bin-linux/[^"]*'
+        )
 
         try:
             # Get minecraft server download page
