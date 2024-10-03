@@ -3,6 +3,7 @@
 ### New features
 TBD
 ### Bug fixes
+- Migrations | Fix orphan schedule configurations crashing migration operation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/796))
 - Fix logic issue causing bedrock wizard's root files buttons to not respond to user click events ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/797))
 - Reset crash detection counter after crash detection process detects successful start ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/798))
 - Update new bedrock DL url and correctly bubble up exception on DL fail - Thanks @sarcastron ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/802))
