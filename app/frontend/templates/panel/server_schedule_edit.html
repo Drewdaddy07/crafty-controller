@@ -81,7 +81,7 @@
                     </select>
                     <div id="ifBackup" style="display: none;">
                       <br>
-                      <label for="action_id">{{ translate('serverSchedules', 'actionId' , data['lang']) }}<small
+                      <label id="action_id_label" for="action_id" data-backup-translate="{{ translate('serverSchedules', 'backupPol', data['lang']) }}" data-action-translate="{{ translate('serverSchedules', 'actionId', data['lang']) }}"><small
                         class="text-muted ml-1"></small> </label><br>
                       <select id="action_id" name="action_id"
                         class="form-control form-control-lg select-css" value="{{ data['schedule']['action_id']  }}">
@@ -384,10 +384,12 @@
       if (document.getElementById('action').value == "backup"){
         document.getElementById("ifBackup").style.display = "block";
         document.getElementById("action_id").required = true;
+        $("#action_id_label").html($("#action_id_label").attr("data-backup-translate"));
       } else {
         document.getElementById("ifBackup").style.display = "none";
         document.getElementById("action_id").required = false;
         $("#action_id").val(null);
+        $("#action_id_label").html($("#action_id_label").attr("data-action-translate"));
       }
     }
     function basicAdvanced() {
