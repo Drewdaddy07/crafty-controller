@@ -3,7 +3,7 @@
 ### New features
 TBD
 ### Refactor
-- Refactor and standardize all JSON validator errors returning human readable translations
+- Refactor and standardize all JSON validator errors returning human readable translations ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/786))
 ### Bug fixes
 - Bump requests to resolve yank for CVE-2024-35195 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/808))
 ### Tweaks
