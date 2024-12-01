@@ -235,7 +235,8 @@
         "finishedPreparing": "Dokončili jsme přípravu protokolů podpory. Klikněte na tlačítko Stáhnout pro stažení",
         "logout": "Odhlásit se",
         "preparingLogs": " Počkejte prosím, než připravíme vaše protokoly... Až budou připraveny, pošleme vám oznámení. U rozsáhlých zavádění to může chvíli trvat.",
-        "supportLogs": "Protokoly podpory"
+        "supportLogs": "Protokoly podpory",
+        "backup_desc": ""
     },
     "offline": {
         "offline": "Offline",
