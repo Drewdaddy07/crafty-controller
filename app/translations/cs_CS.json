@@ -620,7 +620,7 @@
     },
     "startup": {
         "almost": "Dokončuji. Držte se...",
-        "cache": "Znovu načítam  mezipaměť Big Bucket",
+        "cache": "Znovu načítam mezipaměť Big Bucket",
         "internals": "Nastavuji a startuji Crafty interní komponenty",
         "internet": "Kontroluju připojení k internetu",
         "server": "Konfigurace ",
