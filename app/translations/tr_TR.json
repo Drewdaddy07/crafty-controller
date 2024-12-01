@@ -29,7 +29,6 @@
         "permName": "Yetki İsmi",
         "perms": "Yetkiler",
         "server": "Sunucu: ",
-        "superUser": "Süper Kullanıcı",
         "yes": "Evet"
     },
     "base": {
@@ -209,8 +208,6 @@
         "privMsg": "ve ",
         "return": "Arayüze Geri Dön",
         "selfHost": "Bu depoyu kendiniz barındırıyorsanız lütfen adresinizi kontrol ediniz veya sorun giderme kılavuzumuza bakınız.",
-        "serverJars1": "Sunucu JARs API'ına erişilemiyor.",
-        "serverJars2": "en güncel bilgilere sahiptir",
         "start-error": "{} sunucusu başlamatılamadı. Hata kodu: {}",
         "superError": "Bu işlemi tamamlamak için süper kullanıcı olmanız gerekir.",
         "terribleFailure": "Ne Korkunç Bir Hata!"

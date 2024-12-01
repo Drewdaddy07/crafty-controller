@@ -29,7 +29,6 @@
         "permName": "Berechtigungs Name",
         "perms": "Berechtigungen",
         "server": "Server: ",
-        "superUser": "Super Benutzer",
         "yes": "Ja"
     },
     "base": {
@@ -209,8 +208,6 @@
         "privMsg": "und der/die/das ",
         "return": "Zurück zum Dashboard",
         "selfHost": "Wenn Sie dieses Repo selbst hosten, überprüfen Sie bitte Ihre Adresse oder konsultieren Sie unsere Anleitung zur Fehlerbehebung.",
-        "serverJars1": "Server-JAR-API nicht erreichbar. Bitte überprüfen Sie ",
-        "serverJars2": "um die aktuellsten Informationen zu erhalten.",
         "start-error": "Der Server {} konnte wegen dem Fehlercode: {} nicht gestartet werden",
         "superError": "Sie müssen ein Administrator sein, um diese Aktion abzuschließen.",
         "terribleFailure": "Was für ein furchtbarer Fehler!"
@@ -554,7 +551,6 @@
     "serverTerm": {
         "commandInput": "Geben Sie Ihren Befehl ein",
         "delay-explained": "Der Dienst wurde kürzlich gestartet und verzögert den Start der Minecraft-Serverinstanz",
-        "downloading": "Lädt herunter...",
         "importing": "Importieren...",
         "installing": "Installation läuft...",
         "restart": "Neustart",

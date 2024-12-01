@@ -29,7 +29,6 @@
         "permName": "权限名称",
         "perms": "权限",
         "server": "服务器：",
-        "superUser": "超级用户",
         "yes": "是"
     },
     "base": {
@@ -209,8 +208,6 @@
         "privMsg": "以及",
         "return": "返回仪表板",
         "selfHost": "如果您自托管此仓库，请检查您的地址或参考我们的故障排除指南。",
-        "serverJars1": "无法访问服务器 JAR API。请检查",
-        "serverJars2": "以获取最新信息。",
         "start-error": "服务器 {} 启动失败，错误代码为：{}",
         "superError": "您必须作为超级用户来完成此操作。",
         "terribleFailure": "多糟糕的错误！"
@@ -554,7 +551,6 @@
     "serverTerm": {
         "commandInput": "输入您的指令",
         "delay-explained": "服务进程已经在刚才启动，并且正在延迟 Minecraft 服务器实例的启动",
-        "downloading": "下载中……",
         "importing": "正在导入……",
         "installing": "正在安装……",
         "restart": "重启",

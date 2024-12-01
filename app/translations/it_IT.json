@@ -29,7 +29,6 @@
         "permName": "Nome Permesso",
         "perms": "Permessi",
         "server": "Server: ",
-        "superUser": "Super User",
         "yes": "Sì"
     },
     "base": {
@@ -209,8 +208,6 @@
         "privMsg": "e il ",
         "return": "Torna alla pagina iniziale",
         "selfHost": "se stai ospitando te questo repo, controlla il tuo indirizzo o consulta la nostra guida di risoluzione dei problemi.",
-        "serverJars1": "API JAR del server non raggiungibile. Si prega di controllare",
-        "serverJars2": "per informazioni più aggiornate.",
         "start-error": "Server {} failed to start with error code: {}",
         "superError": "Devi essere un super utente per eseguire questa azione.",
         "terribleFailure": "What a Terrible Failure!"
@@ -554,7 +551,6 @@
     "serverTerm": {
         "commandInput": "Inserisci il comando",
         "delay-explained": "Il servizio/agente è stato avviato di recente e sta ritardando l'avvio del server di Minecraft",
-        "downloading": "Scaricando...",
         "importing": "Importazione...",
         "installing": "Installazione...",
         "restart": "Riavvia",

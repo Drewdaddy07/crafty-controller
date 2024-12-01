@@ -29,7 +29,6 @@
         "permName": "PERMISSION NAME",
         "perms": "PERMISSIONS",
         "server": "SERVER: ",
-        "superUser": "SUPA DOOPA USR",
         "yes": "YESH!"
     },
     "base": {
@@ -209,8 +208,6 @@
         "privMsg": "AND THEEZ ",
         "return": "Go Bak to Dashbored",
         "selfHost": "If u iz self-hostin' dis repo, check ur addy or peep our fix-it guide.",
-        "serverJars1": "CAN'T TALK TO SERVER JARS API. CHECKZ",
-        "serverJars2": "TO SEE NEWZ STUFFZ.",
         "start-error": "CHAIR {} FAILD 2 START WIF OOF CODE: {}",
         "superError": "U MUST BE A BIG CAT TO DO DIS.",
         "terribleFailure": "SUMTIN DUN BWOKE"
@@ -554,7 +551,6 @@
     "serverTerm": {
         "commandInput": "ENTR YOUR COMARNED",
         "delay-explained": "TEH SERVICE/AGENT HUS RESENTLY STARTD AN IZ DELAYIN TEH STARTD OV TEH SERVR",
-        "downloading": "WAIT PLZ!?!?!",
         "importing": "BRINGINGZ IN...",
         "installing": "PUTTINGZ TOGETHER...",
         "restart": "COPYZ",
