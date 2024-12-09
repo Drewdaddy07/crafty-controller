@@ -670,7 +670,10 @@
         "uses": "Numero di usi permessi (-1==Nessun limite)"
     },
     "validators": {
-        "passLength": "La password è troppo corta. Lunghezza minima: 8"
+        "passLength": "La password è troppo corta. Lunghezza minima: 8",
+        "enumErr": "Validazione fallita. Valori accettabili includono: ",
+        "serverExeCommand": "Il comando di esecuzione del server dev’essere una stringa con lunghezza minima di 1.",
+        "serverLogPath": "Il percorso del registro del server dev’essere una stringa con lunghezza minima di 1"
     },
     "webhooks": {
         "areYouSureDel": "Sei sicuro di voler eliminare questo webhook?",
