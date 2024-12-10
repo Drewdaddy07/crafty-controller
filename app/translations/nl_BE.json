@@ -29,7 +29,6 @@
         "permName": "Machtigingsnaam",
         "perms": "Machtigingen",
         "server": "Server: ",
-        "superUser": "Supergebruiker",
         "yes": "Ja"
     },
     "base": {
@@ -209,8 +208,6 @@
         "privMsg": "en de ",
         "return": "Terug naar Dashboard",
         "selfHost": "Als u deze repository zelf host, controleer dan uw adres of raadpleeg onze handleiding voor probleemoplossing.",
-        "serverJars1": "Server JARs API niet bereikbaar. Controleer alstublieft",
-        "serverJars2": "voor de meest recente informatie.",
         "start-error": "Server {} kan niet starten met foutcode: {}",
         "superError": "U moet een supergebruiker zijn om deze actie te voltooien.",
         "terribleFailure": "Wat een verschrikkelijke mislukking!"
@@ -558,7 +555,6 @@
     "serverTerm": {
         "commandInput": "Voer uw opdracht in",
         "delay-explained": "De service/agent is onlangs gestart en vertraagt ​​de start van de minecraft-serverinstantie",
-        "downloading": "Aan het downloaden...",
         "importing": "Importeren...",
         "installing": "Installeren...",
         "restart": "Herstarten",
