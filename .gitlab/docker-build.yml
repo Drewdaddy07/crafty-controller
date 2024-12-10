@@ -73,16 +73,31 @@ docker-build:
     - for t in $DOCKER_TAGS; do TARGS="$TARGS --tag $t"; done
     - echo "Tag arguments: $TARGS"
 
-    - docker buildx build \
-      --cache-from type=registry,ref="$CI_REGISTRY_IMAGE:latest" \
-      --build-arg BUILDKIT_INLINE_CACHE=1 \
-      --build-arg "BUILD_DATE=$(date +"%Y-%m-%dT%H:%M:%SZ")" \
-      --build-arg "BUILD_REF=${CI_COMMIT_SHA}" \
-      --build-arg "CRAFTY_VER=${VERSION}" \
-      --provenance false \
-      $TARGS \
-      --platform linux/arm64/v8,linux/amd64 \
-      --push .
+    # Conditional build command: omit cache if schedule
+    - |
+      if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then
+        echo "Omitting cache for nightly build."
+        docker buildx build \
+          --build-arg "BUILD_DATE=$(date +"%Y-%m-%dT%H:%M:%SZ")" \
+          --build-arg "BUILD_REF=${CI_COMMIT_SHA}" \
+          --build-arg "CRAFTY_VER=${VERSION}" \
+          --provenance false \
+          $TARGS \
+          --platform linux/arm64/v8,linux/amd64 \
+          --push .
+      else
+        echo "Using cache for build."
+        docker buildx build \
+          --cache-from type=registry,ref="$CI_REGISTRY_IMAGE:latest" \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --build-arg "BUILD_DATE=$(date +"%Y-%m-%dT%H:%M:%SZ")" \
+          --build-arg "BUILD_REF=${CI_COMMIT_SHA}" \
+          --build-arg "CRAFTY_VER=${VERSION}" \
+          --provenance false \
+          $TARGS \
+          --platform linux/arm64/v8,linux/amd64 \
+          --push .
+      fi
 
   after_script:
     - docker buildx rm zedBuilder-$CI_JOB_ID && echo "Successfully Stopped builder instance" || echo "Failed to stop builder instance."
