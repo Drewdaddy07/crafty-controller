@@ -4,10 +4,13 @@
 TBD
 ### Refactor
 - Refactor and standardize all JSON validator errors returning human readable translations ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/786))
+- Improve docker-build CI/CD, supporting nightly builds ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/813))
 ### Bug fixes
 - Bump requests to resolve yank for CVE-2024-35195 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/808))
 ### Tweaks
-TBD
+- Bump Docker base image `22.04` -> `24.04` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/812))
+- Bump python pip `2.0.3` -> `24.3.1` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/812))
+- Bump python setuptools `50.3.2` -> `75.6.0` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/812))
 ### Lang
 - Weblate Translation Platform Integration
 - Remove incomplete labels from translation files to better support new translation workflow ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/810))
