@@ -52,8 +52,8 @@ docker-build:
     - docker buildx create --name zedBuilder-$CI_JOB_ID --use tls-environment-$CI_JOB_ID
 
   script:
-    - echo "Running on branch '$CI_COMMIT_BRANCH', environment: $ENVIRONMENT_NAME"
-    - echo "Crafty Version: $VERSION"
+    - echo "Running on branch '$CI_COMMIT_BRANCH', environment- $ENVIRONMENT_NAME"
+    - echo "Crafty Version- $VERSION"
 
     # If DOCKER_TAGS is empty (production default branch and not schedule), we set stable tags:
     # This scenario adds both VERSION and 'latest' tags.
@@ -65,13 +65,13 @@ docker-build:
                      arcadiatechnology/crafty-4:latest"
       fi
 
-    - echo "Using the following tags: $DOCKER_TAGS"
+    - echo "Using the following tags- $DOCKER_TAGS"
 
     # Prepare build command
     # We break DOCKER_TAGS into separate --tag arguments
     - TARGS=""
     - for t in $DOCKER_TAGS; do TARGS="$TARGS --tag $t"; done
-    - echo "Tag arguments: $TARGS"
+    - echo "Tag arguments- $TARGS"
 
     # Conditional build command: omit cache if schedule
     - |
@@ -88,7 +88,7 @@ docker-build:
       else
         echo "Using cache for build."
         docker buildx build \
-          --cache-from type=registry,ref="$CI_REGISTRY_IMAGE:latest" \
+          --cache-from type=registry,ref="$CI_REGISTRY_IMAGE:dev" \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           --build-arg "BUILD_DATE=$(date +"%Y-%m-%dT%H:%M:%SZ")" \
           --build-arg "BUILD_REF=${CI_COMMIT_SHA}" \
