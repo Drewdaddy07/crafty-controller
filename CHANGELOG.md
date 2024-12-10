@@ -14,6 +14,7 @@ TBD
 ### Lang
 - Weblate Translation Platform Integration
 - Remove incomplete labels from translation files to better support new translation workflow ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/810))
+- New langs added `ja_JP`, `ko_KR` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/811))
 <br><br>
 
 ## --- [4.4.4] - 2024/10/03
