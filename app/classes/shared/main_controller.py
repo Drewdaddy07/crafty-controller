@@ -48,6 +48,7 @@ class Controller:
         self.import_helper: ImportHelpers = import_helper
         self.big_bucket: BigBucket = BigBucket(helper)
         self.users_helper: HelperUsers = HelperUsers(database, self.helper)
+        self.totp_helper: HelperTOTP = HelperTOTP(database)
         self.roles_helper: HelperRoles = HelperRoles(database)
         self.servers_helper: HelperServers = HelperServers(database)
         self.totp_helper: HelperTOTP = HelperTOTP(database)
@@ -59,7 +60,7 @@ class Controller:
         self.management: ManagementController = ManagementController(
             self.management_helper
         )
-        self.totp: TOTPController = TOTPController()
+        self.totp: TOTPController = TOTPController(self.totp_helper, self.helper)
         self.roles: RolesController = RolesController(
             self.users_helper, self.roles_helper
         )

@@ -221,12 +221,13 @@
         "defaultPath": "The password you entered is the default credential path, not the password. Please find the default password in that location.",
         "disabled": "User account disabled. Please contact your system administrator for more info.",
         "forgotPassword": "Forgot Password",
-        "incorrect": "Incorrect username or password",
+        "incorrect": "Incorrect username, password, or 2FA",
         "login": "Log In",
         "password": "Password",
         "username": "Username",
         "viewStatus": "View Public Status Page",
-        "totp": "Enter The Authenticator Code"
+        "totp": "Enter Authenticator Code",
+        "2fa": "(If 2FA is Enabled)"
     },
     "notify": {
         "activityLog": "Activity Logs",
@@ -686,6 +687,7 @@
         "serverExeCommand": "Server execution command must be a string with a minimum length of 1.",
         "serverLogPath": "Server log path must be a string with a minimum length of 1",
         "taskIntervalType": "Task Interval Type must be one of the following: ",
+        "totp": "TOTP Code must be 6 numbers",
         "typeBool": "must be true or false (type boolean)",
         "typeEmail": "must be of type email.",
         "typeIntMinVal0": "must be an integer with a minimum value of 0.",

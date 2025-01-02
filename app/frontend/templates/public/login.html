@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="default">
 
 <head>
   <!-- Required meta tags -->
@@ -97,6 +97,15 @@
                   </div>
                 </div>
                 <div class="form-group">
+                  <label class="label">{{ translate('login', 'totp', data['lang']) }}&nbsp;<span
+                      class="badge badge-pill badge-info">{{ translate('login', '2fa', data['lang'])
+                      }}</span></label>
+                  <div class="input-group">
+                    <input type="text" class="form-control login-text-input login-input" placeholder="000000"
+                      name="totp" id="totp">
+                  </div>
+                </div>
+                <div class="form-group">
                   <button class="login-input btn btn-primary submit-btn btn-block">{{ translate('login', 'login',
                     data['lang']) }}</button>
                 </div>
@@ -145,15 +154,6 @@
   <!-- endinject -->
   <script>
 
-    TOTP_INPUT = `<div class="form-group">
-                  <label class="label">{{ translate('login', 'totp', data['lang']) }}</label>
-                  <div class="input-group">
-                    <input type="text" class="form-control login-text-input login-input"
-                      placeholder="000000" name="totp" id="totp"
-                      required="true">
-                  </div>
-                </div>`
-
     $(document).ready(function () {
       let login_opacity_div = document.getElementById('login_opacity');
       let opacity = login_opacity_div.getAttribute('data-value');
@@ -191,14 +191,12 @@
         },
         body: JSON.stringify({
           "username": formDataObject.username,
-          "password": formDataObject.password
+          "password": formDataObject.password,
+          "totp": formDataObject.totp,
         }),
       });
       let responseData = await res.json();
       if (responseData.status === "ok") {
-        if (responseData.data["totp"]) {
-          $("#login-inputs").html()
-        }
         console.log("OK")
         location.href = `/panel/dashboard`
       } else {
