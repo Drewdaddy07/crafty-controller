@@ -170,7 +170,7 @@
 {% block js %}
 <script>
   function replacer(key, value) {
-    if (key == "disabled_language_files" || key == "monitored_mounts") {
+    if (key == "disabled_language_files" || key == "monitored_mounts" || key == "keywords") {
       if (value == 0) {
         return []
       } else {
@@ -199,6 +199,7 @@
     formDataObject.disabled_language_files = $('#lang_select').val();
     formDataObject.monitored_mounts = $('#mount_select').val();
     formDataObject.keywords = $('#keywords').val().split(",");
+    console.log(formDataObject.keywords)
     $('#config-form input[type="radio"]:checked').each(function () {
       if ($(this).val() == 'True') {
         formDataObject[this.name] = true;
