@@ -183,17 +183,24 @@
 
       //Create an object from the form data entries
       let formDataObject = Object.fromEntries(formData.entries());
+      let body = {
+        "username": formDataObject.username,
+        "password": formDataObject.password,
+      }
+      if (formDataObject.totp != "") {
+        body = {
+          "username": formDataObject.username,
+          "password": formDataObject.password,
+          "totp": formDataObject.totp,
+        }
+      }
       let res = await fetch(`/api/v2/auth/login/`, {
         method: 'POST',
         headers: {
           'X-XSRFToken': formDataObject._xsrf,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          "username": formDataObject.username,
-          "password": formDataObject.password,
-          "totp": formDataObject.totp,
-        }),
+        body: JSON.stringify(body),
       });
       let responseData = await res.json();
       if (responseData.status === "ok") {

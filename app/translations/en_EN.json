@@ -664,6 +664,7 @@
         "roleName": "Role Name",
         "selectManager": "Select Manager for User",
         "super": "Super User",
+        "totpIdReq": "TOTP ID Required for request",
         "userLang": "User Language",
         "userName": "User Name",
         "userNameDesc": "What do you want to call this user?",
@@ -671,7 +672,8 @@
         "userRolesDesc": "Roles this user is a member of.",
         "userSettings": "User Settings",
         "userTheme": "UI Theme",
-        "uses": "Number of uses allowed (-1==No Limit)"
+        "uses": "Number of uses allowed (-1==No Limit)",
+        "optReq": "TOTP is required for super users. You cannot remove your only TOTP method."
     },
     "validators": {
         "backupName": "Backup name must be a string and a minimum length of 3.",
