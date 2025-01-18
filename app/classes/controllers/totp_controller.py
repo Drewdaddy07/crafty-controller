@@ -37,7 +37,7 @@ class TOTPController:
             if totp.id == totp_id:
                 totp_factory = pyotp.TOTP(totp.totp_secret)
                 if totp_factory.verify(totp_code):
-                    HelperTOTP.verified(user_id)
+                    HelperTOTP.verify_totp(totp.id)
                     return True
         return False
 

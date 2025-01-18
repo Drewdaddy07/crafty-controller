@@ -173,7 +173,6 @@ class ApiAuthLoginHandler(BaseApiHandler):
             logger.info(f"User: {user_data} Logged in from IP: {self.get_remote_ip()}")
 
             for item in user_data.totp_user:
-                print(item.verified)
                 if item.verified is False:
                     self.controller.totp.delete_user_totp(item.id)
                     logger.info("TOTP code with id %s not verified. Removing.", item.id)

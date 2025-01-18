@@ -71,13 +71,16 @@ class HelperTOTP:
 
     @staticmethod
     def verify_totp(totp_id: str):
-        TOTPData.update({"verified": True}).where(TOTPData.id == totp_id)
+        TOTPData.update({"verified": True}).where(TOTPData.id == totp_id).execute()
 
     @staticmethod
     def verified(user_id):
         return (
             TOTPData.select()
-            .where((TOTPData.user == user_id) & (TOTPData.verified is True))
+            .where(
+                (TOTPData.user == user_id)
+                & (TOTPData.verified == True)  # pylint: disable=singleton-comparison
+            )  # disabled pylint because ORMs do not like "is True"
             .exists()
         )
 
