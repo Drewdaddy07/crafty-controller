@@ -72,7 +72,7 @@ class MainPrompt(cmd.Cmd):
             print(username)
             user_id = self.controller.users.get_id_by_name(username)
             Console.info(
-                f"TOTP RESULT {self.controller.totp.verify_user_totp(user_id, code)}"
+                f"TOTP RESULT {self.controller.totp.validate_user_totp(user_id, code)}"
             )
         except Exception as e:
             Console.error(f"BOOOO {e}")

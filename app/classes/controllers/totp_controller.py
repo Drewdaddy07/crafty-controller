@@ -18,7 +18,10 @@ class TOTPController:
     def delete_user_totp(self, totp_id: str) -> bool:
         return self.totp_helper.delete_totp_entry(totp_id)
 
-    def verify_user_totp(self, user_id, totp_code):
+    def verified(self, user_id) -> bool:
+        return HelperTOTP.verified(user_id)
+
+    def validate_user_totp(self, user_id, totp_code):
         user = HelperUsers.get_by_id(user_id)
         authenticated = False
         # Iterate through just in case a user has multiple 2FA methods
@@ -27,6 +30,16 @@ class TOTPController:
             if totp_factory.verify(totp_code):
                 authenticated = True
         return authenticated
+
+    def verify_user_totp(self, user_id, totp_id, totp_code):
+        user = HelperUsers.get_by_id(user_id)
+        for totp in user.totp_user:
+            if totp.id == totp_id:
+                totp_factory = pyotp.TOTP(totp.totp_secret)
+                if totp_factory.verify(totp_code):
+                    HelperTOTP.verified(user_id)
+                    return True
+        return False
 
     def create_missing_backup_codes(self, user_id):
         user = HelperUsers.get_by_id(user_id)
@@ -45,3 +58,6 @@ class TOTPController:
         if user_id != recovery_code.user.user_id:
             raise RuntimeError("Unable to verify user")
         self.totp_helper.remove_recovery_code(recovery_code.id)
+
+    def remove_all_recovery_codes(self, user_id: int):
+        self.totp_helper.remove_all_recovery_codes(user_id)

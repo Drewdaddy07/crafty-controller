@@ -20,6 +20,15 @@ totp_schema = {
     "minProperties": 1,
 }
 
+totp_verify_schema = {
+    "type": "object",
+    "properties": {
+        "totp": {"type": "integer", "minLength": 6, "maxLength": 6},
+    },
+    "additionalProperties": False,
+    "minProperties": 1,
+}
+
 
 class APIUsersTOTPIndexHandler(BaseApiHandler):
     def post(self, user_id: str):
@@ -77,14 +86,13 @@ class APIUsersTOTPIndexHandler(BaseApiHandler):
                 )
         otp_name = data["name"]
         otp = self.controller.totp.create_user_totp(otp_name, user_id)
-        recovery = self.controller.totp.create_missing_backup_codes(user_id)
         otp_dict = model_to_dict(otp)
         otp_dict["user"].pop("password", None)
         return self.finish_json(
             200,
             {
                 "status": "ok",
-                "data": {"otp": otp_dict, "backup_codes": recovery},
+                "data": {"otp": otp_dict},
             },
         )
 
@@ -134,6 +142,62 @@ class APIUsersTOTPIndexHandler(BaseApiHandler):
         self.finish_json(
             200,
             {"status": "ok", "data": codes},
+        )
+
+
+class APIUsersTOTPVerifyIndexHandler(BaseApiHandler):
+    def post(self, totp_id):
+        auth_data = self.authenticate_user()
+        if not auth_data:
+            return
+        (
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+        ) = auth_data
+        try:
+            data = json.loads(self.request.body)
+        except json.decoder.JSONDecodeError as e:
+            return self.finish_json(
+                400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
+            )
+
+        try:
+            validate(data, totp_verify_schema)
+        except ValidationError as e:
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "INVALID_JSON_SCHEMA",
+                    "error_data": str(e),
+                },
+            )
+
+        verified = self.controller.totp.verify_user_totp(
+            auth_data[4]["user_id"], totp_id, data.get("totp")
+        )  # In this step we only iterate through the request user's TOTP so this will
+        # validate the user identity itself.
+
+        if not verified:
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "NOT AUTHORIZED",
+                    "error_data": self.helper.translation.translate(
+                        "otp", "verify", auth_data[4]["lang"]
+                    ),
+                },
+            )
+        recovery = self.controller.totp.create_missing_backup_codes(
+            auth_data[4]["user_id"]
+        )
+        return self.finish_json(
+            200, {"status": "ok", "data": {"backup_codes": recovery}}
         )
 
 
@@ -292,9 +356,13 @@ class APIUsersTOTPRecovery(BaseApiHandler):
                     },
                 )
 
-        user_totp = list(res_user.recovery_user)
+        self.controller.totp.remove_all_recovery_codes(res_user.user_id)
+
+        backup_codes = self.controller.totp.create_missing_backup_codes(
+            res_user.user_id
+        )
 
         self.finish_json(
             200,
-            {"status": "ok", "data": {"backup_codes": user_totp}},
+            {"status": "ok", "data": {"backup_codes": backup_codes}},
         )

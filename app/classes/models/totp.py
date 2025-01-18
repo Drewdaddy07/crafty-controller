@@ -1,9 +1,6 @@
 import logging
 
-from peewee import (
-    ForeignKeyField,
-    CharField,
-)
+from peewee import ForeignKeyField, CharField, BooleanField
 
 from app.classes.shared.helpers import Helpers
 from app.classes.models.users import Users
@@ -27,6 +24,7 @@ class TOTPData(BaseModel):
     id = CharField(primary_key=True, default=Helpers.create_uuid)
     name = CharField(default="TOTP")
     user = ForeignKeyField(Users, backref="totp_user")
+    verified = BooleanField(default=False)
     totp_secret = CharField()
 
     class Meta:
@@ -71,6 +69,18 @@ class HelperTOTP:
         with self.database.atomic():
             return TOTPData.delete().where(TOTPData.id == totp_id).execute()
 
+    @staticmethod
+    def verify_totp(totp_id: str):
+        TOTPData.update({"verified": True}).where(TOTPData.id == totp_id)
+
+    @staticmethod
+    def verified(user_id):
+        return (
+            TOTPData.select()
+            .where((TOTPData.user == user_id) & (TOTPData.verified is True))
+            .exists()
+        )
+
     ####################################################################################
     # TOTP REOVERY METHODS
     ####################################################################################
@@ -85,3 +95,7 @@ class HelperTOTP:
     def remove_recovery_code(self, secret):
         with self.database.atomic():
             TOTPRecovery.delete().where(TOTPRecovery.id == secret).execute()
+
+    def remove_all_recovery_codes(self, user_id):
+        with self.database.atomic():
+            TOTPRecovery.delete().where(TOTPRecovery.user == user_id).execute()
