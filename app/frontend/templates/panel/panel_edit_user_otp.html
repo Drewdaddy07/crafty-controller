@@ -232,7 +232,6 @@
                         } else {
                             $("#verify-status").html(`<i class="fas fa-exclamation-triangle"></i>`);
                             $("#verify-input").addClass("wrong");
-                            console.log(responseData)
                         }
                     });
                 } else {
@@ -273,7 +272,6 @@
 
     // Delete TOTP on button click
     async function deleteTOTP(keyId) {
-        console.log("CONFIRM DEAD")
         let res = await fetch(`/api/v2/users/${userId}/totp/${keyId}/`, {
             method: 'DELETE',
             headers: {

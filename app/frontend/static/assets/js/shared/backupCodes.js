@@ -1,4 +1,7 @@
 $("#renewCodes").click(async function () {
+    if (typeof userId === "undefined") {
+        userId = $(this).data("id");
+    }
     let res = await fetch(`/api/v2/users/${userId}/totp/recovery/renew/`, {
         method: 'GET',
         headers: {
@@ -14,7 +17,6 @@ $("#renewCodes").click(async function () {
 function createBackupCodesDiv(data) {
     let backupcodes = `<h4>${$("#createButton").data("backup-codes")}</h4>
                         <ul class="list-group">`;
-    console.log(data["backup_codes"])
     data["backup_codes"].forEach(element => {
         backupcodes += `<li class="list-group-item code">${element}</li>`;
     });
