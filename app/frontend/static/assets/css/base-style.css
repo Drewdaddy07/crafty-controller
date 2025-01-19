@@ -8713,7 +8713,7 @@ a.close.disabled {
 .bs-popover-auto[x-placement^="bottom"]>.arrow::after {
     top: 1px;
     border-width: 0 0.5rem 0.5rem 0.5rem;
-    border-bottom-var(--base-text);
+    border-bottom: var(--base-text);
 }
 
 .bs-popover-bottom .popover-header::before,
@@ -30940,6 +30940,10 @@ body.invoice-page.invoice-2 table tr td {
     font-weight: 600;
     color: var(--dark);
     padding: 0 7px;
+}
+
+.text-align-center {
+    text-align: center;
 }
 
 /*# sourceMappingURL=style.css.map */
