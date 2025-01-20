@@ -1,13 +1,7 @@
 # Changelog
-## --- [4.4.6] - 2024/TBD
-### New features
-TBD
+## --- [4.4.6] - 2024/01/20
 ### Bug fixes
 - Fix traceback on stats page for data missing data.get ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/824))
-### Tweaks
-TBD
-### Lang
-TBD
 <br><br>
 
 ## --- [4.4.5] - 2024/01/19
