@@ -132,6 +132,7 @@ class ServerHandler(BaseHandler):
                 else None
             ),
             "superuser": superuser,
+            "themes": self.helper.get_themes(),
         }
 
         if superuser:
