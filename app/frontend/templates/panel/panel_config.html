@@ -24,7 +24,7 @@
   <div class="row">
     <div class="col-md-12 grid-margin">
       <div class="card">
-        <div class="card-body">
+        <div class="card-body pt-0">
 
 
           {% if data['superuser'] %}
@@ -318,11 +318,6 @@
     border: 1px solid var(--outline);
   }
 
-  .popover-body {
-    color: white !important;
-    ;
-  }
-
   .loading:after {
     overflow: hidden;
     display: inline-block;
@@ -401,7 +396,7 @@
         } else {
 
           bootbox.alert({
-            title: responseData.error,
+            title: responseData.status,
             message: responseData.error_data
           });
         }
@@ -444,7 +439,8 @@
           });
         }
       }
-    });
+    }
+    )
   });
   if (webSocket) {
     webSocket.on('move_status', function (message) {
