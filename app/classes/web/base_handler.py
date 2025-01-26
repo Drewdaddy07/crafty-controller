@@ -208,6 +208,7 @@ class BaseHandler(tornado.web.RequestHandler):
             ):  # check to see if user is superuser
                 # and MFA is not in token.
                 # Also check to see if user is trying to add MFA or access backup codes.
+                # Check for token ID because only API keys will have this.
                 warning = self.helper.translation.translate(
                     "otp", "mfaWarn", user["lang"]
                 )
