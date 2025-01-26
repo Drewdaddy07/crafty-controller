@@ -273,7 +273,9 @@
         "renewRecovery": "Renew Recovery Codes",
         "newOTP": "Add New 2 Factor Auth",
         "verifyTitle": "Verify 2FA method using authenticator",
-        "verify": "Failed to verify 2FA. Incorrect code entered."
+        "verify": "Failed to verify 2FA. Incorrect code entered.",
+        "mfaWarn": "You must have MFA enabled to interact with this system. Please create a MFA key. If you are seeing this message and have already created a key please log out then log back in with MFA.",
+        "goToPage": "Go to MFA page"
     },
     "panelConfig": {
         "adminControls": "Admin Controls",

@@ -174,6 +174,17 @@ class BaseHandler(tornado.web.RequestHandler):
             api_token = self.get_cookie("token")
         return api_token
 
+    def is_totp_method(self):
+        if (
+            re.match(r"^/api/v2/(users/.+/totp/|totp/.+/verify/)$", self.request.path)
+            and self.request.method == "POST"
+        ) or (
+            re.match(r"^/api/v2/users/[^/]+/totp/recovery/renew/$", self.request.path)
+            and self.request.method == "GET"
+        ):
+            return True
+        return False
+
     def authenticate_user(
         self,
     ) -> t.Optional[
@@ -187,9 +198,29 @@ class BaseHandler(tornado.web.RequestHandler):
         ]
     ]:
         try:
-            api_key, _token_data, user = self.controller.authentication.check_err(
+            api_key, token_data, user = self.controller.authentication.check_err(
                 self._auth_get_api_token()
             )
+            if (
+                user["superuser"] and not token_data.get("mfa")
+            ) and not self.is_totp_method():  # check to see if user is superuser
+                # and MFA is not in token.
+                # Also check to see if user is trying to add MFA or access backup codes.
+                warning = self.helper.translation.translate(
+                    "otp", "mfaWarn", user["lang"]
+                )
+                goto = self.helper.translation.translate(
+                    "otp", "goToPage", user["lang"]
+                )
+                url = f"/panel/edit_user_otp?id={user["user_id"]}"
+                return self.finish_json(
+                    403,
+                    {
+                        "status": "error",
+                        "error": "ACCESS_DENIED",
+                        "error_data": (f"{warning}" f"<br><a href='{url}'>{goto}</a>"),
+                    },
+                )
 
             superuser = user["superuser"]
             server_permissions_api_mask = ""
@@ -262,7 +293,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 {
                     "status": "error",
                     "error": "ACCESS_DENIED",
-                    "info": "An error occured while authenticating the user",
+                    "error_data": "An error occured while authenticating the user",
                 },
             )
             return None

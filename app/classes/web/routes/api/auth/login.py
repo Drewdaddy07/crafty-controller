@@ -120,6 +120,8 @@ class ApiAuthLoginHandler(BaseApiHandler):
         totp_enabled = len(
             list(user_data.totp_user)
         ) > 0 and self.controller.totp.verified(user_data.user_id)
+
+        totp_login_result = False
         # Check if user has TOTP and if we got any type of TOTP data in the login
         # payload
         valid_backup_code = False
@@ -187,7 +189,10 @@ class ApiAuthLoginHandler(BaseApiHandler):
             self.controller.management.add_to_audit_log(
                 user_data.user_id, "logged in via the API", None, self.get_remote_ip()
             )
-            token = self.controller.authentication.generate(user_data.user_id)
+            token = self.controller.authentication.generate(
+                user_data.user_id, {"mfa": totp_login_result}
+            )
+
             self.set_current_user(user_data.user_id, token)
             if valid_backup_code:
                 return self.finish_json(
