@@ -60,13 +60,17 @@
                 <div class="form-group">
                   <label class="label">{{ translate('login', 'username', data['lang']) }}</label>
                   <div class="input-group">
-                    <input type="text" class="form-control login-text-input login-input" placeholder="{{ translate('login', 'username', data['lang']) }}" name="username" id="username" required="true">
+                    <input type="text" class="form-control login-text-input login-input"
+                      placeholder="{{ translate('login', 'username', data['lang']) }}" name="username" id="username"
+                      required="true">
                   </div>
                 </div>
                 <div class="form-group">
                   <label class="label">{{ translate('login', 'password', data['lang']) }}</label>
                   <div class="input-group">
-                    <input type="password" class="form-control login-text-input login-input" placeholder="{{ translate('login', 'password', data['lang']) }}" name="password" id="password" required="true">
+                    <input type="password" class="form-control login-text-input login-input"
+                      placeholder="{{ translate('login', 'password', data['lang']) }}" name="password" id="password"
+                      required="true">
                   </div>
                 </div>
                 <div class="form-group">
@@ -98,7 +102,8 @@
                   <div class="form-check form-check-flat mt-0">
                     &nbsp;
                   </div>
-                  <button onclick="resetPass()" id="#resetPass" form="" class="btn btn-outline-primary btn-sm forgot-password ">{{ translate('login', 'forgotPassword',
+                  <button onclick="resetPass()" id="#resetPass" form=""
+                    class="btn btn-outline-primary btn-sm forgot-password ">{{ translate('login', 'forgotPassword',
                     data['lang']) }}</button>
                 </div>
 
@@ -158,9 +163,11 @@
 
     }
     $("#2fa-type").on("change", function () {
-      if ($("#2fa-type").val() === "backupCode") {
+      if ($("#2fa-type").val() === "backup_code") {
         $("#auth-code-label").html($("#multi-label").data("backupcode"))
+        $("#totp").attr("placeholder", "ABCD-EFGH-IJKL-MNOP")
       } else {
+        $("#totp").attr("placeholder", "000000")
         $("#auth-code-label").html($("#multi-label").data("2fa"))
       }
     })
