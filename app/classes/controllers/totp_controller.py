@@ -27,7 +27,11 @@ class TOTPController:
         # Iterate through just in case a user has multiple 2FA methods
         for totp in user.totp_user:
             totp_factory = pyotp.TOTP(totp.totp_secret)
-            if totp_factory.verify(totp_code):
+            if totp_factory.verify(
+                totp_code,
+                valid_window=int(self.helper.get_setting("extend_otp_window", False)),
+                # Casting boolean value as window. 1 for true :)
+            ):
                 authenticated = True
         return authenticated
 

@@ -114,6 +114,11 @@ config_json_schema = {
             "error": "typeString",
             "fill": True,
         },
+        "extend_otp_window": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,
