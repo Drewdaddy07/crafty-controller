@@ -37,13 +37,35 @@ login_schema = {
 
 
 class ApiAuthLoginHandler(BaseApiHandler):
-    def is_time_locked(self):
+    def is_cooldown(self):
+        # Check for active cooldown
+        current_time = datetime.now()
+        cooldown_until = self.controller.auth_tracker.get(
+            self.request.remote_ip, {}
+        ).get("cooldown_until", None)
+        if cooldown_until and cooldown_until > current_time:
+            cooldown_remaining = (cooldown_until - current_time).seconds
+            minutes, seconds = divmod(cooldown_remaining, 60)
+            return f"{int(minutes):02}:{int(seconds):02}"
+        return False
+
+    def is_max_failures(self) -> bool:
+        if len(self.get_recent_attempts()) > 3:  # Check if recent attempts is more than
+            # user defined max
+            if not self.is_cooldown():  # If we're not on cooldown we're going to
+                # activate it
+                self.controller.auth_tracker[self.request.remote_ip][
+                    "cooldown_until"
+                ] = datetime.now() + timedelta(0, 300)
+            return True
+        return False
+
+    def get_recent_attempts(self) -> list:
         timestamps = (
             self.controller.auth_tracker.get(self.request.remote_ip, {})
             .get("login", {})
             .get("times", [])
-        )
-        print(timestamps)
+        )  # Get timestamps for this IP
         # Parse the timestamps and check if they're within the last 3 minutes
         now = datetime.now()
         three_minutes_ago = now - timedelta(minutes=3)
@@ -54,14 +76,7 @@ class ApiAuthLoginHandler(BaseApiHandler):
             for ts in timestamps
             if datetime.strptime(ts, "%d/%m/%Y %H:%M:%S") >= three_minutes_ago
         ]
-        if len(recent_timestamps) > 3:
-            if three_minutes_ago <= parsed_time <= now:
-                # Calculate the remaining time until it's no longer within 3 minutes
-                time_remaining = parsed_time - three_minutes_ago
-                minutes, seconds = divmod(time_remaining.total_seconds(), 60)
-            self.controller.auth_tracker[self.request.remote_ip][
-                "next_allowed_login"
-            ] = [datetime.now().strftime("%d/%m/%Y %H:%M:%S")]
+        return recent_timestamps
 
     def post(self):
         try:
@@ -97,8 +112,18 @@ class ApiAuthLoginHandler(BaseApiHandler):
                     "error_data": f"{str(err)}",
                 },
             )
+        self.is_max_failures()  # check if user has reached max failures in 3 minutes
+        cooldown = self.is_cooldown()  # Check if we have a cooldown active
 
-        # self.is_time_locked()
+        if cooldown:
+            self.finish_json(
+                429,  # HTTP 429 Too Many Requests
+                {
+                    "status": "error",
+                    "error": "TOO_MANY_ATTEMPTS",
+                    "error_data": f"Cooldown active. Try again in {cooldown} seconds.",
+                },
+            )
 
         username = data["username"]
         password = data["password"]
@@ -119,8 +144,9 @@ class ApiAuthLoginHandler(BaseApiHandler):
                 {
                     "status": "error",
                     "error": "INCORRECT_CREDENTIALS",
-                    "error_data": "INVALID CREDENTIALS",
-                    "token": None,
+                    "error_data": self.helper.translation.translate(
+                        "login", "incorrect", self.helper.get_setting("language")
+                    ),
                 },
             )
 
