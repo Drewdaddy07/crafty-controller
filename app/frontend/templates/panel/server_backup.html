@@ -112,7 +112,8 @@
                               <i class="fas fa-pencil-alt"></i>
                             </button>
                             {% if not backup.default %}
-                            <button data-backup={{ backup.backup_id }} class="btn btn-danger del_button">
+                            <button data-backup={{ backup.backup_id }} data-backupname={{ backup.backup_name }}
+                              class="btn btn-danger del_button">
                               <i class="fas fa-trash" aria-hidden="true"></i>
                             </button>
                             {% end %}
@@ -164,7 +165,8 @@
                               <i class="fas fa-pencil-alt"></i>
                             </button>
                             {% if not backup.default %}
-                            <button data-backup={{ backup.backup_id }} class="btn btn-danger del_button">
+                            <button data-backup={{ backup.backup_id }} data-backupname={{ backup.backup_name }}
+                              class="btn btn-danger del_button">
                               <i class="fas fa-trash" aria-hidden="true"></i>
                             </button>
                             {% end %}
@@ -321,10 +323,9 @@
     });
 
     $(".del_button").click(function () {
+      var file_to_del = $(this).data("backupname");
+      console.log(file_to_del)
       let backup = $(this).data('backup');
-      var file_to_del = $(this).data("file");
-      var backup_path = $(this).data('backup_path');
-
       console.log("file to delete is" + file_to_del);
 
       bootbox.confirm({
