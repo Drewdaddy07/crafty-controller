@@ -333,8 +333,11 @@ class FileHelpers:
                     else:
                         logger.debug(f"Found {file} in exclusion list. Skipping...")
 
-                    # add current file bytes to total bytes.
-                    total_bytes += os.path.getsize(os.path.join(root, file))
+                    try:
+                        # add current file bytes to total bytes.
+                        total_bytes += os.path.getsize(os.path.join(root, file))
+                    except FileNotFoundError as why:
+                        logger.debug(f"Failed to calculate file size with error {why}")
                     # calcualte percentage based off total size and current archive size
                     percent = round((total_bytes / dir_bytes) * 100, 2)
                     # package results
