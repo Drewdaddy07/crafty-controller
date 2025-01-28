@@ -1,7 +1,6 @@
 import logging
 import json
 import os
-from apscheduler.jobstores.base import JobLookupError
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from app.classes.models.server_permissions import EnumPermissionsServer
@@ -20,6 +19,7 @@ BACKUP_SCHEMA = {
             "error": "typeString",
             "fill": True,
         },
+        "inPlace": {"type": "boolean", "error": "typeBool", "fill": True},
     },
     "additionalProperties": False,
     "minProperties": 1,
@@ -250,7 +250,8 @@ class ApiServersServerBackupsBackupIndexHandler(BaseApiHandler):
                     "error_data": str(e),
                 },
             )
-
+        in_place = data.get("inPlace")
+        print(in_place)
         svr_obj = self.controller.servers.get_server_instance_by_id(server_id)
         server_data = self.controller.servers.get_server_data_by_id(server_id)
         zip_name = data["filename"]
@@ -265,6 +266,18 @@ class ApiServersServerBackupsBackupIndexHandler(BaseApiHandler):
         if Helpers.validate_traversal(backup_location, zip_name):
             if svr_obj.check_running():
                 svr_obj.stop_server()
+            if (
+                not in_place
+            ):  # If user does not want to backup in place we will clean the server dir
+                for item in os.listdir(server_data["path"]):
+                    if os.path.isdir(os.path.join(server_data["path"], item)):
+                        self.file_helper.del_dirs(
+                            os.path.join(server_data["path"], item)
+                        )
+                    else:
+                        self.file_helper.del_file(
+                            os.path.join(server_data["path"], item)
+                        )
             self.file_helper.restore_archive(backup_location, server_data["path"])
 
         return self.finish_json(200, {"status": "ok"})
