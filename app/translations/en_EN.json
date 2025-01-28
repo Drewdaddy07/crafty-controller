@@ -319,7 +319,7 @@
         "dir_size_poll_freq_minutes": "How often Crafty should poll your server directories for their sizes (minutes)",
         "disabled_language_files": "Globally disabled language files",
         "enable_user_self_delete": "Allow users to delete their own account",
-        "extend_otp_window": "Allow current MFA code and PREVIOUS MFA code to be valid",
+        "enable_otp_skew": "Enable MFA skew (+-1)",
         "False": "False",
         "history_max_age": "How long Crafty should hold onto your server statistics (days)",
         "https_port": "Crafty's port",

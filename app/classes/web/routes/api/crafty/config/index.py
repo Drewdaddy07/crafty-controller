@@ -114,7 +114,7 @@ config_json_schema = {
             "error": "typeString",
             "fill": True,
         },
-        "extend_otp_window": {
+        "enable_otp_skew": {
             "type": "boolean",
             "error": "typeBool",
             "fill": True,

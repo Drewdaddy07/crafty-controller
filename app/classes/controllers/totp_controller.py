@@ -29,7 +29,7 @@ class TOTPController:
             totp_factory = pyotp.TOTP(totp.totp_secret)
             if totp_factory.verify(
                 totp_code,
-                valid_window=int(self.helper.get_setting("extend_otp_window", False)),
+                valid_window=int(self.helper.get_setting("enable_otp_skew", False)),
                 # Casting boolean value as window. 1 for true :)
             ):
                 authenticated = True

@@ -529,7 +529,7 @@ class Helpers:
             "dir_size_poll_freq_minutes": 5,
             "crafty_logs_delete_after_days": 0,
             "big_bucket_repo": "https://jars.arcadiatech.org",
-            "extend_otp_window": False,
+            "enable_otp_skew": False,
             "max_login_attempts": 3,
         }
 
