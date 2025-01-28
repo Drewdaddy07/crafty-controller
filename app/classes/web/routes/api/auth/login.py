@@ -114,14 +114,15 @@ class ApiAuthLoginHandler(BaseApiHandler):
             )
         self.is_max_failures()  # check if user has reached max failures in 3 minutes
         cooldown = self.is_cooldown()  # Check if we have a cooldown active
-
+        global_lang = self.helper.get_setting("language")
         if cooldown:
+            err = self.helper.translation.translate("login", "cooldown", global_lang)
             self.finish_json(
                 429,  # HTTP 429 Too Many Requests
                 {
                     "status": "error",
                     "error": "TOO_MANY_ATTEMPTS",
-                    "error_data": f"Cooldown active. Try again in {cooldown} seconds.",
+                    "error_data": f"{err} {cooldown}",
                 },
             )
 
