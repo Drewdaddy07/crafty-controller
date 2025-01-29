@@ -3,7 +3,6 @@ import os
 import re
 import sys
 import json
-import tempfile
 import time
 import uuid
 import string
@@ -12,7 +11,6 @@ import socket
 import secrets
 import logging
 import html
-import zipfile
 import pathlib
 import ctypes
 import shutil
