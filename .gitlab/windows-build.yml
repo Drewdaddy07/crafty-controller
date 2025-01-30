@@ -3,7 +3,7 @@
 win-dev-build:
   stage: build-and-deploy
   tags:
-    - win64
+    - saas-windows-medium-amd64
   cache:
     paths:
       - .venv/
@@ -52,7 +52,7 @@ win-dev-build:
 win-prod-build:
   stage: build-and-deploy
   tags:
-    - win64
+    - saas-windows-medium-amd64
   cache:
     paths:
       - .venv/
