@@ -697,6 +697,8 @@
     "userConfig": {
         "apiKey": "API Keys",
         "auth": "Authorized? ",
+        "changePass": "Change Password",
+        "changeUser": "Change Username",
         "config": "Config",
         "configArea": "User Config Area",
         "configAreaDesc": "Here is where you change all of your user settings",
@@ -711,6 +713,7 @@
         "enabled": "Enabled",
         "gravDesc": "This email is strictly for use with Gravatar™. Crafty will not, under any circumstance make use of this email for anything other than looking up your Gravatar™",
         "gravEmail": "Gravatar™ Email",
+        "hints": "Enable Hints?",
         "lastIP": "Last IP: ",
         "lastLogin": "Last Login: ",
         "lastUpdate": "Last Update: ",
