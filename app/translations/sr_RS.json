@@ -198,6 +198,16 @@
         "installerJava": "Nije uspelo instaliranje {}: Forge Server instalacije zahtevaju Java. Detektovali smo da Java nije instalirana. Molimo instalirajte Java, a zatim pokušajte ponovo da instalirate server.",
         "contact": "Kontaktirajte Crafty Control podršku preko Discord-a",
         "fileTooLarge": "Otprema nije uspela. Fajl je prevelik. Kontaktirajte sistemskog administratora za pomoć.",
-        "fileError": "Tip fajla mora biti slika."
+        "fileError": "Tip fajla mora biti slika.",
+        "migration": "Glavni server za skladištenje Crafty-a se prenosi na novu lokaciju. Svi pokreti servera su suspendovani tokom ovog procesa. Molimo vas da sačekate dok završimo migraciju",
+        "no-file": "Čini se da ne možemo pronaći traženi fajl. Proverite putanju još jednom. Da li Crafty ima odgovarajuće dozvole?",
+        "noInternet": "Crafty ima problema sa pristupom internetu. Kreiranje servera je onemogućena. Molimo proverite vašu internet konekciju i osvežite ovu stranicu.",
+        "noJava": "Server {} nije mogao da se pokrene sa greškom: Detektovali smo da Java nije instalirana. Molimo instalirajte Java, a zatim pokrenite server.",
+        "portReminder": "Detektovali smo da je ovo prvi put da se pokreće {}. Pobrinite se da prosledite port {} kroz vaš ruter/firewall kako bi bio dostupan sa interneta.",
+        "privMsg": "i ",
+        "return": "Vrati se na nadzornu ploču",
+        "start-error": "Server {} nije mogao da se pokrene sa greškom: {}",
+        "not-downloaded": "Čini se da ne možemo pronaći vaš izvršni fajl. Da li je preuzimanje završeno? Da li su dozvole postavljene kao izvršne?",
+        "selfHost": "Ako hostujete ovaj repo sami, molimo proverite svoju adresu ili konsultujte naš vodič za rešavanje problema."
     }
 }
