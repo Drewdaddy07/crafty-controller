@@ -1192,6 +1192,7 @@ class Helpers:
             )
 
         logger.info("Self-signed certificate and key generation completed.")
+        Console.info("Self-signed certificate and key generation completed.")
         return True
 
     @staticmethod
