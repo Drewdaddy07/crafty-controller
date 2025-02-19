@@ -568,6 +568,9 @@
         "stopScroll": "Stop Auto Scrolling",
         "updating": "Updating..."
     },
+    "serverUpdate": {
+        "updateCtr": "Update Center"
+    },
     "serverWizard": {
         "absoluteServerPath": "Absolute path to your server",
         "absoluteZipPath": "Absolute path to your server",

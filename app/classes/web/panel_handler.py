@@ -39,6 +39,7 @@ SUBPAGE_PERMS = {
     "admin_controls": EnumPermissionsServer.PLAYERS,
     "metrics": EnumPermissionsServer.LOGS,
     "webhooks": EnumPermissionsServer.CONFIG,
+    "update_center": EnumPermissionsServer.CONFIG,
 }
 
 SCHEDULE_AUTH_ERROR_URL = "/panel/error?error=Unauthorized access To Schedules"
@@ -665,6 +666,18 @@ class PanelHandler(BaseHandler):
                 page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                     server_id
                 )
+
+            if subpage == "update_center":
+                page_data["server_api"] = (
+                    self.controller.big_bucket._check_bucket_alive()
+                )
+                page_data["server_types"] = self.controller.big_bucket.get_bucket_data()
+                page_data["js_server_types"] = json.dumps(
+                    self.controller.big_bucket.get_bucket_data()
+                )
+                if page_data["server_types"] is None:
+                    page_data["server_types"] = []
+                    page_data["js_server_types"] = []
 
             if subpage == "config":
                 page_data["java_versions"] = Helpers.find_java_installs()
