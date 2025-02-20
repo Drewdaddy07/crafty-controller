@@ -292,7 +292,6 @@
         "compress": "Back-up comprimeren",
         "confirm": "Bevestigen",
         "confirmDelete": "Wil je deze back-up verwijderen? Dit kan niet ongedaan gemaakt worden.",
-        "confirmRestore": "Weet je zeker dat je deze back-up wil terugzetten? Alle huidige bestanden zullen worden overschreven.",
         "currentBackups": "Huidige back-ups",
         "delete": "Verwijderen",
         "destroyBackup": "Back-up \" + file_to_del + \" verwijderen?",

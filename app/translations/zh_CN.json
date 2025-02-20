@@ -314,7 +314,6 @@
         "compress": "压缩备份",
         "confirm": "确认",
         "confirmDelete": "您想要删除这个备份吗？此操作不能撤销。",
-        "confirmRestore": "你确定要从此备份恢复吗？所有现存的服务器文件将更改到备份时的状态，并且无法撤销。",
         "currentBackups": "现有备份",
         "default": "默认备份",
         "defaultExplain": "Crafty 在更新前会使用的备份。此项目不能被更改或删除。",

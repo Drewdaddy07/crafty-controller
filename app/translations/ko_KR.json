@@ -467,7 +467,6 @@
         "compress": "백업 파일을 압축하기",
         "confirm": "확인",
         "confirmDelete": "이 백업을 삭제하시겠습니까? 이 백업은 되돌릴 수 없습니다.",
-        "confirmRestore": "이 백업에서 복원하시겠습니까? 현재 서버 파일이 모두 백업 상태로 변경되어 복구할 수 없습니다.",
         "currentBackups": "현재 백업",
         "default": "기본 백업",
         "defaultExplain": "Crafty가 업데이트하기 전에 사용할 백업입니다. 이 백업은 변경하거나 삭제할 수 없습니다.",

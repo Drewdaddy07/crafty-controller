@@ -310,7 +310,6 @@
         "compress": "Skompresuj backup",
         "confirm": "Akceptuj",
         "confirmDelete": "Czy chcesz usunąć ten backup? Nie można tego cofnąć.",
-        "confirmRestore": "Czy jesteś pewien że chcesz przywrócić z tego backupu. Wszystkie pliki powrócą do stanu z backupu.",
         "currentBackups": "Backupy Teraz",
         "default": "Podstawowa kopia zapasowa",
         "defaultExplain": "Kopia zapasowa przed jakimikolwiek zmianami. Nie można jej usunąć ani edytować.",
