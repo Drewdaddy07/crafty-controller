@@ -344,7 +344,10 @@
         "status": "状态",
         "storage": "存储位置",
         "storageLocation": "存储位置",
-        "storageLocationDesc": "您想要在哪里存储备份？"
+        "storageLocationDesc": "您想要在哪里存储备份？",
+        "inplace": "在原位置恢复备份 - 备份 zip 中不存在的文件将保留在服务器目录中",
+        "radioRequired": "您必须选择一个选项来恢复您的备份",
+        "replace": " 恢复备份文件并将服务器目录重置为备份中的结构"
     },
     "serverConfig": {
         "bePatientDelete": "请耐心等待，我们正在从 Crafty 面板中移除服务器。稍后此页面会关闭。",
