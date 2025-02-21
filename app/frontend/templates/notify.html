@@ -16,11 +16,11 @@
   <li class="nav-item dropdown user-dropdown">
     <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
       <img class="img-xs rounded-circle profile-picture" onerror="pfpError(this)" src="{{ data['user_data']['pfp'] }}"
-        alt="Profile image"> </a>
+        alt="Profile"> </a>
     <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
       <div class="dropdown-header text-center">
         <img class="img-md rounded-circle profile-picture" onerror="pfpError(this)" src="{{ data['user_data']['pfp'] }}"
-          alt="Profile image">
+          alt="Profile">
         <p class="mb-1 mt-3 font-weight-semibold">{{ data['user_data']['username'] }}</p>
         <p class="font-weight-light text-muted mb-0">Roles: </p>
         {% for r in data['user_role'] %}
@@ -41,8 +41,8 @@
         data['lang']) }}<br><br></span>
       <span class="dropdown-item" id="support_progress">
         <div class="support_progress">
-          <div class="progress-bar progress-bar-striped progress-bar-animated" id="logs_progress_bar" role="progressbar"
-            style="width:0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+          <progress class="progress-bar progress-bar-striped progress-bar-animated" id="logs_progress_bar"
+            style="width:0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</progress>
         </div>
       </span>
       {% else %}
@@ -165,7 +165,7 @@
     if (responseData.status === "ok") {
       return
     } else {
-      bootbox.alert(responseData.error)
+      bootbox.alert(responseData.error_data)
     }
   }
 
