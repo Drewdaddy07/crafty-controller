@@ -70,12 +70,14 @@ class TOTPController:
             totp_code = str(totp_code)  # Set totp to desired string
             totp_factory = pyotp.TOTP(self.pending_totp[totp_id]["totp_secret"])
             if totp_factory.verify(totp_code):
-                return HelperTOTP.create_user_totp(
+                user_totp = HelperTOTP.create_user_totp(
                     totp_id,
                     totp_name,
                     user,
                     self.pending_totp[totp_id]["totp_secret"],
                 )
+                self.pending_totp.pop(totp_id)
+                return user_totp
         return False
 
     def create_missing_backup_codes(self, user_id):
