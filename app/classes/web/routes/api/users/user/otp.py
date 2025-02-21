@@ -197,6 +197,12 @@ class APIUsersTOTPVerifyIndexHandler(BaseApiHandler):
         recovery = self.controller.totp.create_missing_backup_codes(
             auth_data[4]["user_id"]
         )
+        self.controller.management.add_to_audit_log(
+            auth_data[4]["username"],
+            f"successfully added MFA {totp_id}",
+            server_id=None,
+            source_ip=self.get_remote_ip(),
+        )
         return self.finish_json(
             200, {"status": "ok", "data": {"backup_codes": recovery}}
         )
@@ -313,7 +319,7 @@ class APIUsersTOTPHandler(BaseApiHandler):
         self.controller.totp.delete_user_totp(totp_id)
         self.controller.management.add_to_audit_log(
             user.user_id,
-            f"deleted the user TOTP {totp_id}",
+            f"deleted the user MFA {totp_id}",
             server_id=None,
             source_ip=self.get_remote_ip(),
         )
