@@ -14,6 +14,7 @@ class TOTPController:
         self.totp_helper = totp_helper
         self.helper = helper
         self.pending_totp = {}
+        self.used_totp_codes = {}
 
     def create_user_totp(self, user_id: int) -> dict:
         """Creates temporary user totp in self.pending_totp var until it is verified.
@@ -63,6 +64,30 @@ class TOTPController:
         user = HelperUsers.get_by_id(user_id)
         authenticated = False
         # Iterate through just in case a user has multiple 2FA methods
+        now = datetime.now(tz=timezone.utc)
+
+        # Check to see if someone is trying to reuse a key in the 60 second window
+        if str(user_id) in self.used_totp_codes:
+            if str(totp_code) in self.used_totp_codes[str(user_id)]:
+                if now - self.used_totp_codes[str(user_id)][totp_code] < timedelta(
+                    seconds=60
+                ):
+                    logger.info(
+                        "Someone is attempting to reuse MFA code for user %s", user_id
+                    )
+                    return authenticated
+        else:
+            self.used_totp_codes[str(user_id)] = {}  # Init empty dict if not in there
+
+        # Store OTP as used for 60 seconds
+        self.used_totp_codes[str(user_id)][str(totp_code)] = now
+
+        # Clean up expired entries reclaim some memory
+        for key in list(self.used_totp_codes.keys()):
+            for item in list(self.used_totp_codes[key].keys()):
+                if now - self.used_totp_codes[key][item] > timedelta(seconds=60):
+                    del self.used_totp_codes[key][item]
+
         for totp in user.totp_user:
             totp_factory = pyotp.TOTP(totp.totp_secret)
             if totp_factory.verify(
