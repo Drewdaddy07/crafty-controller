@@ -1,33 +1,39 @@
-# Crafty Controller 4.0 - Lint & Build Pipes
-# [Maintainer: Zedifus(https://gitlab.com/Zedifus)]
-###################################################
----
-stages:
-  - lint
-  - test
-  - build-and-deploy
-  - release
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/pipeline/#customization
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 
+# container_scanning:
+#   variables:
+#     DOCKER_IMAGE: ...
+#     DOCKER_USER: ...
+#     DOCKER_PASSWORD: ...
+stages:
+- lint
+- test
+- build-and-deploy
+- release
 variables:
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
-
 include:
-  - local: .gitlab/lint.yml
-  - local: .gitlab/docker-build.yml
-  - local: .gitlab/windows-build.yml
-  - local: .gitlab/release.yml
-  - template: Security/Dependency-Scanning.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
-  - template: Security/Secret-Detection.gitlab-ci.yml
-
+- local: ".gitlab/lint.yml"
+- local: ".gitlab/docker-build.yml"
+- local: ".gitlab/windows-build.yml"
+- local: ".gitlab/release.yml"
+- template: Security/Dependency-Scanning.gitlab-ci.yml
+- template: Security/SAST.gitlab-ci.yml
+- template: Security/Secret-Detection.gitlab-ci.yml
+- template: Jobs/Container-Scanning.gitlab-ci.yml
 sast:
   variables:
     SAST_EXCLUDED_PATHS: spec, test, tests, tmp, migrations, vendors
     SAST_BANDIT_EXCLUDED_PATHS: "'*/migrations/*, */vendors/*'"
     SAST_EXCLUDED_ANALYZERS: semgrep
   stage: test
-
 secret_detection:
   variables:
     SECRET_DETECTION_EXCLUDED_PATHS: migrations, vendors
