@@ -1,6 +1,7 @@
 $("#renewCodes").click(async function () {
     if (typeof userId === "undefined") {
-        userId = $(this).data("id");
+        var userId = $(this).data("id"); //I don't like the use of var here, but sonar
+        // was crying and this may be defined in the outer scope where this is called.
     }
     let res = await fetch(`/api/v2/users/${userId}/totp/recovery/renew/`, {
         method: 'GET',
