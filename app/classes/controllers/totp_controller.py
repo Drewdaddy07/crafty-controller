@@ -82,11 +82,7 @@ class TOTPController:
         # Store OTP as used for 60 seconds
         self.used_totp_codes[str(user_id)][str(totp_code)] = now
 
-        # Clean up expired entries reclaim some memory
-        for key in list(self.used_totp_codes.keys()):
-            for item in list(self.used_totp_codes[key].keys()):
-                if now - self.used_totp_codes[key][item] > timedelta(seconds=60):
-                    del self.used_totp_codes[key][item]
+        self.clear_stale_entries()
 
         for totp in user.totp_user:
             totp_factory = pyotp.TOTP(totp.totp_secret)
@@ -98,6 +94,15 @@ class TOTPController:
                 logger.info("Successfully verified user MFA %s", user_id)
                 authenticated = True
         return authenticated
+
+    def clear_stale_entries(self):
+        """clears out totp codes older than 1 minute when one is sent"""
+        now = datetime.now(tz=timezone.utc)
+        # Clean up expired entries reclaim some memory
+        for key in list(self.used_totp_codes.keys()):
+            for item in list(self.used_totp_codes[key].keys()):
+                if now - self.used_totp_codes[key][item] > timedelta(seconds=60):
+                    del self.used_totp_codes[key][item]
 
     def verify_user_totp(
         self, user_id: int, totp_id: str, totp_name: str, totp_code: str
