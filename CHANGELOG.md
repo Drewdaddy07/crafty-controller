@@ -6,7 +6,8 @@
 ### New features
 TBD
 ### Bug fixes
-TBD
+- Fix problematic MOTDs on bedrock servers breaking stats collection ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/831))
+- Fix caching issue on upload imports ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/836))
 ### Tweaks
 TBD
 ### Lang
