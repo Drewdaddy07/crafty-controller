@@ -30,7 +30,7 @@ $(".edit_password").on("click", async function () {
       </div>
       </form>`, async function (result) {
         if (result) {
-            password = validateForm();
+            let password = validateForm();
             if (!password) {
                 return;
             }
