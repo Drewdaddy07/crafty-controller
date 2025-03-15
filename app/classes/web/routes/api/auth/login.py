@@ -291,29 +291,29 @@ class ApiAuthLoginHandler(BaseApiHandler):
                     },
                 },
             )
-        else:
-            # log this failed login attempt
-            self.controller.management.add_to_audit_log(
-                user_data.user_id, "Tried to log in", None, self.get_remote_ip()
+
+        # log this failed login attempt
+        self.controller.management.add_to_audit_log(
+            user_data.user_id, "Tried to log in", None, self.get_remote_ip()
+        )
+        self.controller.log_attempt(self.get_remote_ip(), username)
+        # Setup error message for failed login
+        error_msg = self.helper.translation.translate(
+            "login", "incorrect", self.helper.get_setting("language")
+        )
+        if password == "app/config/default-creds.txt":
+            error_msg += ". "
+            error_msg += self.helper.translation.translate(
+                "login", "defaultPath", self.helper.get_setting("language")
             )
-            self.controller.log_attempt(self.get_remote_ip(), username)
-            # Setup error message for failed login
-            error_msg = self.helper.translation.translate(
-                "login", "incorrect", self.helper.get_setting("language")
-            )
-            if password == "app/config/default-creds.txt":
-                error_msg += ". "
-                error_msg += self.helper.translation.translate(
-                    "login", "defaultPath", self.helper.get_setting("language")
-                )
-            self.finish_json(
-                401,
-                {
-                    "status": "error",
-                    "error": "INCORRECT_CREDENTIALS",
-                    "error_data": error_msg,
-                },
-            )
+        return self.finish_json(
+            401,
+            {
+                "status": "error",
+                "error": "INCORRECT_CREDENTIALS",
+                "error_data": error_msg,
+            },
+        )
 
     def set_current_user(self, user_id: str = None, token: str = None):
         expire_days = self.helper.get_setting("cookie_expire")

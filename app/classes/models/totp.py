@@ -1,6 +1,6 @@
 import logging
 
-from peewee import ForeignKeyField, CharField, BooleanField
+from peewee import ForeignKeyField, CharField
 
 from app.classes.shared.helpers import Helpers
 from app.classes.models.users import Users
