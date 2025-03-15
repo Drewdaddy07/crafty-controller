@@ -74,58 +74,59 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="label" data-backupcode="{{ translate('login', 'backupCode', data['lang']) }}"
+                  <label class="label full-width" data-backupcode="{{ translate('login', 'backupCode', data['lang']) }}"
                     data-2fa="{{ translate('login', 'totp', data['lang']) }}" id="multi-label"><span
                       id="auth-code-label">{{
                       translate('login', 'totp', data['lang']) }}</span>&nbsp;<span
                       class="badge badge-pill badge-info">{{
                       translate('login', '2fa', data['lang'])
-                      }}</span></label>
-                  <div class="input-group flex-container">
-                    <div id="totp_container">
-                      <input type="text" class="form-control login-text-input login-input" placeholder="000000"
-                        name="totp" id="totp">
-                    </div>
-                    <select required class="form-control form-control-lg select-css" id="2fa-type" name="type">
-                      <option value="totp">{{ translate('login', 'totpSelect', data['lang']) }}</option>
-                      <option value="backup_code">{{ translate('login', 'backupCodeTitle', data['lang']) }}</option>
-                    </select>
-                  </div>
+                      }}</span>
+                    <div class="input-group flex-container">
+                      <div id="totp_container">
+                        <input type="text" class="form-control login-text-input login-input" placeholder="000000"
+                          name="totp" id="totp">
+                      </div>
+                  </label>
+                  <select required class="form-control form-control-lg select-css" id="2fa-type" name="type">
+                    <option value="totp">{{ translate('login', 'totpSelect', data['lang']) }}</option>
+                    <option value="backup_code">{{ translate('login', 'backupCodeTitle', data['lang']) }}</option>
+                  </select>
                 </div>
-                <div class="form-group">
-                  <button class="login-input btn btn-primary submit-btn btn-block">{{ translate('login', 'login',
-                    data['lang']) }}</button>
-                </div>
-                <fieldset id="error-field" class="loginError">
-                </fieldset>
-                <div class="form-group d-flex justify-content-between">
-                  <div class="form-check form-check-flat mt-0">
-                    &nbsp;
-                  </div>
-                  <button onclick="resetPass()" id="#resetPass" form=""
-                    class="btn btn-outline-primary btn-sm forgot-password ">{{ translate('login', 'forgotPassword',
-                    data['lang']) }}</button>
-                </div>
-
-                <div class="text-block text-center my-3">
-                  <span class="text-small font-weight-semibold"><a href="https://craftycontrol.com/">Crafty Control</a>
-                  </span>
-                </div>
-
-                <div class="text-block text-center my-3">
-                  <a href="/status" class="text-small forgot-password">{{ translate('login', 'viewStatus',
-                    data['lang']) }}</a>
-                </div>
-              </form>
-
+            </div>
+            <div class="form-group">
+              <button class="login-input btn btn-primary submit-btn btn-block">{{ translate('login', 'login',
+                data['lang']) }}</button>
+            </div>
+            <fieldset id="error-field" class="loginError">
+            </fieldset>
+            <div class="form-group d-flex justify-content-between">
+              <div class="form-check form-check-flat mt-0">
+                &nbsp;
+              </div>
+              <button onclick="resetPass()" id="#resetPass" form=""
+                class="btn btn-outline-primary btn-sm forgot-password ">{{ translate('login', 'forgotPassword',
+                data['lang']) }}</button>
             </div>
 
+            <div class="text-block text-center my-3">
+              <span class="text-small font-weight-semibold"><a href="https://craftycontrol.com/">Crafty Control</a>
+              </span>
+            </div>
+
+            <div class="text-block text-center my-3">
+              <a href="/status" class="text-small forgot-password">{{ translate('login', 'viewStatus',
+                data['lang']) }}</a>
+            </div>
+            </form>
+
           </div>
+
         </div>
       </div>
-      <!-- content-wrapper ends -->
     </div>
-    <!-- page-body-wrapper ends -->
+    <!-- content-wrapper ends -->
+  </div>
+  <!-- page-body-wrapper ends -->
   </div>
   <!-- container-scroller -->
   <!-- plugins:js -->
@@ -214,14 +215,12 @@
           // Redirect immediately if no warning
           location.href = responseData.data.page;
         }
+      } else if (responseData.cooldown_time) {
+        $("#error-field").html(`${responseData.error_data}&nbsp;<span id="cooldown">${responseData.cooldown_time || ""}</span>`);
+        let time_array = String(responseData.cooldown_time).split(":")
+        startCountdown(time_array[0], time_array[1]);
       } else {
-        if (responseData.cooldown_time) {
-          $("#error-field").html(`${responseData.error_data}&nbsp;<span id="cooldown">${responseData.cooldown_time || ""}</span>`);
-          let time_array = String(responseData.cooldown_time).split(":")
-          startCountdown(time_array[0], time_array[1]);
-        } else {
-          $("#error-field").html(`${responseData.error_data}`);
-        }
+        $("#error-field").html(`${responseData.error_data}`);
       }
     });
     function startCountdown(minutes, seconds) {

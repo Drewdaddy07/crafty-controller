@@ -37,7 +37,6 @@ class APIUsersTOTPIndexHandler(BaseApiHandler):
 
         if user_id in ["@me", user["user_id"]]:
             user_id = user["user_id"]
-            res_user = user
         elif (
             EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions
             and not auth_data[4]["superuser"]
@@ -51,8 +50,8 @@ class APIUsersTOTPIndexHandler(BaseApiHandler):
             )
         else:
             # has User_Config permission and isn't viewing self
-            res_user = self.controller.users.get_user_by_id(user_id)
-            if not res_user:
+            user = self.controller.users.get_user_by_id(user_id)
+            if not user:
                 return self.finish_json(
                     404,
                     {

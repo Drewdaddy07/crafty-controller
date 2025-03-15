@@ -48,6 +48,10 @@
     /* Vertically align items */
 }
 
+.full-width {
+    width: 100%;
+}
+
 #totp_container {
     flex: 1;
     /* Allows the TOTP input to take up more space */
