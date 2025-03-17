@@ -275,7 +275,7 @@
         "match": "Şifreler eşleşmelidir",
         "newRole": "Yeni Rol Ekle",
         "newUser": "Yeni Kullanıcı Ekle",
-        "noMounts": "Arayüzde montaj gösterme",
+        "noMounts": "Arayüzde depolama bağlantısı gösterme",
         "pageTitle": "Panel Konfigürasyonu",
         "role": "Rol",
         "roleUsers": "Role Sahip Kullanıcılar",
@@ -750,6 +750,8 @@
         "keywords": "Crafty'nin sunucu terminallerinizde vurgulaması gerektiği anahtar kelimeler",
         "language": "Küresel sistem dili. (Herkese açık sayfalar ve çeviri yedeği için)",
         "max_audit_entries": "Crafty'nin etkinlik günlüğünde izin verilen maksimum kayıt sayısı",
-        "max_log_lines": "Dosya başına maksimum günlük satırı sayısı"
+        "max_log_lines": "Dosya başına maksimum günlük satırı sayısı",
+        "max_login_attempts": "Uzak IP'nin zaman aşımına uğramadan önce deneyebileceği maksimum oturum açma sayısı",
+        "monitored_mounts": "Arayüz üzerinde görülebilen depolama bağlantıları"
     }
 }
