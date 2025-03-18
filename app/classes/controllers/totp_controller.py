@@ -68,14 +68,15 @@ class TOTPController:
 
         # Check to see if someone is trying to reuse a key in the 60 second window
         if str(user_id) in self.used_totp_codes:
-            if str(totp_code) in self.used_totp_codes[str(user_id)]:
-                if now - self.used_totp_codes[str(user_id)][totp_code] < timedelta(
-                    seconds=60
-                ):
-                    logger.info(
-                        "Someone is attempting to reuse MFA code for user %s", user_id
-                    )
-                    return authenticated
+            if str(totp_code) in self.used_totp_codes[
+                str(user_id)
+            ] and now - self.used_totp_codes[str(user_id)][totp_code] < timedelta(
+                seconds=60
+            ):
+                logger.info(
+                    "Someone is attempting to reuse MFA code for user %s", user_id
+                )
+                return authenticated
         else:
             self.used_totp_codes[str(user_id)] = {}  # Init empty dict if not in there
 
