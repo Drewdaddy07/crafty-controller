@@ -372,7 +372,6 @@ class FileHelpers:
             "server.properties",
             "permissions.json",
             "allowlist.json",
-            "db_stats",
         ]
         # Get directory without zipfile name
         new_dir = pathlib.Path(zip_path).parents[0]
@@ -390,7 +389,7 @@ class FileHelpers:
                 # out of the temp directory and into it's final home.
                 for item in os.listdir(temp_dir):
                     # if the file is one of our ignored names we'll skip it
-                    if item in ignored_names and server_update:
+                    if (item in ignored_names and server_update) or item == "db_stats":
                         continue
                     # we handle files and dirs differently or we'll crash out.
                     if os.path.isdir(os.path.join(temp_dir, item)):
