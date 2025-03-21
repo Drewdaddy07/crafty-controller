@@ -368,7 +368,12 @@ class FileHelpers:
 
     @staticmethod
     def unzip_file(zip_path, server_update=False):
-        ignored_names = ["server.properties", "permissions.json", "allowlist.json"]
+        ignored_names = [
+            "server.properties",
+            "permissions.json",
+            "allowlist.json",
+            "db_stats",
+        ]
         # Get directory without zipfile name
         new_dir = pathlib.Path(zip_path).parents[0]
         # make sure we're able to access the zip file
