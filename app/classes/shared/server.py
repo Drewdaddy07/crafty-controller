@@ -687,11 +687,16 @@ class ServerInstance:
                 try:
                     # Getting the forge version from the executable command
                     version = re.findall(
-                        r"forge-installer-([0-9\.]+)((?:)|"
+                        r"(?:forge|neoforge)-installer-([0-9\.]+)((?:)|"
                         r"(?:-([0-9\.]+)-[a-zA-Z]+)).jar",
                         server_obj.execution_command,
                     )
-                    version_param = version[0][0].split(".")
+                    version_info = re.findall(
+                        r"(forge|neoforge)-installer-([0-9\.]+)((?:)|"
+                        r"(?:-([0-9\.]+)-[a-zA-Z]+)).jar",
+                        server_obj.execution_command,
+                    )
+                    version_param = version_info[0][1].split(".")
                     version_major = int(version_param[0])
                     version_minor = int(version_param[1])
                     if len(version_param) > 2:
@@ -705,7 +710,7 @@ class ServerInstance:
 
                         # Retrieving the executable jar filename
                         file_path = glob.glob(
-                            f"{server_obj.path}/forge-{version[0][0]}*.jar"
+                            f"{server_obj.path}/{version_info[0][0]}-{version[0][1]}*.jar"
                         )[0]
                         file_name = re.findall(
                             r"(forge[-0-9.]+.jar)",
