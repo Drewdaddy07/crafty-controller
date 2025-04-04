@@ -710,7 +710,8 @@ class ServerInstance:
 
                         # Retrieving the executable jar filename
                         file_path = glob.glob(
-                            f"{server_obj.path}/{version_info[0][0]}-{version[0][1]}*.jar"
+                            f"{server_obj.path}/"
+                            f"{version_info[0][0]}-{version[0][1]}*.jar"
                         )[0]
                         file_name = re.findall(
                             r"(forge[-0-9.]+.jar)",
@@ -736,7 +737,9 @@ class ServerInstance:
                         server_obj.execution_command = execution_command
                         Console.debug(SUCCESSMSG)
 
-                    elif version_major <= 1 and version_minor <= 20 and version_sub < 3:
+                    elif (
+                        version_major <= 1 and version_minor <= 20 and version_sub < 3
+                    ) or version_info[0][0] == "neoforge":
                         # NEW VERSION >= 1.17 and <= 1.20.2
                         # (no jar file in server dir, only run.bat and run.sh)
 
@@ -771,7 +774,7 @@ class ServerInstance:
 
                         # Let's set the proper server executable
                         server_obj.executable = os.path.join(
-                            f"{executable_path}forge-{version}-server.jar"
+                            f"{executable_path}{version_info[0][0]}-{version}-server.jar"
                         )
                         # Now lets set up the new run command.
                         # This is based off the run.sh/bat that
