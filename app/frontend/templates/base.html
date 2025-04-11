@@ -140,7 +140,7 @@
     const MFA_LINK = document.querySelector('meta[name="mfa_link"]');
     const USER_ID = document.querySelector('meta[name="userId"]');
     if (MFA_WARN) {
-      warn(MFA_WARN.content, link = `/panel/edit_user_otp?id=${USER_ID.content}`, link_msg = `${MFA_LINK.content}`, className = "clean-link", bg_color = "#cf0000")
+      warn(MFA_WARN.content, `/panel/edit_user_otp?id=${USER_ID.content}`, `${MFA_LINK.content}`, "clean-link", "#cf0000")
     }
     /**
       * Returns a random number between min (inclusive) and max (exclusive)
