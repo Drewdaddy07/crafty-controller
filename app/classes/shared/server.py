@@ -925,7 +925,9 @@ class ServerInstance:
 
         try:
             # remove the stats polling job since server is stopped
+            logger.info("Cleaning up stats schedules for server %s", self.server_id)
             self.server_scheduler.remove_job("stats_" + str(self.server_id))
+            self.server_scheduler.remove_job("save_stats_" + str(self.server_id))
         except JobLookupError as e:
             logger.error(
                 f"Could not remove job with id stats_{self.server_id} due"
@@ -990,6 +992,7 @@ class ServerInstance:
         self.server_scheduler.remove_job(f"c_{self.server_id}")
         # remove the stats polling job since server is stopped
         self.server_scheduler.remove_job("stats_" + str(self.server_id))
+        self.server_scheduler.remove_job("save_stats_" + str(self.server_id))
 
         # the server crashed, or isn't found - so let's reset things.
         logger.warning(
