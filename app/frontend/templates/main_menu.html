@@ -124,7 +124,8 @@
       </a>
     </li>
     {% end %}
-    <li class="nav-item">
+    <li class="nav-item parent">
+      <span id="panel-settings" class="ribbon d-none">New!</span>
       <a class="nav-link panel-settings" href="/panel/panel_config">
         <i class="fas fa-cogs"></i>&nbsp;
         <span class="menu-title">{{ translate('sidebar', 'panelSettings', data['lang']) }}</span>
@@ -136,6 +137,13 @@
 <script>
   $(document).ready(function () {
     $('#sidebar-servers li:gt(10)').remove();
+    // "New" tag will be removed from panel settings icon on June 16th, 2025
+    const today = new Date();
+    const cutoffDate = new Date(2025, 5, 16); // June is month 5 (0-indexed)
+
+    if (today < cutoffDate) {
+      $("#panel-settings").removeClass("d-none");
+    }
   })
 </script>
 <!-- partial -->
