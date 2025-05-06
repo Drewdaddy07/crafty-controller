@@ -3,7 +3,6 @@ import os
 import re
 import sys
 import json
-import tempfile
 import time
 import uuid
 import string
@@ -12,18 +11,23 @@ import socket
 import secrets
 import logging
 import html
-import zipfile
 import pathlib
 import ctypes
 import shutil
 import shlex
 import subprocess
 import itertools
-from datetime import datetime, timezone
 from socket import gethostname
 from contextlib import redirect_stderr, suppress
+from datetime import datetime, timezone, timedelta
+
 import libgravatar
 from packaging import version as pkg_version
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
+
 
 from app.classes.helpers.cryptography_helper import CryptoHelper
 from app.classes.shared.null_writer import NullWriter
@@ -42,10 +46,68 @@ if os.name == "nt":
 
 logger = logging.getLogger(__name__)
 
+MASTER_CONFIG = {
+    "https_port": 8443,
+    "language": "en_EN",
+    "cookie_expire": 30,
+    "show_errors": True,
+    "history_max_age": 7,
+    "stats_update_frequency_seconds": 30,
+    "delete_default_json": False,
+    "show_contribute_link": True,
+    "virtual_terminal_lines": 70,
+    "max_log_lines": 700,
+    "max_audit_entries": 300,
+    "disabled_language_files": [],
+    "keywords": ["help", "chunk"],
+    "allow_nsfw_profile_pictures": False,
+    "enable_user_self_delete": False,
+    "reset_secrets_on_next_boot": False,
+    "dir_size_poll_freq_minutes": 5,
+    "crafty_logs_delete_after_days": 0,
+    "big_bucket_repo": "https://jars.arcadiatech.org",
+    "enable_otp_skew": False,
+    "max_login_attempts": 3,
+    "superMFA": True,
+}
+
+CONFIG_CATEGORIES = {
+    "general": [
+        "https_port",
+        "language",
+        "show_errors",
+        "show_contribute_link",
+        "disabled_language_files",
+        "big_bucket_repo",
+        "enable_user_self_delete",
+    ],
+    "security": [
+        "allow_nsfw_profile_pictures",
+        "cookie_expire",
+        "reset_secrets_on_next_boot",
+        "enable_otp_skew",
+        "superMFA",
+        "max_login_attempts",
+    ],
+    "logs": [
+        "max_log_lines",
+        "max_audit_entries",
+        "history_max_age",
+        "crafty_logs_delete_after_days",
+        "virtual_terminal_lines",
+        "keywords",
+    ],
+    "monitoring": [
+        "monitored_mounts",
+        "dir_size_poll_freq_minutes",
+        "stats_update_frequency_seconds",
+    ],
+    "miscellaneous": ["delete_default_json"],
+}
+
 try:
     import requests
     from requests import get
-    from OpenSSL import crypto
     from argon2 import PasswordHasher
 
 except ModuleNotFoundError as err:
@@ -59,6 +121,7 @@ class Helpers:
 
     def __init__(self):
         self.root_dir = os.path.abspath(os.path.curdir)
+        self.read_annc = False
         self.config_dir = os.path.join(self.root_dir, "app", "config")
         self.webroot = os.path.join(self.root_dir, "app", "frontend")
         self.servers_dir = os.path.join(self.root_dir, "servers")
@@ -80,10 +143,13 @@ class Helpers:
 
         self.translation = Translation(self)
         self.update_available = False
+        self.migration_notifications = []
         self.ignored_names = ["crafty_managed.txt", "db_stats"]
         self.crafty_starting = False
         self.minimum_password_length = 8
         self.crypto_helper = CryptoHelper(self)
+
+        self.theme_list = self.load_themes()
 
     @staticmethod
     def auto_installer_fix(ex):
@@ -130,24 +196,33 @@ class Helpers:
                 "Chrome/104.0.0.0 Safari/537.36"
             ),
         }
-        target_win = 'https://minecraft.azureedge.net/bin-win/[^"]*'
-        target_linux = 'https://minecraft.azureedge.net/bin-linux/[^"]*'
-
+        target_win = 'https://www.minecraft.net/bedrockdedicatedserver/bin-win/[^"]*'
+        target_linux = (
+            'https://www.minecraft.net/bedrockdedicatedserver/bin-linux/[^"]*'
+        )
         try:
             # Get minecraft server download page
             # (hopefully the don't change the structure)
             download_page = get(url, headers=headers, timeout=1)
-
+            download_page.raise_for_status()
             # Search for our string targets
-            win_download_url = re.search(target_win, download_page.text).group(0)
-            linux_download_url = re.search(target_linux, download_page.text).group(0)
+            win_search_result = re.search(target_win, download_page.text)
+            linux_search_result = re.search(target_linux, download_page.text)
+            if win_search_result is None or linux_search_result is None:
+                raise RuntimeError(
+                    "Could not determine download URL from minecraft.net."
+                )
 
+            win_download_url = win_search_result.group(0)
+            linux_download_url = linux_search_result.group(0)
+            print(win_download_url, linux_download_url)
             if os.name == "nt":
                 return win_download_url
 
             return linux_download_url
         except Exception as e:
             logger.error(f"Unable to resolve remote bedrock download url! \n{e}")
+            raise e
         return False
 
     def get_execution_java(self, value, execution_command):
@@ -489,6 +564,30 @@ class Helpers:
         return True
 
     @staticmethod
+    def get_categorized_settings(all_settings):
+        # Start with empty dicts for each defined category
+        categorized = {cat: {} for cat in CONFIG_CATEGORIES}
+
+        miscellaneous = {}
+
+        for key, value in all_settings.items():
+            added = False
+            for category, keys in CONFIG_CATEGORIES.items():
+                if key in keys:
+                    categorized[category][key] = value
+                    added = True
+                    break
+            if not added:
+                miscellaneous[key] = value
+
+        # Add miscellaneous last
+        if miscellaneous:
+            for key, value in miscellaneous.items():
+                categorized["miscellaneous"][key] = value
+
+        return categorized
+
+    @staticmethod
     def get_master_config():
         # Let's get the mounts and only show the first one by default
         mounts = Helpers.get_all_mounts()
@@ -497,28 +596,8 @@ class Helpers:
         # Make changes for users' local config.json files here. As of 4.0.20
         # Config.json was removed from the repo to make it easier for users
         # To make non-breaking changes to the file.
-        return {
-            "https_port": 8443,
-            "language": "en_EN",
-            "cookie_expire": 30,
-            "show_errors": True,
-            "history_max_age": 7,
-            "stats_update_frequency_seconds": 30,
-            "delete_default_json": False,
-            "show_contribute_link": True,
-            "virtual_terminal_lines": 70,
-            "max_log_lines": 700,
-            "max_audit_entries": 300,
-            "disabled_language_files": [],
-            "keywords": ["help", "chunk"],
-            "allow_nsfw_profile_pictures": False,
-            "enable_user_self_delete": False,
-            "reset_secrets_on_next_boot": False,
-            "monitored_mounts": mounts,
-            "dir_size_poll_freq_minutes": 5,
-            "crafty_logs_delete_after_days": 0,
-            "big_bucket_repo": "https://jars.arcadiatech.org",
-        }
+        MASTER_CONFIG["monitored_mounts"] = mounts
+        return MASTER_CONFIG
 
     def get_all_settings(self):
         try:
@@ -598,9 +677,20 @@ class Helpers:
             )
         return False
 
-    @staticmethod
-    def get_themes():
-        return ["default", "dark", "light", "ronald"]
+    def load_themes(self):
+        theme_list = []
+        themes_path = os.path.join(self.webroot, "static", "assets", "css", "themes")
+        theme_files = [
+            file
+            for file in os.listdir(themes_path)
+            if os.path.isfile(os.path.join(themes_path, file))
+        ]
+        for theme in theme_files:
+            theme_list.append(theme.split(".css")[0])
+        return theme_list
+
+    def get_themes(self):
+        return self.theme_list
 
     @staticmethod
     def get_local_ip():
@@ -628,11 +718,49 @@ class Helpers:
 
         return version_data
 
-    def get_announcements(self):
+    def check_migrations(self) -> None:
+        if self.read_annc is False:
+            self.read_annc = True
+            for file in os.listdir(
+                os.path.join(self.root_dir, "app", "migrations", "status")
+            ):
+                with open(
+                    os.path.join(self.root_dir, "app", "migrations", "status", file),
+                    "r",
+                    encoding="utf-8",
+                ) as notif_file:
+                    file_json = json.load(notif_file)
+                    for notif in file_json:
+                        if not file_json[notif].get("status"):
+                            self.migration_notifications.append(file_json[notif])
+
+    def get_announcements(self, lang=None):
         try:
             data = []
             response = requests.get("https://craftycontrol.com/notify", timeout=2)
             data = json.loads(response.content)
+            if not lang:
+                lang = self.get_setting("language")
+            self.check_migrations()
+            for migration_warning in self.migration_notifications:
+                if not migration_warning.get("status"):
+                    data.append(
+                        {
+                            "id": migration_warning.get("pid"),
+                            "title": self.translation.translate(
+                                "notify",
+                                f"{migration_warning.get('type')}_title",
+                                lang,
+                            ),
+                            "date": "",
+                            "desc": self.translation.translate(
+                                "notify",
+                                f"{migration_warning.get('type')}_desc",
+                                lang,
+                            ),
+                            "link": "",
+                        }
+                    )
             if self.update_available:
                 data.append(self.update_available)
             return data
@@ -1030,10 +1158,33 @@ class Helpers:
             return False
 
     def create_self_signed_cert(self, cert_dir=None):
+        """
+        Creates a self-signed SSL certificate and private key, writing them to disk.
+
+        Parameters:
+            - cert_dir (str, optional): The directory where the certificate and key
+            files will be created.
+                If not provided, a default path under the config_dir is used.
+
+        Returns:
+            - bool: True if the certificate and key are created,
+              False otherwise.
+
+        Raises:
+            - OSError: If there are issues creating files or directories.
+
+        Exception:
+            Any unexpected error that occurs during certificate or key generation.
+
+        Note:
+        This function generates an RSA key pair and an X.509 certificate using
+        the cryptography library.
+        The resulting files are saved in PEM format.
+        """
         if cert_dir is None:
             cert_dir = os.path.join(self.config_dir, "web", "certs")
 
-        # create a directory if needed
+        # Ensure directory exists
         Helpers.ensure_dir_exists(cert_dir)
 
         cert_file = os.path.join(cert_dir, "commander.cert.pem")
@@ -1042,61 +1193,84 @@ class Helpers:
         logger.info(f"SSL Cert File is set to: {cert_file}")
         logger.info(f"SSL Key File is set to: {key_file}")
 
-        # don't create new files if we already have them.
+        # Don't create new files if we already have them.
         if Helpers.check_file_exists(cert_file) and Helpers.check_file_exists(key_file):
             logger.info("Cert and Key files already exists, not creating them.")
-            return True
+            return False
 
         Console.info("Generating a self signed SSL")
         logger.info("Generating a self signed SSL")
 
-        # create a key pair
+        # Generate private key
         logger.info("Generating a key pair. This might take a moment.")
         Console.info("Generating a key pair. This might take a moment.")
-        k = crypto.PKey()
-        k.generate_key(crypto.TYPE_RSA, 4096)
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=4096,
+        )
 
-        # create a self-signed cert
-        cert = crypto.X509()
-        cert.get_subject().C = "US"
-        cert.get_subject().ST = "Michigan"
-        cert.get_subject().L = "Kent County"
-        cert.get_subject().O = "Crafty Controller"
-        cert.get_subject().OU = "Server Ops"
-        cert.get_subject().CN = gethostname()
-        alt_names = ",".join(
+        # Build certificate subject/issuer meta
+        subject = issuer = x509.Name(
             [
-                f"DNS:{socket.gethostname()}",
-                f"DNS:*.{socket.gethostname()}",
-                "DNS:localhost",
-                "DNS:*.localhost",
-                "DNS:127.0.0.1",
+                x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Indiana"),
+                x509.NameAttribute(
+                    NameOID.ORGANIZATION_NAME, "Arcadia Technology, LLC"
+                ),
+                x509.NameAttribute(
+                    NameOID.ORGANIZATIONAL_UNIT_NAME, "Crafty Controller"
+                ),
+                x509.NameAttribute(NameOID.COMMON_NAME, gethostname()),
+                x509.NameAttribute(NameOID.EMAIL_ADDRESS, "info@arcadiatech.org"),
             ]
-        ).encode()
-        subject_alt_names_ext = crypto.X509Extension(
-            b"subjectAltName", False, alt_names
         )
-        basic_constraints_ext = crypto.X509Extension(
-            b"basicConstraints", True, b"CA:false"
-        )
-        cert.add_extensions([subject_alt_names_ext, basic_constraints_ext])
-        cert.set_serial_number(secrets.randbelow(254) + 1)
-        cert.gmtime_adj_notBefore(0)
-        cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
-        cert.set_issuer(cert.get_subject())
-        cert.set_pubkey(k)
-        cert.set_version(2)
-        cert.sign(k, "sha256")
 
-        with open(cert_file, "w", encoding="utf-8") as cert_file_handle:
-            cert_file_handle.write(
-                crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode()
+        # Build subject Alternative Names
+        alt_names = [
+            socket.gethostname(),
+            f"*.{socket.gethostname()}",
+            "localhost",
+            "*.localhost",
+            "*.local",
+            "127.0.0.1",
+        ]
+        san = x509.SubjectAlternativeName([x509.DNSName(name) for name in alt_names])
+
+        # Construct certificate
+        cert_builder = (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(issuer)
+            .public_key(private_key.public_key())
+            .serial_number(secrets.randbelow(254) + 1)  # rand serial
+            .not_valid_before(datetime.now(timezone.utc))
+            .not_valid_after(datetime.now(timezone.utc) + timedelta(days=365))  # 1 yr
+            .add_extension(san, critical=False)
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None), critical=True
             )
+        )
 
-        with open(key_file, "w", encoding="utf-8") as key_file_handle:
+        # Sign certificate
+        certificate = cert_builder.sign(
+            private_key=private_key, algorithm=hashes.SHA256()
+        )
+
+        # Write cert and priv key to disk
+        with open(cert_file, "wb") as cert_file_handle:
+            cert_file_handle.write(certificate.public_bytes(serialization.Encoding.PEM))
+        with open(key_file, "wb") as key_file_handle:
             key_file_handle.write(
-                crypto.dump_privatekey(crypto.FILETYPE_PEM, k).decode()
+                private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.NoEncryption(),
+                )
             )
+
+        logger.info("Self-signed certificate and key generation completed.")
+        Console.info("Self-signed certificate and key generation completed.")
+        return True
 
     @staticmethod
     def random_string_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -1163,8 +1337,8 @@ class Helpers:
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <input type="radio" name="root_path" value="{dpath}">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i style="color: var(--info);" class="far fa-folder"></i>
-                      <i style="color: var(--info);" class="far fa-folder-open"></i>
+                      <i class="text-info far fa-folder"></i>
+                      <i class="text-info far fa-folder-open"></i>
                       {filename}
                       </span>
                     </input></div><li>
@@ -1185,23 +1359,12 @@ class Helpers:
                     \n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">
                     <input type="radio" name="root_path" value="{dpath}">
                     <span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">
-                      <i style="color: var(--info);" class="far fa-folder"></i>
-                      <i style="color: var(--info);" class="far fa-folder-open"></i>
+                      <i class="text-info far fa-folder"></i>
+                      <i class="text-info far fa-folder-open"></i>
                       {filename}
                       </span>
                     </input></div><li>"""
         return output
-
-    @staticmethod
-    def unzip_backup_archive(backup_path, zip_name):
-        zip_path = os.path.join(backup_path, zip_name)
-        if Helpers.check_file_perms(zip_path):
-            temp_dir = tempfile.mkdtemp()
-            with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                # extracts archive to temp directory
-                zip_ref.extractall(temp_dir)
-            return temp_dir
-        return False
 
     @staticmethod
     def remove_prefix(text, prefix):

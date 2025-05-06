@@ -29,7 +29,6 @@
         "permName": "Nom de la Permission",
         "perms": "Permissions",
         "server": "Serveur: ",
-        "superUser": "Super Utilisateur",
         "yes": "Oui"
     },
     "base": {
@@ -143,12 +142,12 @@
                 "pdf": "PDF",
                 "print": "Imprimer"
             },
-            "decimal": "",
+            "decimal": ".",
             "emptyTable": "Aucune donnée disponible dans le table",
             "info": "Affichage de _START_ to _END_ entrées sur _TOTAL_",
             "infoEmpty": "Affichage des entrées 0 à 0 sur 0 entrées",
             "infoFiltered": "(filtré sur un total de _MAX_ entrées)",
-            "infoPostFix": "",
+            "infoPostFix": "|",
             "lengthMenu": "Afficher _MENU_ entrées",
             "loadingRecords": "Chargement ...",
             "paginate": {
@@ -209,8 +208,6 @@
         "privMsg": "et le ",
         "return": "Revenir au Tableau de Bord",
         "selfHost": "Si vous hébergez vous-même ce repo, veuillez vérifier votre adresse et votre guide de dépannage.",
-        "serverJars1": "l'API Server JARs est inaccessible. Merci de vérifier",
-        "serverJars2": "pour les informations les plus à jour.",
         "start-error": "Le serveur {} n'a pas pu démarrer avec le code d'erreur : {}",
         "superError": "Tu dois être un super utilisateur pour effectuer cette action.",
         "terribleFailure": "C'est une Terrible Erreur !"
@@ -313,7 +310,6 @@
         "compress": "Compresser la Sauvegarde",
         "confirm": "Confirmer",
         "confirmDelete": "Es-tu sûr de vouloir supprimer cette sauvegarde ? Tu ne pourras pas revenir en arrière.",
-        "confirmRestore": "Êtes-vous sûr de vouloir restaurer à partir de cette sauvegarde. Tous les fichiers du serveur actuel passeront à l'état de sauvegarde et seront irrécupérables.",
         "currentBackups": "Sauvegardes Actuelles",
         "default": "Sauvegarde par Défaut",
         "defaultExplain": "La sauvegarde que Crafty utilisera avant la mise à jour. Cela ne peut être changé ou modifié.",
@@ -554,7 +550,6 @@
     "serverTerm": {
         "commandInput": "Entre ta commande",
         "delay-explained": "Le service/agent a récemment démarré et retarde le démarrage de l'instance du serveur minecraft",
-        "downloading": "Téléchargement ...",
         "importing": "Importation ...",
         "installing": "Installation ...",
         "restart": "Redémarrer",

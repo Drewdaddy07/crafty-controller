@@ -1,13 +1,72 @@
 # Changelog
-## --- [4.4.4] - 2024/TBD
+## --- [4.4.8] - 2025/TBD
+
+### Refactor
+- Refactor backups for efficiency and in-place backup restores ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/815))
+- Refactor self-signed cert creation from `OpenSSL.crypto.X509` to `pyca/cryptography`'s X.509 APIs ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/833))
+- Refactor 'config.json' tab to include settings sections ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/841))
 ### New features
-TBD
+- Add TOTP to allow for added authentication security ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/818) | [!838](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/838) | [!841](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/841))
 ### Bug fixes
-TBD
+- Bump cryptography for CVE-2024-12797 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/833))
+- Fix problematic MOTDs on bedrock servers breaking stats collection ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/831))
+- Fix caching issue on upload imports ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/836))
+- Fix server-name not showing after CSS refactor ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/832))
+- Fix overall player count on dashboard after CSS refactor ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/829))
+- Fix ignored names being ignored on all unzips and not just server updates ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/830))
+- Fix unzipping archive with db_stats would cause system crash ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/839))
+- Remove stats scheduling when monitored server is offline ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/842))
 ### Tweaks
-TBD
+- Add neoforge support in server builder ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/843))
 ### Lang
 TBD
+<br><br>
+
+
+## --- [4.4.7] - 2025/01/20
+### Bug fixes
+- Docker Repair | Remove ubuntu user to replace with crafty user ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/826)) Resolves #521
+<br><br>
+
+## --- [4.4.6] - 2025/01/20
+## NOTE Version effected by non-root docker issue if you installed from this version see [RCA document](https://gitlab.com/crafty-controller/crafty-4/-/issues/521#:~:text=Users%20deploying%20after%204.4.4)
+
+### Bug fixes
+- Fix traceback on stats page for data missing data.get ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/824))
+<br><br>
+
+## --- [4.4.5] - 2025/01/19
+## NOTE Version effected by non-root docker issue if you installed from this version see [RCA document](https://gitlab.com/crafty-controller/crafty-4/-/issues/521#:~:text=Users%20deploying%20after%204.4.4)
+
+### Refactor
+- Refactor and standardize all JSON validator errors returning human readable translations ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/786))
+- Improve docker-build CI/CD, supporting nightly builds ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/813))
+- Standardize and centralize CSS throughout front end, Allows for easier management of themes ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/726))
+### Bug fixes
+- Bump requests to resolve yank for CVE-2024-35195 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/808))
+- Better handle malformed mcping data ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/799))
+- Resolve type issue when posting no keywords in the "keyword" field in config.json tab ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/819))
+- Resolve issue where sometimes backup migration `20240308_multi-backup` would run twice ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/820))
+### Tweaks
+- Dyamically change child action translation for backups ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/806))
+- Remove EXIF image data on app Background Photos ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/805))
+- Bump Docker base image `22.04` -> `24.04` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/812))
+- Bump python pip `2.0.3` -> `24.3.1` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/812))
+- Bump python setuptools `50.3.2` -> `75.6.0` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/812))
+- Bump tornado for CVE-2024-52804 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/814))
+### Lang
+- Weblate Translation Platform Integration
+- Remove incomplete labels from translation files to better support new translation workflow ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/810))
+- New langs added `ja_JP`, `ko_KR` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/811))
+<br><br>
+
+## --- [4.4.4] - 2024/10/03
+### Bug fixes
+- Migrations | Fix orphan schedule configurations crashing migration operation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/796))
+- Fix logic issue causing bedrock wizard's root files buttons to not respond to user click events ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/797))
+- Reset crash detection counter after crash detection process detects successful start ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/798))
+- Update new bedrock DL url and correctly bubble up exception on DL fail - Thanks @sarcastron ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/802))
+- Bump cryptography for GHSA-h4gh-qq45-vh27 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/803))
 <br><br>
 
 ## --- [4.4.3] - 2024/08/08

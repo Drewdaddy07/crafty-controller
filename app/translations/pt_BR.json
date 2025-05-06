@@ -28,7 +28,6 @@
         "permName": "Nome da Permissão",
         "perms": "Permissões",
         "server": "Servidor: ",
-        "superUser": "Super Usuário",
         "yes": "Sim"
     },
     "base": {
@@ -127,12 +126,12 @@
                 "pdf": "PDF",
                 "print": "Imprimir"
             },
-            "decimal": "",
+            "decimal": ".",
             "emptyTable": "Nenhum dado disponível na tabela",
             "info": "Exibindo de _START_ a _END_ de _TOTAL_ entradas",
             "infoEmpty": "Exibindo de 0 a 0 de 0 entradas",
             "infoFiltered": "(filtrado de _MAX_ entradas totais)",
-            "infoPostFix": "",
+            "infoPostFix": "|",
             "lengthMenu": "Exibir _MENU_ entradas",
             "loadingRecords": "Carregando...",
             "paginate": {
@@ -257,7 +256,6 @@
         "compress": "Comprimir Backup",
         "confirm": "Confirmar",
         "confirmDelete": "Deseja deletar este backup? Esta ação não pode ser desfeita.",
-        "confirmRestore": "Tem certeza de que deseja restaurar a partir deste backup. Todos os arquivos atuais do servidor serão mudados para o estado de backup e serão irrecuperáveis.",
         "currentBackups": "Backups atuais",
         "delete": "Deletar",
         "destroyBackup": "Destruir backup \" + file_to_del + \"?",
@@ -445,7 +443,6 @@
     "serverTerm": {
         "commandInput": "Insira seu comando",
         "delay-explained": "O serviço/agente iniciou recentemente e está atrasando o início da instância do servidor de minecraft",
-        "downloading": "Baixando...",
         "restart": "Reiniciar",
         "sendCommand": "Enviar comando",
         "start": "Iniciar",

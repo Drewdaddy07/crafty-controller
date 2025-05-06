@@ -368,8 +368,11 @@ class FileHelpers:
                     else:
                         logger.debug(f"Found {file} in exclusion list. Skipping...")
 
-                    # add current file bytes to total bytes.
-                    total_bytes += os.path.getsize(os.path.join(root, file))
+                    try:
+                        # add current file bytes to total bytes.
+                        total_bytes += os.path.getsize(os.path.join(root, file))
+                    except FileNotFoundError as why:
+                        logger.debug(f"Failed to calculate file size with error {why}")
                     # calcualte percentage based off total size and current archive size
                     percent = round((total_bytes / dir_bytes) * 100, 2)
                     # package results
@@ -429,7 +432,13 @@ class FileHelpers:
                 f"Error moving {old_dir} to {new_dir} with information: {why}"
             ) from why
 
-    def unzip_file(self, zip_path, server_update: bool = False) -> None:
+    @staticmethod
+    def restore_archive(archive_location, destination):
+        with zipfile.ZipFile(archive_location, "r") as zip_ref:
+            zip_ref.extractall(destination)
+
+    @staticmethod
+    def unzip_file(zip_path, server_update: bool = False) -> None:
         """
         Unzips zip file at zip_path to location generated at new_dir based on zip
         contents.
@@ -442,25 +451,51 @@ class FileHelpers:
         Returns: None
 
         """
-        ignored_names: list = [
+        ignored_names = [
             "server.properties",
             "permissions.json",
             "allowlist.json",
         ]
         # Get directory without zipfile name
         new_dir = pathlib.Path(zip_path).parents[0]
-        # make sure the directory we're unzipping this to exists
-        Helpers.ensure_dir_exists(new_dir)
-        # we'll make a temporary directory to unzip this to.
-        temp_dir = tempfile.mkdtemp()
-        try:
-            with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                # we'll extract this to the temp dir using zipfile module
-                zip_ref.extractall(temp_dir)
-        # Catch zipfile extract all error or file open errors.
-        except (ValueError, FileNotFoundError, PermissionError) as why:
-            Console.error(f"Unzip failed with information: {why}")
-            raise RuntimeError(f"Unzip failed for path: {zip_path}") from why
+        # make sure we're able to access the zip file
+        if Helpers.check_file_perms(zip_path) and os.path.isfile(zip_path):
+            # make sure the directory we're unzipping this to exists
+            Helpers.ensure_dir_exists(new_dir)
+            # we'll make a temporary directory to unzip this to.
+            temp_dir = tempfile.mkdtemp()
+            try:
+                with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                    # we'll extract this to the temp dir using zipfile module
+                    zip_ref.extractall(temp_dir)
+                # we'll iterate through the top level directory moving everything
+                # out of the temp directory and into it's final home.
+                for item in os.listdir(temp_dir):
+                    # if the file is one of our ignored names we'll skip it
+                    if (item in ignored_names and server_update) or item == "db_stats":
+                        continue
+                    # we handle files and dirs differently or we'll crash out.
+                    if os.path.isdir(os.path.join(temp_dir, item)):
+                        try:
+                            FileHelpers.move_dir_exist(
+                                os.path.join(temp_dir, item),
+                                os.path.join(new_dir, item),
+                            )
+                        except Exception as ex:
+                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                    else:
+                        try:
+                            FileHelpers.move_file(
+                                os.path.join(temp_dir, item),
+                                os.path.join(new_dir, item),
+                            )
+                        except Exception as ex:
+                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+            except Exception as ex:
+                Console.error(ex)
+        else:
+            return "false"
+        return
 
         # we'll iterate through the top level directory moving everything
         # out of the temp directory and into it's final home.

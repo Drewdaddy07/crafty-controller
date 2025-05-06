@@ -1,7 +1,6 @@
 import logging
 import json
 import os
-from apscheduler.jobstores.base import JobLookupError
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from app.classes.models.server_permissions import EnumPermissionsServer
@@ -14,7 +13,13 @@ logger = logging.getLogger(__name__)
 BACKUP_SCHEMA = {
     "type": "object",
     "properties": {
-        "filename": {"type": "string", "minLength": 5},
+        "filename": {
+            "type": "string",
+            "minLength": 5,
+            "error": "typeString",
+            "fill": True,
+        },
+        "inPlace": {"type": "boolean", "error": "typeBool", "fill": True},
     },
     "additionalProperties": False,
     "minProperties": 1,
@@ -22,19 +27,51 @@ BACKUP_SCHEMA = {
 BACKUP_PATCH_SCHEMA = {
     "type": "object",
     "properties": {
-        "backup_name": {"type": "string", "minLength": 3},
-        "backup_location": {"type": "string", "minLength": 1},
-        "max_backups": {"type": "integer"},
-        "compress": {"type": "boolean"},
-        "shutdown": {"type": "boolean"},
-        "before": {"type": "string"},
-        "after": {"type": "string"},
-        "excluded_dirs": {"type": "array"},
+        "backup_name": {
+            "type": "string",
+            "minLength": 3,
+            "error": "backupName",
+        },
+        "backup_location": {
+            "type": "string",
+            "minLength": 1,
+            "error": "typeString",
+            "fill": True,
+        },
+        "max_backups": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "compress": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "shutdown": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "before": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
+        "after": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
+        "excluded_dirs": {
+            "type": "array",
+            "error": "typeList",
+            "fill": True,
+        },
         "backup_type": {
             "type": "string",
             "enum": ["zip_vault", "snapshot"],
             "error": "enumErr",
-            "fill": True,
         },
     },
     "additionalProperties": False,
@@ -44,18 +81,41 @@ BACKUP_PATCH_SCHEMA = {
 BASIC_BACKUP_PATCH_SCHEMA = {
     "type": "object",
     "properties": {
-        "backup_name": {"type": "string", "minLength": 3},
-        "max_backups": {"type": "integer"},
-        "compress": {"type": "boolean"},
-        "shutdown": {"type": "boolean"},
-        "before": {"type": "string"},
-        "after": {"type": "string"},
-        "excluded_dirs": {"type": "array"},
+        "backup_name": {"type": "string", "minLength": 3, "error": "backupName"},
+        "max_backups": {
+            "type": "integer",
+            "error": "typeInteger",
+            "fill": True,
+        },
+        "compress": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "shutdown": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "before": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
+        "after": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
+        "excluded_dirs": {
+            "type": "array",
+            "error": "typeList",
+            "fill": True,
+        },
         "backup_type": {
             "type": "string",
             "enum": ["zip_vault", "snapshot"],
             "error": "enumErr",
-            "fill": True,
         },
     },
     "additionalProperties": False,
@@ -200,112 +260,34 @@ class ApiServersServerBackupsBackupIndexHandler(BaseApiHandler):
                     "error_data": str(e),
                 },
             )
-
-        svr_obj = self.controller.servers.get_server_obj(server_id)
+        in_place = data.get("inPlace")
+        svr_obj = self.controller.servers.get_server_instance_by_id(server_id)
         server_data = self.controller.servers.get_server_data_by_id(server_id)
         zip_name = data["filename"]
         # import the server again based on zipfile
         backup_config = self.controller.management.get_backup_config(backup_id)
         backup_location = os.path.join(
-            backup_config["backup_location"], backup_config["backup_id"]
+            backup_config["backup_location"],
+            backup_config["backup_id"],
+            data["filename"],
         )
+
         if Helpers.validate_traversal(backup_location, zip_name):
-            try:
-                temp_dir = Helpers.unzip_backup_archive(backup_location, zip_name)
-            except (FileNotFoundError, NotADirectoryError) as e:
-                return self.finish_json(
-                    400, {"status": "error", "error": f"NO BACKUP FOUND {e}"}
-                )
-            if server_data["type"] == "minecraft-java":
-                new_server = self.controller.restore_java_zip_server(
-                    svr_obj.server_name,
-                    temp_dir,
-                    server_data["executable"],
-                    "1",
-                    "2",
-                    server_data["server_port"],
-                    server_data["created_by"],
-                )
-            elif server_data["type"] == "minecraft-bedrock":
-                new_server = self.controller.restore_bedrock_zip_server(
-                    svr_obj.server_name,
-                    temp_dir,
-                    server_data["executable"],
-                    server_data["server_port"],
-                    server_data["created_by"],
-                )
-            new_server_id = new_server
-            new_server = self.controller.servers.get_server_data(new_server)
-            self.controller.rename_backup_dir(
-                server_id,
-                new_server_id,
-                new_server["server_id"],
-            )
-            # preserve current schedules
-            for schedule in self.controller.management.get_schedules_by_server(
-                server_id
-            ):
-                job_data = self.controller.management.get_scheduled_task(
-                    schedule.schedule_id
-                )
-                job_data["server_id"] = new_server_id
-                del job_data["schedule_id"]
-                self.tasks_manager.update_job(schedule.schedule_id, job_data)
-            # preserve execution command
-            new_server_obj = self.controller.servers.get_server_obj(new_server_id)
-            new_server_obj.execution_command = server_data["execution_command"]
-            # reset executable path
-            if svr_obj.path in svr_obj.executable:
-                new_server_obj.executable = str(svr_obj.executable).replace(
-                    svr_obj.path, new_server_obj.path
-                )
-            # reset run command path
-            if svr_obj.path in svr_obj.execution_command:
-                new_server_obj.execution_command = str(
-                    svr_obj.execution_command
-                ).replace(svr_obj.path, new_server_obj.path)
-            # reset log path
-            if svr_obj.path in svr_obj.log_path:
-                new_server_obj.log_path = str(svr_obj.log_path).replace(
-                    svr_obj.path, new_server_obj.path
-                )
-            self.controller.servers.update_server(new_server_obj)
-
-            # preserve backup config
-            server_backups = self.controller.management.get_backups_by_server(server_id)
-            for backup in server_backups:
-                old_backup_id = server_backups[backup]["backup_id"]
-                del server_backups[backup]["backup_id"]
-                server_backups[backup]["server_id"] = new_server_id
-                if str(server_id) in (server_backups[backup]["backup_location"]):
-                    server_backups[backup]["backup_location"] = str(
-                        server_backups[backup]["backup_location"]
-                    ).replace(str(server_id), str(new_server_id))
-                new_backup_id = self.controller.management.add_backup_config(
-                    server_backups[backup]
-                )
-                os.listdir(server_backups[backup]["backup_location"])
-                FileHelpers.move_dir(
-                    os.path.join(
-                        server_backups[backup]["backup_location"], old_backup_id
-                    ),
-                    os.path.join(
-                        server_backups[backup]["backup_location"], new_backup_id
-                    ),
-                )
-            # remove old server's tasks
-            try:
-                self.tasks_manager.remove_all_server_tasks(server_id)
-            except JobLookupError as e:
-                logger.info("No active tasks found for server: {e}")
-            self.controller.remove_server(server_id, True)
-
-        self.controller.management.add_to_audit_log(
-            auth_data[4]["user_id"],
-            f"Restored server {server_id} backup {data['filename']}",
-            server_id,
-            self.get_remote_ip(),
-        )
+            if svr_obj.check_running():
+                svr_obj.stop_server()
+            if (
+                not in_place
+            ):  # If user does not want to backup in place we will clean the server dir
+                for item in os.listdir(server_data["path"]):
+                    if os.path.isdir(os.path.join(server_data["path"], item)):
+                        self.file_helper.del_dirs(
+                            os.path.join(server_data["path"], item)
+                        )
+                    else:
+                        self.file_helper.del_file(
+                            os.path.join(server_data["path"], item)
+                        )
+            self.file_helper.restore_archive(backup_location, server_data["path"])
 
         return self.finish_json(200, {"status": "ok"})
 
@@ -326,13 +308,21 @@ class ApiServersServerBackupsBackupIndexHandler(BaseApiHandler):
                 validate(data, BACKUP_PATCH_SCHEMA)
             else:
                 validate(data, BASIC_BACKUP_PATCH_SCHEMA)
-        except ValidationError as e:
+        except ValidationError as why:
+            offending_key = ""
+            if why.schema.get("fill", None):
+                offending_key = why.path[0] if why.path else None
+            err = f"""{offending_key} {self.translator.translate(
+                "validators",
+                why.schema.get("error", "additionalProperties"),
+                self.controller.users.get_user_lang_by_id(auth_data[4]["user_id"]),
+            )} {why.schema.get("enum", "")}"""
             return self.finish_json(
                 400,
                 {
                     "status": "error",
                     "error": "INVALID_JSON_SCHEMA",
-                    "error_data": str(e),
+                    "error_data": f"{str(err)}",
                 },
             )
         backup_conf = self.controller.management.get_backup_config(backup_id)
@@ -417,13 +407,21 @@ class ApiServersServerBackupsBackupFilesIndexHandler(BaseApiHandler):
             )
         try:
             validate(data, BACKUP_SCHEMA)
-        except ValidationError as e:
+        except ValidationError as why:
+            offending_key = ""
+            if why.schema.get("fill", None):
+                offending_key = why.path[0] if why.path else None
+            err = f"""{offending_key} {self.translator.translate(
+                "validators",
+                why.schema.get("error", "additionalProperties"),
+                self.controller.users.get_user_lang_by_id(auth_data[4]["user_id"]),
+            )} {why.schema.get("enum", "")}"""
             return self.finish_json(
                 400,
                 {
                     "status": "error",
                     "error": "INVALID_JSON_SCHEMA",
-                    "error_data": str(e),
+                    "error_data": f"{str(err)}",
                 },
             )
         self.helper.validate_traversal(
@@ -444,7 +442,7 @@ class ApiServersServerBackupsBackupFilesIndexHandler(BaseApiHandler):
             )
         except Exception as e:
             return self.finish_json(
-                400, {"status": "error", "error": f"DELETE FAILED with error {e}"}
+                400, {"status": "error", "error": "DELETE FAILED", "error_data": e}
             )
         self.controller.management.add_to_audit_log(
             auth_data[4]["user_id"],

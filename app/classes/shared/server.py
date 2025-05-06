@@ -690,11 +690,16 @@ class ServerInstance:
                 try:
                     # Getting the forge version from the executable command
                     version = re.findall(
-                        r"forge-installer-([0-9\.]+)((?:)|"
+                        r"(?:forge|neoforge)-installer-([0-9\.]+)((?:)|"
                         r"(?:-([0-9\.]+)-[a-zA-Z]+)).jar",
                         server_obj.execution_command,
                     )
-                    version_param = version[0][0].split(".")
+                    version_info = re.findall(
+                        r"(forge|neoforge)-installer-([0-9\.]+)((?:)|"
+                        r"(?:-([0-9\.]+)-[a-zA-Z]+)).jar",
+                        server_obj.execution_command,
+                    )
+                    version_param = version_info[0][1].split(".")
                     version_major = int(version_param[0])
                     version_minor = int(version_param[1])
                     if len(version_param) > 2:
@@ -708,7 +713,8 @@ class ServerInstance:
 
                         # Retrieving the executable jar filename
                         file_path = glob.glob(
-                            f"{server_obj.path}/forge-{version[0][0]}*.jar"
+                            f"{server_obj.path}/"
+                            f"{version_info[0][0]}-{version[0][1]}*.jar"
                         )[0]
                         file_name = re.findall(
                             r"(forge[-0-9.]+.jar)",
@@ -734,7 +740,9 @@ class ServerInstance:
                         server_obj.execution_command = execution_command
                         Console.debug(SUCCESSMSG)
 
-                    elif version_major <= 1 and version_minor <= 20 and version_sub < 3:
+                    elif (
+                        version_major <= 1 and version_minor <= 20 and version_sub < 3
+                    ) or version_info[0][0] == "neoforge":
                         # NEW VERSION >= 1.17 and <= 1.20.2
                         # (no jar file in server dir, only run.bat and run.sh)
 
@@ -769,7 +777,7 @@ class ServerInstance:
 
                         # Let's set the proper server executable
                         server_obj.executable = os.path.join(
-                            f"{executable_path}forge-{version}-server.jar"
+                            f"{executable_path}{version_info[0][0]}-{version}-server.jar"
                         )
                         # Now lets set up the new run command.
                         # This is based off the run.sh/bat that
@@ -928,7 +936,9 @@ class ServerInstance:
 
         try:
             # remove the stats polling job since server is stopped
+            logger.info("Cleaning up stats schedules for server %s", self.server_id)
             self.server_scheduler.remove_job("stats_" + str(self.server_id))
+            self.server_scheduler.remove_job("save_stats_" + str(self.server_id))
         except JobLookupError as e:
             logger.error(
                 f"Could not remove job with id stats_{self.server_id} due"
@@ -993,6 +1003,7 @@ class ServerInstance:
         self.server_scheduler.remove_job(f"c_{self.server_id}")
         # remove the stats polling job since server is stopped
         self.server_scheduler.remove_job("stats_" + str(self.server_id))
+        self.server_scheduler.remove_job("save_stats_" + str(self.server_id))
 
         # the server crashed, or isn't found - so let's reset things.
         logger.warning(
@@ -1056,8 +1067,10 @@ class ServerInstance:
 
         running = self.check_running()
 
-        # if all is okay, we just exit out
+        # if all is okay, we set the restart count to 0 and just exit out
         if running:
+            Console.debug("Successfully found process. Resetting crash counter to 0")
+            self.restart_count = 0
             return
         # check the exit code -- This could be a fix for /stop
         if str(self.process.returncode) in self.settings["ignored_exits"].split(","):
@@ -1158,16 +1171,43 @@ class ServerInstance:
         logger.info(f"Backup Thread started for server {self.settings['server_name']}.")
 
     @callback
-    def backup_server(self, backup_config):
-        """
-        Called from backup manager as a backup finishes. The completion of this method
-        will send the webhook (that's why it's named backup_server).
-        This will also call to set the backup status, turn the server back on, or
-        send after commands.
-        """
-        if backup_config["after"]:
-            self.send_command(backup_config["after"])
-        if self.was_running:
+    def backup_server(self, backup_id, _update):
+        was_server_running = None
+        logger.info(f"Starting server {self.name} (ID {self.server_id}) backup")
+        server_users = PermissionsServers.get_server_user_list(self.server_id)
+        # Alert the start of the backup to the authorized users.
+        for user in server_users:
+            WebSocketManager().broadcast_user(
+                user,
+                "notification",
+                self.helper.translation.translate(
+                    "notify", "backupStarted", HelperUsers.get_user_lang_by_id(user)
+                ).format(self.name),
+            )
+        time.sleep(3)
+
+        # Get the backup config
+        if not backup_id:
+            return logger.error("No backup ID provided. Exiting backup")
+        conf = HelpersManagement.get_backup_config(backup_id)
+        # Adjust the location to include the backup ID for destination.
+        backup_location = os.path.join(conf["backup_location"], conf["backup_id"])
+
+        # Check if the backup location even exists.
+        if not backup_location:
+            Console.critical("No backup path found. Canceling")
+            return None
+        if conf["before"]:
+            logger.debug(
+                "Found running server and send command option. Sending command"
+            )
+            self.send_command(conf["before"])
+            # Pause to let command run
+            time.sleep(5)
+
+        if conf["after"]:
+            self.send_command(conf["after"])
+        if conf["shutdown"] and was_server_running:
             logger.info(
                 "Backup complete. User had shutdown preference. Starting server."
             )
@@ -1512,12 +1552,9 @@ class ServerInstance:
     def get_servers_stats(self):
         server_stats = {}
 
-        logger.info("Getting Stats for Server " + self.name + " ...")
-
         server_id = self.server_id
+        logger.debug("Getting Stats for Server %s | %s...", self.name, server_id)
         server = HelperServers.get_server_data_by_id(server_id)
-
-        logger.debug(f"Getting stats for server: {server_id}")
 
         # get our server object, settings and data dictionaries
         self.reload_server_settings()
