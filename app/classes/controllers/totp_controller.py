@@ -2,7 +2,7 @@ import re
 from datetime import timezone, datetime, timedelta
 import logging
 import pyotp
-from app.classes.shared.helpers import Helpers
+from app.classes.helpers.helpers import Helpers
 from app.classes.models.users import HelperUsers
 from app.classes.models.totp import HelperTOTP
 
