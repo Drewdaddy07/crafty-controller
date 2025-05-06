@@ -6,7 +6,7 @@ def migrate(migrator, database, **kwargs):
     """
     Write your migrations here.
     """
-    migrator.add_columns("backups", backup_type=peewee.CharField(default="zip_archive"))
+    migrator.add_columns("backups", backup_type=peewee.CharField(default="zip_vault"))
 
 
 def rollback(migrator, database, **kwargs):

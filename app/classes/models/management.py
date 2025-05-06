@@ -117,7 +117,7 @@ class Backups(BaseModel):
     default = BooleanField(default=False)
     status = CharField(default='{"status": "Standby", "message": ""}')
     enabled = BooleanField(default=True)
-    backup_type = CharField(default="zip_archive")
+    backup_type = CharField(default="zip_vault")
 
     class Meta:
         table_name = "backups"

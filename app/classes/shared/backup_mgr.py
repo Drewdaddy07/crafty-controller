@@ -18,7 +18,6 @@ from app.classes.shared.console import Console
 from app.classes.helpers.helpers import Helpers
 from app.classes.shared.websocket_manager import WebSocketManager
 from app.classes.helpers.file_helpers import FileHelpers
-from app.classes.web.webhooks.base_webhook import helper
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +35,29 @@ class BackupManager:
                 f" error: {e}"
             )
             self.tz = ZoneInfo("Europe/London")
+
+    def restore_starter(
+        self, backup_config, backup_location, backup_file, svr_obj, in_place
+    ):
+        SERVER_PATH = svr_obj.settings["path"]
+        if Helpers.validate_traversal(backup_location, backup_file):
+            if svr_obj.check_running():
+                svr_obj.stop_server()
+            if backup_config["backup_type"] != "zip_vault":
+                print("snapshot")
+            else:
+                if not in_place:  # If user does not want to backup in place we will
+                    # clean the server dir
+                    for item in os.listdir(SERVER_PATH):
+                        if (
+                            os.path.isdir(os.path.join(SERVER_PATH, item))
+                            and item != "db_stats"
+                        ):
+                            self.file_helper.del_dirs(os.path.join(SERVER_PATH, item))
+                        else:
+                            self.file_helper.del_file(os.path.join(SERVER_PATH, item))
+                print("restoring")
+                self.file_helper.restore_archive(backup_location, SERVER_PATH)
 
     def backup_starter(self, backup_config, server):
         """Notify users of backup starting, and start the backup.
@@ -140,9 +162,6 @@ class BackupManager:
             time.sleep(5)
         except Exception as e:
             self.fail_backup(e, backup_config, server)
-        server.backup_server(
-            backup_config,
-        )
 
     @staticmethod
     def fail_backup(why: Exception, backup_config: dict, server) -> None:
@@ -340,9 +359,8 @@ class BackupManager:
                 )
         return output, files_count
 
-    @staticmethod
     def create_depends_file_from_backup_manifest(
-        manifest: dict, backup_repository: pathlib.Path, backup_id: str
+        self, manifest: dict, backup_repository: pathlib.Path, backup_id: str
     ) -> None:
         """
         Creates the .depends file associated with this backup based on the backup's
@@ -372,7 +390,7 @@ class BackupManager:
             f.write("1\n")
             # Iterate through files and add b64 hashes to file.
             for depended_file in manifest["files"]:
-                f.write(helper.crypto_helper.bytes_to_b64(depended_file[0]) + "\n")
+                f.write(self.helper.crypto_helper.bytes_to_b64(depended_file[0]) + "\n")
 
     def find_files_not_in_repository(
         self, backup_manifest: dict, backup_repository: pathlib.Path
@@ -398,7 +416,7 @@ class BackupManager:
         # If file does not exist add it array.
         for file_tuple in backup_manifest["files"]:
             file_path = self.get_path_from_hash(
-                helper.crypto_helper.bytes_to_hex(file_tuple[0]), backup_repository
+                self.helper.crypto_helper.bytes_to_hex(file_tuple[0]), backup_repository
             )
             if not file_path.exists():
                 output.append(file_tuple)
@@ -494,7 +512,7 @@ class BackupManager:
 
         # Get file location and save to location
         file_location = self.get_path_from_hash(
-            helper.crypto_helper.bytes_to_hex(file_hash), repository_location
+            self.helper.crypto_helper.bytes_to_hex(file_hash), repository_location
         )
 
         # Saves file, double check it does not already exist.

@@ -59,6 +59,20 @@
               </div>
               {% end %}
               <form id="backup-form" class="forms-sample">
+                {% if not data["backup_config"].get("backup_id", None) %}
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-secondary active">
+                    <input type="radio" class="btn-check" name="backup_type" id="zip_vault" value="zip_vault"
+                      autocomplete="off" checked> Full Zip Vault
+                  </label>
+                  <label class="btn btn-secondary">
+                    <input type="radio" class="btn-check" name="backup_type" id="snapshot" value="snapshot"
+                      autocomplete="off"> Snapshot
+                  </label>
+                </div>
+                <br>
+                <br>
+                {% end %}
                 <div class="form-group">
                   <label for="backup_name">{{ translate('serverBackups', 'name', data['lang']) }}
                     {% if data["backup_config"].get("default", None) %}
@@ -74,13 +88,9 @@
                   {% else %}
                   <input type="text" class="form-control" name="backup_name" id="backup_name"
                     placeholder="{{ translate('serverBackups', 'myBackup', data['lang']) }}">
+                  <br>
+                  <br>
                   {% end %}
-                  <br>
-                  <input type="radio" class="form-check-input" name="backup_type" id="zip_archive" value="zip_archive" checked>
-                   <label for="True">Full Zip Archive</label><br>
-                  <input type="radio" class="form-check-input" name="backup_type" id="zip_archive" value="snapshot">
-                   <label for="True">Snapshot</label><br>
-                  <br>
                   {% if data['super_user'] %}
                   <label for="server_name">{{ translate('serverBackups', 'storageLocation', data['lang']) }} <small
                       class="text-muted ml-1"> - {{ translate('serverBackups', 'storageLocationDesc', data['lang'])
