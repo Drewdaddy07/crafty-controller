@@ -396,8 +396,7 @@ class FileHelpers:
                     )
         return True
 
-    @staticmethod
-    def move_item_file_or_dir(old_dir, new_dir, item) -> None:
+    def move_item_file_or_dir(self, old_dir, new_dir, item) -> None:
         """
         Move item to new location if it is either a file or a dir. Will raise
         shutil.Error for any errors encountered.
@@ -437,8 +436,7 @@ class FileHelpers:
         with zipfile.ZipFile(archive_location, "r") as zip_ref:
             zip_ref.extractall(destination)
 
-    @staticmethod
-    def unzip_file(zip_path, server_update: bool = False) -> None:
+    def unzip_file(self, zip_path, server_update: bool = False) -> None:
         """
         Unzips zip file at zip_path to location generated at new_dir based on zip
         contents.
@@ -475,40 +473,15 @@ class FileHelpers:
                     if (item in ignored_names and server_update) or item == "db_stats":
                         continue
                     # we handle files and dirs differently or we'll crash out.
-                    if os.path.isdir(os.path.join(temp_dir, item)):
-                        try:
-                            FileHelpers.move_dir_exist(
-                                os.path.join(temp_dir, item),
-                                os.path.join(new_dir, item),
-                            )
-                        except Exception as ex:
-                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
-                    else:
-                        try:
-                            FileHelpers.move_file(
-                                os.path.join(temp_dir, item),
-                                os.path.join(new_dir, item),
-                            )
-                        except Exception as ex:
-                            logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                    try:
+                        self.move_item_file_or_dir(temp_dir, new_dir, item)
+                    except shutil.Error as ex:
+                        logger.error(f"ERROR IN ZIP IMPORT: {ex}")
             except Exception as ex:
                 Console.error(ex)
         else:
             return "false"
         return
-
-        # we'll iterate through the top level directory moving everything
-        # out of the temp directory and into it's final home.
-        for item in os.listdir(temp_dir):
-            # if the file is one of our ignored names we'll skip it
-            if item in ignored_names and server_update:
-                continue
-
-            # we handle files and dirs differently or we'll crash out.
-            try:
-                self.move_item_file_or_dir(temp_dir, new_dir, item)
-            except shutil.Error as ex:
-                logger.error(f"ERROR IN ZIP IMPORT: {ex}")
 
     @staticmethod
     def unzip_server(zip_path, user_id):
