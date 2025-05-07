@@ -1,38 +1,37 @@
+import base64
 import contextlib
-import os
-import re
-import sys
+import ctypes
+import html
+import itertools
 import json
+import logging
+import os
+import pathlib
+import re
+import secrets
+import shlex
+import shutil
+import socket
+import string
+import subprocess
+import sys
 import time
 import uuid
-import string
-import base64
-import socket
-import secrets
-import logging
-import html
-import pathlib
-import ctypes
-import shutil
-import shlex
-import subprocess
-import itertools
-from socket import gethostname
 from contextlib import redirect_stderr, suppress
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+from socket import gethostname
 
 import libgravatar
-from packaging import version as pkg_version
 from cryptography import x509
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-
+from cryptography.x509.oid import NameOID
+from packaging import version as pkg_version
 
 from app.classes.helpers.cryptography_helper import CryptoHelper
-from app.classes.shared.null_writer import NullWriter
 from app.classes.shared.console import Console
 from app.classes.shared.installer import installer
+from app.classes.shared.null_writer import NullWriter
 from app.classes.shared.translation import Translation
 
 with redirect_stderr(NullWriter()):
@@ -107,8 +106,8 @@ CONFIG_CATEGORIES = {
 
 try:
     import requests
-    from requests import get
     from argon2 import PasswordHasher
+    from requests import get
 
 except ModuleNotFoundError as err:
     logger.critical(f"Import Error: Unable to load {err.name} module", exc_info=True)
