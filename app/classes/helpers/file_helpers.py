@@ -10,11 +10,13 @@ import time
 import urllib.request
 import zipfile
 import zlib
+from pathlib import Path
 from typing import BinaryIO
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 import certifi
 
+from app.classes.helpers.cryptography_helper import CryptoHelper
 from app.classes.helpers.helpers import Helpers
 from app.classes.shared.console import Console
 from app.classes.shared.websocket_manager import WebSocketManager
@@ -24,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 class FileHelpers:
     allowed_quotes = ['"', "'", "`"]
+    BYTE_TRUE = bytes.fromhex("01")
+    BYTE_FALSE = bytes.fromhex("00")
 
     def __init__(self, helper):
         self.helper: Helpers = helper
@@ -459,3 +463,74 @@ class FileHelpers:
                 zip_ref.extractall(temp_dir)
             if user_id:
                 return temp_dir
+
+    @staticmethod
+    def get_chunk_path_from_hash(chunk_hash: bytes, repository_location: Path) -> Path:
+        """
+        Given chunk hash and repository location, gets full path to chunk in repo.
+
+        Args:
+            chunk_hash: Hash of chunk in bytes.
+            repository_location: Path to the backup repository.
+
+        Return: Path to chunk in repository.
+        """
+        if len(chunk_hash) != 128:
+            raise ValueError(
+                f"Provided hash is of incorrect length."
+                f"Hash: {CryptoHelper.bytes_to_hex(chunk_hash)}"
+            )
+        hash_hex = CryptoHelper.bytes_to_hex(chunk_hash)
+        return repository_location / "chunks" / hash_hex[:2] / hash_hex[-126:]
+
+    def save_chunk(
+        self,
+        file_chunk: bytes,
+        repository_location: Path,
+        chunk_hash: bytes,
+        use_compression: bool,
+    ) -> None:
+        file_location = self.get_chunk_path_from_hash(chunk_hash, repository_location)
+
+        # If chunk is already present, stop here. Don't save the chunk again.
+        if file_location.exists():
+            return
+
+        # Create folder for chunk.
+        file_location.parent.mkdir(parents=True, exist_ok=True)
+
+        # Chunk version number.
+        version = bytes.fromhex("00")
+
+        # Check and apply compression, write compression byte.
+        if use_compression:
+            file_chunk = self.zlib_compress_bytes(file_chunk)
+            compression = self.BYTE_TRUE
+        else:
+            compression = self.BYTE_FALSE
+
+        # Placeholder to allow for encryption in future versions
+        encryption = self.BYTE_FALSE
+        nonce = bytes.fromhex("000000000000000000000000")
+
+        # Create chunk
+        output = version + encryption + nonce + compression + file_chunk
+
+        # Save chunk to file
+        try:
+            with file_location.open("wb+") as file:
+                file.write(output)
+        except OSError as why:
+            raise RuntimeError(f"Unable to save chunk to {file_location}") from why
+
+    @staticmethod
+    def zlib_compress_bytes(bytes_to_compress: bytes) -> bytes:
+        """
+        Compress given bytes with zlib.
+
+        Args:
+            bytes_to_compress: Bytes to compress.
+
+        Return: Compressed bytes.
+        """
+        return zlib.compress(bytes_to_compress)
