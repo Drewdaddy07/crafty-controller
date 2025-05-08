@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import logging
 import mimetypes
@@ -503,6 +504,92 @@ class FileHelpers:
                 f"Hash: {CryptoHelper.bytes_to_hex(file_hash)}"
             )
         return repository_location / "files" / hash_hex[:2] / hash_hex[-126:]
+
+    @staticmethod
+    def discover_files(target_path: Path) -> list[Path]:
+        """
+        Returns a list of all files in a target path, ignores empty directories.
+
+        Args:
+            target_path: Path to find all files in.
+
+        Returns: List of all files in target path.
+
+        """
+        # Check that target is a directory.
+        if not target_path.is_dir():
+            raise NotADirectoryError(f"{target_path} is not a directory.")
+
+        discovered_files = []
+
+        # Use pathlib built in rglob to find all files.
+        for p in target_path.rglob("*"):
+            if p.is_file():
+                discovered_files.append(p)
+        return discovered_files
+
+    def snapshot_backup(
+        self, source_path: Path, backup_repository: Path, use_compression: bool
+    ) -> None:
+        backup_time = datetime.datetime.now()
+        backup_time_file_safe = backup_time.strftime("%Y-%m-%d-%H-%M-%S")
+        backup_manifest_path = (
+            backup_repository / "manifests" / f"{backup_time_file_safe}.manifest"
+        )
+
+        # Get list of files to backup
+        list_of_files = self.discover_files(source_path)
+
+        # Create manifest folder location
+        try:
+            backup_manifest_path.parent.mkdir(exist_ok=True, parents=True)
+            manifest_file = backup_manifest_path.open("w+")
+        except OSError as why:
+            raise RuntimeError(
+                f"Unable to create backup manifest directory at {backup_manifest_path}."
+            ) from why
+
+        # Iterate over files in source location
+        for f in list_of_files:
+            try:
+                file_hash = CryptoHelper.blake2_hash_file(f)
+                self.save_file(f, backup_repository, file_hash, use_compression)
+                file_local_path = self.get_local_path_with_base(f, source_path)
+            except OSError as why:
+                manifest_file.close()
+                raise RuntimeError(
+                    f"Encountered error trying to save file {f}."
+                ) from why
+
+            manifest_file.write(
+                f"{CryptoHelper.bytes_to_b64(file_hash)}:"
+                f"{CryptoHelper.str_to_b64(file_local_path)}"
+            )
+
+        # Backup Complete
+        manifest_file.close()
+
+    @staticmethod
+    def get_local_path_with_base(desired_path: Path, base: Path) -> str:
+        """
+        Removes base from given path.
+        Given:
+            Path: /root/example.md
+            Base: /root/
+            Returns: example.md
+
+        Args:
+            desired_path: Path to file in base.
+            base: Base file to remove from path.
+
+        Returns: Local path to file.
+
+        """
+        # Check that file is contained in base, and the base is a directory.
+        if base not in desired_path.parents:
+            raise OSError(f"{desired_path} is not a child of {base}.")
+
+        return str(desired_path.resolve())[len(str(base.resolve())) + 1 :]
 
     def save_file(
         self,
