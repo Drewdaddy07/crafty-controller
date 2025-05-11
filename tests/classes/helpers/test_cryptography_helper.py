@@ -1,3 +1,5 @@
+import pytest
+
 from app.classes.helpers.cryptography_helper import CryptoHelper
 
 
@@ -71,6 +73,11 @@ def test_bytes_to_hex_known_value() -> None:
 
 
 def test_str_to_b64() -> None:
+    """
+
+    Returns:
+
+    """
     # Test 1
     known_value_1: str = "Hello World"
     known_output_1: str = "SGVsbG8gV29ybGQ="
@@ -79,3 +86,46 @@ def test_str_to_b64() -> None:
     known_value_2: str = "I love Crafty! Yee haw!"
     known_output_2: str = "SSBsb3ZlIENyYWZ0eSEgWWVlIGhhdyE="
     assert CryptoHelper.str_to_b64(known_value_2) == known_output_2
+
+
+def test_b64_to_str() -> None:
+    """
+    Test known input with b64_to_str
+
+    Returns:
+
+    """
+    # Test 1
+    known_value_1: str = "SGVsbG8gV29ybGQ="
+    known_output_1: str = "Hello World"
+    assert CryptoHelper.b64_to_str(known_value_1) == known_output_1
+
+    # Test 2
+    known_value_2: str = "SSBsb3ZlIENyYWZ0eSEgWWVlIGhhdyE="
+    known_output_2: str = "I love Crafty! Yee haw!"
+    assert CryptoHelper.b64_to_str(known_value_2) == known_output_2
+
+
+def test_b64_to_str_not_b64() -> None:
+    """
+    Test b64_to_str function when give a value that is not b64 encoded. Should return
+    RuntimeError.
+
+    Returns:
+
+    """
+    test_error_value: str = "!This is not B64 encoded text!"
+    with pytest.raises(RuntimeError):
+        _ = CryptoHelper.b64_to_str(test_error_value)
+
+
+def test_b64_to_str_not_unicode() -> None:
+    """
+    Test b64_to_str with data that is not Unicode. Should return RuntimeError.
+
+    Returns:
+
+    """
+    random_data: str = "gQ=="
+    with pytest.raises(RuntimeError):
+        _ = CryptoHelper.b64_to_str(random_data)

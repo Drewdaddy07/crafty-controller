@@ -1,4 +1,5 @@
 import base64
+import binascii
 from hashlib import blake2b
 from pathlib import Path
 
@@ -118,5 +119,5 @@ class CryptoHelper:
         """
         try:
             return base64.b64decode(input_b64).decode("UTF-8")
-        except (RuntimeError, UnicodeError) as why:
+        except (RuntimeError, UnicodeError, binascii.Error) as why:
             raise RuntimeError(f"Unable to decode {input_b64} to b64.") from why
