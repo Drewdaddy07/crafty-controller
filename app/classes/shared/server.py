@@ -44,6 +44,7 @@ with redirect_stderr(NullWriter()):
 
 logger = logging.getLogger(__name__)
 SUCCESSMSG = "SUCCESS! Forge install completed"
+EULA_FILE_NAME = "eula.txt"
 
 
 def callback(called_func):
@@ -434,9 +435,13 @@ class ServerInstance:
         # Checks for eula. Creates one if none detected.
         # If EULA is detected and not set to true we offer to set it true.
         e_flag = False
-        if Helpers.check_file_exists(os.path.join(self.settings["path"], "eula.txt")):
+        if Helpers.check_file_exists(
+            os.path.join(self.settings["path"], EULA_FILE_NAME)
+        ):
             with open(
-                os.path.join(self.settings["path"], "eula.txt"), "r", encoding="utf-8"
+                os.path.join(self.settings["path"], EULA_FILE_NAME),
+                "r",
+                encoding="utf-8",
             ) as f:
                 line = f.readline().lower()
                 e_flag = line in [
@@ -1115,7 +1120,7 @@ class ServerInstance:
         self.server_scheduler.remove_job("c_" + str(self.server_id))
 
     def agree_eula(self, user_id):
-        eula_file = os.path.join(self.server_path, "eula.txt")
+        eula_file = os.path.join(self.server_path, EULA_FILE_NAME)
         with open(eula_file, "w", encoding="utf-8") as f:
             f.write("eula=true")
         self.run_threaded_server(user_id)
