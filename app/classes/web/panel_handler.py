@@ -42,6 +42,7 @@ SUBPAGE_PERMS = {
 }
 
 SCHEDULE_AUTH_ERROR_URL = "/panel/error?error=Unauthorized access To Schedules"
+INVALID_SERVER_ID_ERROR_URL = "/panel/error?error=Invalid Server ID"
 
 HUMANIZED_INDEX_FILE = "humanized_index.json"
 
@@ -175,7 +176,7 @@ class PanelHandler(BaseHandler):
         #     superuser = superuser and api_key.full_access
 
         if server_id is None:
-            self.redirect("/panel/error?error=Invalid Server ID")
+            self.redirect(INVALID_SERVER_ID_ERROR_URL)
             return None
         for server in self.controller.servers.failed_servers:
             if server_id == server["server_id"]:
@@ -183,7 +184,7 @@ class PanelHandler(BaseHandler):
                 return server_id
         # Does this server exist?
         if not self.controller.servers.server_id_exists(server_id):
-            self.redirect("/panel/error?error=Invalid Server ID")
+            self.redirect(INVALID_SERVER_ID_ERROR_URL)
             return None
 
         # Does the user have permission?
@@ -197,14 +198,14 @@ class PanelHandler(BaseHandler):
                     f"API key {api_key.name} (id: {api_key.token_id}) "
                     f"does not have permission"
                 )
-                self.redirect("/panel/error?error=Invalid Server ID")
+                self.redirect(INVALID_SERVER_ID_ERROR_URL)
                 return None
         else:
             if not self.controller.servers.server_id_authorized(
                 server_id, exec_user["user_id"]
             ):
                 logger.debug(f'User {exec_user["user_id"]} does not have permission')
-                self.redirect("/panel/error?error=Invalid Server ID")
+                self.redirect(INVALID_SERVER_ID_ERROR_URL)
                 return None
         return server_id
 
@@ -998,7 +999,7 @@ class PanelHandler(BaseHandler):
         elif page == "add_webhook":
             server_id = self.get_argument("id", None)
             if server_id is None:
-                return self.redirect("/panel/error?error=Invalid Server ID")
+                return self.redirect(INVALID_SERVER_ID_ERROR_URL)
             server_obj = self.controller.servers.get_server_instance_by_id(server_id)
             page_data["backup_failed"] = server_obj.last_backup_status()
             server_obj = None
@@ -1052,7 +1053,7 @@ class PanelHandler(BaseHandler):
             server_id = self.get_argument("id", None)
             webhook_id = self.get_argument("webhook_id", None)
             if server_id is None:
-                return self.redirect("/panel/error?error=Invalid Server ID")
+                return self.redirect(INVALID_SERVER_ID_ERROR_URL)
             server_obj = self.controller.servers.get_server_instance_by_id(server_id)
             page_data["backup_failed"] = server_obj.last_backup_status()
             server_obj = None
