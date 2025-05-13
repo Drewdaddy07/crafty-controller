@@ -754,17 +754,26 @@ class ServerInstance:
                         else:
                             run_file_path = os.path.join(server_obj.path, "run.sh")
 
-                        if Helpers.check_file_perms(run_file_path) and os.path.isfile(
-                            run_file_path
-                        ):
-                            run_file = open(run_file_path, "r", encoding="utf-8")
-                            run_file_text = run_file.read()
-                        else:
+                        if not os.path.isfile(run_file_path):
                             Console.error(
-                                "ERROR ! Forge install can't read the scripts files."
-                                " Aborting ..."
+                                f"Target forge run file path does not point to a file. "
+                                f"Path: {run_file_path}"
                             )
                             return
+
+                        # Try to open file. Will fail on any OSError.
+                        try:
+                            run_file = open(run_file_path, "r", encoding="utf-8")
+                            run_file_text = run_file.read()
+                        except OSError as why:
+                            Console.error(
+                                f"ERROR ! Forge install can't read the scripts "
+                                f"files. Error: {why}"
+                                f" Aborting ..."
+                            )
+                            return
+
+                        run_file.close()
 
                         # We get the server command parameters from forge script
                         server_command = re.findall(
