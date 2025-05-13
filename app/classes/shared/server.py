@@ -376,9 +376,13 @@ class ServerInstance:
             logger.critical(f"Server path: {self.server_path} does not seem to exits")
             Console.critical(f"Server path: {self.server_path} does not seem to exits")
 
-        if not Helpers.check_writeable(self.server_path):
-            logger.critical(f"Unable to write/access {self.server_path}")
-            Console.critical(f"Unable to write/access {self.server_path}")
+        try:
+            with open(self.server_path + "test_file.txt", "w", encoding="utf-8") as f:
+                f.write("Testing write permissions to server path.")
+            os.remove(self.server_path + "test_file.txt")
+        except OSError:
+            logger.critical(f"Unable to write or access {self.server_path}.")
+            Console.critical(f"Unable to write or access {self.server_path}.")
 
     @callback
     def start_server(self, user_id, forge_install=False):
