@@ -43,6 +43,7 @@ SUBPAGE_PERMS = {
 
 SCHEDULE_AUTH_ERROR_URL = "/panel/error?error=Unauthorized access To Schedules"
 INVALID_SERVER_ID_ERROR_URL = "/panel/error?error=Invalid Server ID"
+INVALID_USER_ID_ERROR_URL = "/panel/error?error=Invalid User ID"
 
 HUMANIZED_INDEX_FILE = "humanized_index.json"
 
@@ -1454,7 +1455,7 @@ class PanelHandler(BaseHandler):
                             page_data["languages"].append(file.split(".")[0])
 
             if user_id is None:
-                self.redirect("/panel/error?error=Invalid User ID")
+                self.redirect(INVALID_USER_ID_ERROR_URL)
                 return
             if EnumPermissionsCrafty.USER_CONFIG not in exec_user_crafty_permissions:
                 if str(user_id) != str(exec_user["user_id"]):
@@ -1502,7 +1503,7 @@ class PanelHandler(BaseHandler):
             )
 
             if user_id is None:
-                self.redirect("/panel/error?error=Invalid User ID")
+                self.redirect(INVALID_USER_ID_ERROR_URL)
                 return
             if int(user_id) != exec_user["user_id"] and not exec_user["superuser"]:
                 self.redirect(
@@ -1527,7 +1528,7 @@ class PanelHandler(BaseHandler):
             # self.controller.crafty_perms.list_defined_crafty_permissions()
 
             if user_id is None:
-                self.redirect("/panel/error?error=Invalid User ID")
+                self.redirect(INVALID_USER_ID_ERROR_URL)
                 return
             if int(user_id) != exec_user["user_id"] and not exec_user["superuser"]:
                 self.redirect(
@@ -1556,12 +1557,12 @@ class PanelHandler(BaseHandler):
                 )
                 return
             if user_id is None:
-                self.redirect("/panel/error?error=Invalid User ID")
+                self.redirect(INVALID_USER_ID_ERROR_URL)
                 return
             # does this user id exist?
             target_user = self.controller.users.get_user_by_id(user_id)
             if not target_user:
-                self.redirect("/panel/error?error=Invalid User ID")
+                self.redirect(INVALID_USER_ID_ERROR_URL)
                 return
             if target_user["superuser"]:
                 self.redirect("/panel/error?error=Cannot remove a superuser")
