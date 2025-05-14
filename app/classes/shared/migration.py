@@ -426,7 +426,6 @@ class MigrationManager(object):
             Console.info("There is nothing to migrate")
             return done
 
-        migrator = self.migrator
         for mname in diff:
             done.append(self.up_one(mname, self.migrator))
             if name and name == mname:
