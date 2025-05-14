@@ -41,6 +41,7 @@ from app.classes.shared.websocket_manager import WebSocketManager
 logger = logging.getLogger(__name__)
 
 MODDED_TYPES = ["forge-installer", "neoforge-installer"]
+DATETIME_FORMAT_STRING = "%d/%m/%Y %H:%M:%S"
 
 
 class Controller:
@@ -104,7 +105,7 @@ class Controller:
                 "login": {
                     "names": [username],
                     "attempts": 1,
-                    "times": [datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+                    "times": [datetime.now().strftime(DATETIME_FORMAT_STRING)],
                 }
             }
             return
@@ -112,14 +113,14 @@ class Controller:
             remote["login"]["names"].append(username)
             remote["login"]["attempts"] += 1
             remote["login"]["times"].append(
-                datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                datetime.now().strftime(DATETIME_FORMAT_STRING)
             )
             self.auth_tracker[str(remote_ip)] = remote
         else:
             self.auth_tracker[str(remote_ip)]["login"] = {
                 "names": [username],
                 "attempts": 1,
-                "times": [datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+                "times": [datetime.now().strftime(DATETIME_FORMAT_STRING)],
             }
 
     def log_antilockout(self, remote_ip):
@@ -128,20 +129,20 @@ class Controller:
             self.auth_tracker[str(remote_ip)] = {
                 "anti-lockout": {
                     "attempts": 1,
-                    "times": [datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+                    "times": [datetime.now().strftime(DATETIME_FORMAT_STRING)],
                 }
             }
             return
         if remote.get("anti-lockout", None):
             remote["anti-lockout"]["attempts"] += 1
             remote["anti-lockout"]["times"].append(
-                datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                datetime.now().strftime(DATETIME_FORMAT_STRING)
             )
             self.auth_tracker[str(remote_ip)] = remote
         else:
             self.auth_tracker[str(remote_ip)]["anti-lockout"] = {
                 "attempts": 1,
-                "times": [datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+                "times": [datetime.now().strftime(DATETIME_FORMAT_STRING)],
             }
 
     def write_auth_tracker(self):
