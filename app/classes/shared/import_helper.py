@@ -32,38 +32,7 @@ class ImportHelpers:
         import_thread.start()
 
     def import_threaded_jar_server(self, server_path, new_server_dir, port, new_id):
-        for item in os.listdir(server_path):
-            if item != "db_stats":
-                try:
-                    if os.path.isdir(os.path.join(server_path, item)):
-                        FileHelpers.copy_dir(
-                            os.path.join(server_path, item),
-                            os.path.join(new_server_dir, item),
-                        )
-                    else:
-                        FileHelpers.copy_file(
-                            os.path.join(server_path, item),
-                            os.path.join(new_server_dir, item),
-                        )
-                except shutil.Error as ex:
-                    logger.error(f"Server import failed with error: {ex}")
-
-        has_properties = False
-        for item in os.listdir(new_server_dir):
-            if str(item) == SERVER_PROPERTIES_FILE:
-                has_properties = True
-        if not has_properties:
-            logger.info(
-                f"No server.properties found on zip file import. "
-                f"Creating one with port selection of {str(port)}"
-            )
-            with open(
-                os.path.join(new_server_dir, SERVER_PROPERTIES_FILE),
-                "w",
-                encoding="utf-8",
-            ) as file:
-                file.write(f"server-port={port}")
-                file.close()
+        self.shared_import_threaded_server(server_path, new_server_dir, port)
         time.sleep(5)
         ServersController.finish_import(new_id)
         server_users = PermissionsServers.get_server_user_list(new_id)
@@ -79,7 +48,8 @@ class ImportHelpers:
         )
         import_thread.start()
 
-    def import_threaded_java_zip_server(self, temp_dir, new_server_dir, port, new_id):
+    @staticmethod
+    def shared_import_threaded_zip_server(temp_dir, new_server_dir, port):
         has_properties = False
         # extracts archive to temp directory
         for item in os.listdir(temp_dir):
@@ -111,6 +81,9 @@ class ImportHelpers:
                 file.write(f"server-port={port}")
                 file.close()
 
+    def import_threaded_java_zip_server(self, temp_dir, new_server_dir, port, new_id):
+        self.shared_import_threaded_zip_server(temp_dir, new_server_dir, port)
+
         server_users = PermissionsServers.get_server_user_list(new_id)
         ServersController.finish_import(new_id)
         for user in server_users:
@@ -129,9 +102,8 @@ class ImportHelpers:
         )
         import_thread.start()
 
-    def import_threaded_bedrock_server(
-        self, server_path, new_server_dir, port, full_jar_path, new_id
-    ):
+    @staticmethod
+    def shared_import_threaded_server(server_path, new_server_dir, port):
         for item in os.listdir(server_path):
             if item != "db_stats":
                 try:
@@ -164,6 +136,11 @@ class ImportHelpers:
             ) as file:
                 file.write(f"server-port={port}")
                 file.close()
+
+    def import_threaded_bedrock_server(
+        self, server_path, new_server_dir, port, full_jar_path, new_id
+    ):
+        self.shared_import_threaded_server(server_path, new_server_dir, port)
         if os.name != "nt" and Helpers.check_file_exists(full_jar_path):
             os.chmod(full_jar_path, 0o2760)
         ServersController.finish_import(new_id)
@@ -185,36 +162,7 @@ class ImportHelpers:
     def import_threaded_bedrock_zip_server(
         self, temp_dir, new_server_dir, full_jar_path, port, new_id
     ):
-        has_properties = False
-        # extracts archive to temp directory
-        for item in os.listdir(temp_dir):
-            if str(item) == SERVER_PROPERTIES_FILE:
-                has_properties = True
-            try:
-                if not os.path.isdir(os.path.join(temp_dir, item)):
-                    FileHelpers.move_file(
-                        os.path.join(temp_dir, item), os.path.join(new_server_dir, item)
-                    )
-                else:
-                    if item != "db_stats":
-                        FileHelpers.move_dir(
-                            os.path.join(temp_dir, item),
-                            os.path.join(new_server_dir, item),
-                        )
-            except Exception as ex:
-                logger.error(f"ERROR IN ZIP IMPORT: {ex}")
-        if not has_properties:
-            logger.info(
-                f"No server.properties found on zip file import. "
-                f"Creating one with port selection of {str(port)}"
-            )
-            with open(
-                os.path.join(new_server_dir, SERVER_PROPERTIES_FILE),
-                "w",
-                encoding="utf-8",
-            ) as file:
-                file.write(f"server-port={port}")
-                file.close()
+        self.shared_import_threaded_zip_server(temp_dir, new_server_dir, port)
         ServersController.finish_import(new_id)
         server_users = PermissionsServers.get_server_user_list(new_id)
         for user in server_users:
