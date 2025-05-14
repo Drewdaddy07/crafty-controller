@@ -1051,9 +1051,7 @@ class Controller:
     def t_update_master_server_dir(self, new_server_path, user_id):
         new_server_path = self.helper.wtol_path(new_server_path)
         new_server_path = os.path.join(new_server_path, "servers")
-        WebSocketManager().broadcast_page(
-            CONFIG_URL, "move_status", "Checking dir"
-        )
+        WebSocketManager().broadcast_page(CONFIG_URL, "move_status", "Checking dir")
         current_master = self.helper.wtol_path(
             HelpersManagement.get_master_server_dir()
         )
