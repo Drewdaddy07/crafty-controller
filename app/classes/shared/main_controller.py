@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 
 MODDED_TYPES = ["forge-installer", "neoforge-installer"]
 DATETIME_FORMAT_STRING = "%d/%m/%Y %H:%M:%S"
+CONFIG_URL = "/panel/panel_config"
 
 
 class Controller:
@@ -1051,7 +1052,7 @@ class Controller:
         new_server_path = self.helper.wtol_path(new_server_path)
         new_server_path = os.path.join(new_server_path, "servers")
         WebSocketManager().broadcast_page(
-            "/panel/panel_config", "move_status", "Checking dir"
+            CONFIG_URL, "move_status", "Checking dir"
         )
         current_master = self.helper.wtol_path(
             HelpersManagement.get_master_server_dir()
@@ -1061,7 +1062,7 @@ class Controller:
                 "Admin tried to change server dir to current server dir. Canceling..."
             )
             WebSocketManager().broadcast_page(
-                "/panel/panel_config",
+                CONFIG_URL,
                 "move_status",
                 "done",
             )
@@ -1072,14 +1073,14 @@ class Controller:
                 " current server dir. This will result in a copy loop."
             )
             WebSocketManager().broadcast_page(
-                "/panel/panel_config",
+                CONFIG_URL,
                 "move_status",
                 "done",
             )
             return
 
         WebSocketManager().broadcast_page(
-            "/panel/panel_config", "move_status", "Checking permissions"
+            CONFIG_URL, "move_status", "Checking permissions"
         )
         if not self.helper.ensure_dir_exists(new_server_path):
             WebSocketManager().broadcast_user(
@@ -1107,7 +1108,7 @@ class Controller:
             )
             if os.path.isdir(server_path):
                 WebSocketManager().broadcast_page(
-                    "/panel/panel_config",
+                    CONFIG_URL,
                     "move_status",
                     f"Moving {server.get('server_name')}",
                 )
@@ -1148,7 +1149,7 @@ class Controller:
         self.servers.init_all_servers()
         self.helper.dir_migration = False
         WebSocketManager().broadcast_page(
-            "/panel/panel_config",
+            CONFIG_URL,
             "move_status",
             "done",
         )
