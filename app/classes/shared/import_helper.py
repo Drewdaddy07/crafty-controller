@@ -12,6 +12,8 @@ from app.classes.shared.websocket_manager import WebSocketManager
 
 logger = logging.getLogger(__name__)
 
+SERVER_PROPERTIES_FILE = "server.properties"
+
 
 class ImportHelpers:
     allowed_quotes = ['"', "'", "`"]
@@ -48,7 +50,7 @@ class ImportHelpers:
 
         has_properties = False
         for item in os.listdir(new_server_dir):
-            if str(item) == "server.properties":
+            if str(item) == SERVER_PROPERTIES_FILE:
                 has_properties = True
         if not has_properties:
             logger.info(
@@ -56,7 +58,9 @@ class ImportHelpers:
                 f"Creating one with port selection of {str(port)}"
             )
             with open(
-                os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
+                os.path.join(new_server_dir, SERVER_PROPERTIES_FILE),
+                "w",
+                encoding="utf-8",
             ) as file:
                 file.write(f"server-port={port}")
                 file.close()
@@ -79,7 +83,7 @@ class ImportHelpers:
         has_properties = False
         # extracts archive to temp directory
         for item in os.listdir(temp_dir):
-            if str(item) == "server.properties":
+            if str(item) == SERVER_PROPERTIES_FILE:
                 has_properties = True
             try:
                 if not os.path.isdir(os.path.join(temp_dir, item)):
@@ -100,7 +104,9 @@ class ImportHelpers:
                 f"Creating one with port selection of {str(port)}"
             )
             with open(
-                os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
+                os.path.join(new_server_dir, SERVER_PROPERTIES_FILE),
+                "w",
+                encoding="utf-8",
             ) as file:
                 file.write(f"server-port={port}")
                 file.close()
@@ -144,7 +150,7 @@ class ImportHelpers:
 
         has_properties = False
         for item in os.listdir(new_server_dir):
-            if str(item) == "server.properties":
+            if str(item) == SERVER_PROPERTIES_FILE:
                 has_properties = True
         if not has_properties:
             logger.info(
@@ -152,7 +158,9 @@ class ImportHelpers:
                 f"Creating one with port selection of {str(port)}"
             )
             with open(
-                os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
+                os.path.join(new_server_dir, SERVER_PROPERTIES_FILE),
+                "w",
+                encoding="utf-8",
             ) as file:
                 file.write(f"server-port={port}")
                 file.close()
@@ -180,7 +188,7 @@ class ImportHelpers:
         has_properties = False
         # extracts archive to temp directory
         for item in os.listdir(temp_dir):
-            if str(item) == "server.properties":
+            if str(item) == SERVER_PROPERTIES_FILE:
                 has_properties = True
             try:
                 if not os.path.isdir(os.path.join(temp_dir, item)):
@@ -201,7 +209,9 @@ class ImportHelpers:
                 f"Creating one with port selection of {str(port)}"
             )
             with open(
-                os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
+                os.path.join(new_server_dir, SERVER_PROPERTIES_FILE),
+                "w",
+                encoding="utf-8",
             ) as file:
                 file.write(f"server-port={port}")
                 file.close()
