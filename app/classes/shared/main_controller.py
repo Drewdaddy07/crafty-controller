@@ -887,9 +887,8 @@ class Controller:
         self.import_helper.import_bedrock_zip_server(
             temp_dir, new_server_dir, full_jar_path, port, new_id
         )
-        if os.name != "nt":
-            if Helpers.check_file_exists(full_jar_path):
-                os.chmod(full_jar_path, 0o2760)
+        if os.name != "nt" and Helpers.check_file_exists(full_jar_path):
+            os.chmod(full_jar_path, 0o2760)
 
         return new_id
 
