@@ -524,9 +524,7 @@ class Controller:
             server_command = create_data.get("command", server_command)
         elif data["create_type"] == "custom":
             # TODO: working_directory, executable_update
-            if root_create_data["create_type"] == "raw_exec":
-                pass
-            elif root_create_data["create_type"] == "import_server":
+            if root_create_data["create_type"] == "import_server":
                 existing_server_path = Helpers.get_os_understandable_path(
                     create_data["existing_server_path"]
                 )
