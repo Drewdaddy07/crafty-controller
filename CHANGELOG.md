@@ -5,7 +5,7 @@ TBD
 ### Bug fixes
 TBD
 ### Tweaks
-TBD
+- Remove default SuperUser MFA Requirement ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/851))
 ### Lang
 TBD
 <br><br>
