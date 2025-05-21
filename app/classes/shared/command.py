@@ -35,9 +35,6 @@ class MainPrompt(cmd.Cmd):
         # overrides the default Prompt
         self.prompt = ""
 
-    def emptyline(self):
-        pass
-
     def do_exit(self, _line):
         self.tasks_manager._main_graceful_exit()
         self.universal_exit()

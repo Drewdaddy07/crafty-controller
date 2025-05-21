@@ -44,6 +44,7 @@ with redirect_stderr(NullWriter()):
 
 logger = logging.getLogger(__name__)
 SUCCESSMSG = "SUCCESS! Forge install completed"
+EULA_FILE_NAME = "eula.txt"
 
 
 def callback(called_func):
@@ -375,9 +376,13 @@ class ServerInstance:
             logger.critical(f"Server path: {self.server_path} does not seem to exits")
             Console.critical(f"Server path: {self.server_path} does not seem to exits")
 
-        if not Helpers.check_writeable(self.server_path):
-            logger.critical(f"Unable to write/access {self.server_path}")
-            Console.critical(f"Unable to write/access {self.server_path}")
+        try:
+            with open(self.server_path + "test_file.txt", "w", encoding="utf-8") as f:
+                f.write("Testing write permissions to server path.")
+            os.remove(self.server_path + "test_file.txt")
+        except OSError:
+            logger.critical(f"Unable to write or access {self.server_path}.")
+            Console.critical(f"Unable to write or access {self.server_path}.")
 
     @callback
     def start_server(self, user_id, forge_install=False):
@@ -434,9 +439,13 @@ class ServerInstance:
         # Checks for eula. Creates one if none detected.
         # If EULA is detected and not set to true we offer to set it true.
         e_flag = False
-        if Helpers.check_file_exists(os.path.join(self.settings["path"], "eula.txt")):
+        if Helpers.check_file_exists(
+            os.path.join(self.settings["path"], EULA_FILE_NAME)
+        ):
             with open(
-                os.path.join(self.settings["path"], "eula.txt"), "r", encoding="utf-8"
+                os.path.join(self.settings["path"], EULA_FILE_NAME),
+                "r",
+                encoding="utf-8",
             ) as f:
                 line = f.readline().lower()
                 e_flag = line in [
@@ -749,17 +758,26 @@ class ServerInstance:
                         else:
                             run_file_path = os.path.join(server_obj.path, "run.sh")
 
-                        if Helpers.check_file_perms(run_file_path) and os.path.isfile(
-                            run_file_path
-                        ):
-                            run_file = open(run_file_path, "r", encoding="utf-8")
-                            run_file_text = run_file.read()
-                        else:
+                        if not os.path.isfile(run_file_path):
                             Console.error(
-                                "ERROR ! Forge install can't read the scripts files."
-                                " Aborting ..."
+                                f"Target forge run file path does not point to a file. "
+                                f"Path: {run_file_path}"
                             )
                             return
+
+                        # Try to open file. Will fail on any OSError.
+                        try:
+                            run_file = open(run_file_path, "r", encoding="utf-8")
+                            run_file_text = run_file.read()
+                        except OSError as why:
+                            Console.error(
+                                f"ERROR ! Forge install can't read the scripts "
+                                f"files. Error: {why}"
+                                f" Aborting ..."
+                            )
+                            return
+
+                        run_file.close()
 
                         # We get the server command parameters from forge script
                         server_command = re.findall(
@@ -1115,7 +1133,7 @@ class ServerInstance:
         self.server_scheduler.remove_job("c_" + str(self.server_id))
 
     def agree_eula(self, user_id):
-        eula_file = os.path.join(self.server_path, "eula.txt")
+        eula_file = os.path.join(self.server_path, EULA_FILE_NAME)
         with open(eula_file, "w", encoding="utf-8") as f:
             f.write("eula=true")
         self.run_threaded_server(user_id)

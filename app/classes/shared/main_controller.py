@@ -41,6 +41,8 @@ from app.classes.shared.websocket_manager import WebSocketManager
 logger = logging.getLogger(__name__)
 
 MODDED_TYPES = ["forge-installer", "neoforge-installer"]
+DATETIME_FORMAT_STRING = "%d/%m/%Y %H:%M:%S"
+CONFIG_URL = "/panel/panel_config"
 
 
 class Controller:
@@ -104,7 +106,7 @@ class Controller:
                 "login": {
                     "names": [username],
                     "attempts": 1,
-                    "times": [datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+                    "times": [datetime.now().strftime(DATETIME_FORMAT_STRING)],
                 }
             }
             return
@@ -112,14 +114,14 @@ class Controller:
             remote["login"]["names"].append(username)
             remote["login"]["attempts"] += 1
             remote["login"]["times"].append(
-                datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                datetime.now().strftime(DATETIME_FORMAT_STRING)
             )
             self.auth_tracker[str(remote_ip)] = remote
         else:
             self.auth_tracker[str(remote_ip)]["login"] = {
                 "names": [username],
                 "attempts": 1,
-                "times": [datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+                "times": [datetime.now().strftime(DATETIME_FORMAT_STRING)],
             }
 
     def log_antilockout(self, remote_ip):
@@ -128,20 +130,20 @@ class Controller:
             self.auth_tracker[str(remote_ip)] = {
                 "anti-lockout": {
                     "attempts": 1,
-                    "times": [datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+                    "times": [datetime.now().strftime(DATETIME_FORMAT_STRING)],
                 }
             }
             return
         if remote.get("anti-lockout", None):
             remote["anti-lockout"]["attempts"] += 1
             remote["anti-lockout"]["times"].append(
-                datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                datetime.now().strftime(DATETIME_FORMAT_STRING)
             )
             self.auth_tracker[str(remote_ip)] = remote
         else:
             self.auth_tracker[str(remote_ip)]["anti-lockout"] = {
                 "attempts": 1,
-                "times": [datetime.now().strftime("%d/%m/%Y %H:%M:%S")],
+                "times": [datetime.now().strftime(DATETIME_FORMAT_STRING)],
             }
 
     def write_auth_tracker(self):
@@ -523,9 +525,7 @@ class Controller:
             server_command = create_data.get("command", server_command)
         elif data["create_type"] == "custom":
             # TODO: working_directory, executable_update
-            if root_create_data["create_type"] == "raw_exec":
-                pass
-            elif root_create_data["create_type"] == "import_server":
+            if root_create_data["create_type"] == "import_server":
                 existing_server_path = Helpers.get_os_understandable_path(
                     create_data["existing_server_path"]
                 )
@@ -886,9 +886,8 @@ class Controller:
         self.import_helper.import_bedrock_zip_server(
             temp_dir, new_server_dir, full_jar_path, port, new_id
         )
-        if os.name != "nt":
-            if Helpers.check_file_exists(full_jar_path):
-                os.chmod(full_jar_path, 0o2760)
+        if os.name != "nt" and Helpers.check_file_exists(full_jar_path):
+            os.chmod(full_jar_path, 0o2760)
 
         return new_id
 
@@ -1052,9 +1051,7 @@ class Controller:
     def t_update_master_server_dir(self, new_server_path, user_id):
         new_server_path = self.helper.wtol_path(new_server_path)
         new_server_path = os.path.join(new_server_path, "servers")
-        WebSocketManager().broadcast_page(
-            "/panel/panel_config", "move_status", "Checking dir"
-        )
+        WebSocketManager().broadcast_page(CONFIG_URL, "move_status", "Checking dir")
         current_master = self.helper.wtol_path(
             HelpersManagement.get_master_server_dir()
         )
@@ -1063,7 +1060,7 @@ class Controller:
                 "Admin tried to change server dir to current server dir. Canceling..."
             )
             WebSocketManager().broadcast_page(
-                "/panel/panel_config",
+                CONFIG_URL,
                 "move_status",
                 "done",
             )
@@ -1074,14 +1071,14 @@ class Controller:
                 " current server dir. This will result in a copy loop."
             )
             WebSocketManager().broadcast_page(
-                "/panel/panel_config",
+                CONFIG_URL,
                 "move_status",
                 "done",
             )
             return
 
         WebSocketManager().broadcast_page(
-            "/panel/panel_config", "move_status", "Checking permissions"
+            CONFIG_URL, "move_status", "Checking permissions"
         )
         if not self.helper.ensure_dir_exists(new_server_path):
             WebSocketManager().broadcast_user(
@@ -1109,7 +1106,7 @@ class Controller:
             )
             if os.path.isdir(server_path):
                 WebSocketManager().broadcast_page(
-                    "/panel/panel_config",
+                    CONFIG_URL,
                     "move_status",
                     f"Moving {server.get('server_name')}",
                 )
@@ -1150,7 +1147,7 @@ class Controller:
         self.servers.init_all_servers()
         self.helper.dir_migration = False
         WebSocketManager().broadcast_page(
-            "/panel/panel_config",
+            CONFIG_URL,
             "move_status",
             "done",
         )

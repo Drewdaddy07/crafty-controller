@@ -329,16 +329,6 @@ class Helpers:
         return s
 
     @staticmethod
-    def check_file_perms(path):
-        try:
-            with open(path, "r", encoding="utf-8"):
-                pass
-            logger.info(f"{path} is readable")
-            return True
-        except PermissionError:
-            return False
-
-    @staticmethod
     def is_file_older_than_x_days(file, days=1):
         if Helpers.check_file_exists(file):
             file_time = os.path.getmtime(file)
@@ -865,21 +855,6 @@ class Helpers:
         return lines
 
     @staticmethod
-    def check_writeable(path: str):
-        filename = os.path.join(path, "tempfile.txt")
-        try:
-            with open(filename, "w", encoding="utf-8"):
-                pass
-            os.remove(filename)
-
-            logger.info(f"{filename} is writable")
-            return True
-
-        except Exception as e:
-            logger.critical(f"Unable to write to {path} - Error: {e}")
-            return False
-
-    @staticmethod
     def check_root():
         if Helpers.is_os_windows():
             return ctypes.windll.shell32.IsUserAnAdmin() == 1
@@ -891,19 +866,13 @@ class Helpers:
 
         logger.info("Checking app directory writable")
 
-        writeable = Helpers.check_writeable(self.root_dir)
-
-        # if not writeable, let's bomb out
-        if not writeable:
-            logger.critical(f"Unable to write to {self.root_dir} directory!")
-            sys.exit(1)
-
         # ensure the log directory is there
         try:
             with suppress(FileExistsError):
                 os.makedirs(os.path.join(self.root_dir, "logs"))
         except Exception as e:
             Console.error(f"Failed to make logs directory with error: {e} ")
+            sys.exit(1)
 
         # ensure the log file is there
         try:
@@ -1265,7 +1234,7 @@ class Helpers:
         random_generator() = G8sjO2
         random_generator(3, abcdef) = adf
         """
-        return "".join(secrets.choice(chars) for x in range(size))
+        return "".join(secrets.choice(chars) for _ in range(size))
 
     @staticmethod
     def is_os_windows():

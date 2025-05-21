@@ -16,6 +16,8 @@ from app.classes.shared.console import Console
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_EMAIL = "default@example.com"
+
 
 class UsersController:
     class ApiPermissionDict(t.TypedDict):
@@ -69,7 +71,7 @@ class UsersController:
             "email": {
                 "type": "string",
                 "format": "email",
-                "examples": ["default@example.com"],
+                "examples": [DEFAULT_EMAIL],
                 "title": "E-Mail",
                 "error": "typeEmail",
                 "fill": True,
@@ -292,7 +294,7 @@ class UsersController:
         username,
         manager,
         password,
-        email="default@example.com",
+        email=DEFAULT_EMAIL,
         enabled: bool = True,
         superuser: bool = False,
         theme="default",
@@ -313,7 +315,7 @@ class UsersController:
     def add_rawpass_user(
         username,
         password,
-        email="default@example.com",
+        email=DEFAULT_EMAIL,
         enabled: bool = True,
         superuser: bool = False,
     ):
