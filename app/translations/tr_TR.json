@@ -688,7 +688,6 @@
         "uses": "İzin verilen kullanım sayısı (-1==Sınır Yok)",
         "hints": "İpuçlarını Etkinleştir?",
         "totpIdReq": "TOTP ID Talep için gerekli",
-        "otpReq": "TOTP süper kullanıcılar için zorunludur. Tek TOTP yönteminizi kaldıramazsınız.",
         "changePass": "Şifre Değiştir",
         "changeUser": "Kullanıcı Adını Değiştir",
         "editTOTP": "Kullanıcı MFA'sını düzenle",

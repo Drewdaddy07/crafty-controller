@@ -686,7 +686,6 @@
         "userSettings": "用户设置",
         "userTheme": "UI 主题",
         "uses": "使用次数限制（-1==无限制）",
-        "otpReq": "超级用户需要 TOTP。您不能删除您仅有的 TOTP 方式。",
         "totpIdReq": "请求需要 TOTP ID",
         "changePass": "更改密码",
         "changeUser": "更改用户名",

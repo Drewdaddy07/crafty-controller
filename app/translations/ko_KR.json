@@ -110,8 +110,7 @@
         "changePass": "비밀번호 변경",
         "changeUser": "사용자 이름 변경",
         "hints": "힌트 활성화",
-        "totpHeader": "다중인증",
-        "otpReq": "슈퍼 사용자에게는 TOTP가 필수입니다. 단 하나뿐인 TOTP 방법은 삭제할 수 없습니다."
+        "totpHeader": "다중인증"
     },
     "validators": {
         "passLength": "비밀번호가 너무 짧아요! (최소 길이: 8)",
