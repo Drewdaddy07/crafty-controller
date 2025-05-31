@@ -468,32 +468,6 @@ class ServerInstance:
             f"Starting server in {self.server_path} with command: {self.server_command}"
         )
 
-        # checks to make sure file is openable (downloaded) and exists.
-        try:
-            with open(
-                os.path.join(
-                    self.server_path,
-                    HelperServers.get_server_data_by_id(self.server_id)["executable"],
-                ),
-                "r",
-                encoding="utf-8",
-            ):
-                # Can open the file
-                pass
-
-        except:
-            if user_id:
-                WebSocketManager().broadcast_user(
-                    user_id,
-                    "send_start_error",
-                    {
-                        "error": self.helper.translation.translate(
-                            "error", "not-downloaded", user_lang
-                        )
-                    },
-                )
-            return
-
         if (
             not Helpers.is_os_windows()
             and HelperServers.get_server_type_by_id(self.server_id)
