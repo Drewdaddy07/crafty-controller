@@ -145,7 +145,7 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/crafty/JarCache/?",
+            r"/api/v2/crafty/JarCache(?:/([0-9-]+))?",
             ApiCraftyJarCacheIndexHandler,
             handler_args,
         ),

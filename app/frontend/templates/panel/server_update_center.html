@@ -127,7 +127,7 @@
                             </div>
                         </div>
                         <div class="col-sm-9 grid-margin">
-                            <button class="btn btn-outline-success full">Submit</button>
+                            <button id="submit" class="btn btn-outline-success full">Submit</button>
                         </div>
                     </div>
                 </div>
@@ -148,6 +148,15 @@
                 $("#basic").addClass("d-none");
                 $("#advanced").removeClass("d-none");
             }
-        })
+        });
+
+        $("#submit").on("click", async function () {
+            let res = await fetch(`/api/v2/crafty/JarCache/0`, {
+                method: 'GET',
+                headers: {
+                    'X-XSRFToken': token
+                },
+            });
+        });
     </script>
     {% end %}
