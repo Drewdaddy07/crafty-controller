@@ -50,7 +50,7 @@ class BackupManager:
             if svr_obj.check_running():
                 svr_obj.stop_server()
             if backup_config["backup_type"] != "zip_vault":
-                print("snapshot")  # TODO: Link Snapshot restore.
+                self.snapshot_restore(backup_config, backup_file, svr_obj)
             else:
                 if not in_place:  # If user does not want to backup in place we will
                     # clean the server dir
@@ -297,7 +297,12 @@ class BackupManager:
             backup_repository_path / "manifests" / f"{backup_time_filesafe}.manifest"
         )
 
-        list_of_files: list[Path] = FileHelpers.discover_files(source_path)
+        excluded_dirs = HelpersManagement.get_excluded_backup_dirs(
+            backup_config["backup_id"]
+        )
+        list_of_files: list[Path] = FileHelpers.discover_files(
+            source_path, excluded_dirs
+        )
 
         # Create manifest file
         try:
@@ -339,21 +344,29 @@ class BackupManager:
             backup_config["max_backups"], backup_repository_path
         )
 
-    def snapshot_restore(self, backup_config, server) -> None:
+    def snapshot_restore(
+        self, backup_config: {str}, backup_manifest_filename: str, server
+    ) -> None:
         """
         Restores snapshot style backup.
 
         Args:
             backup_config: Backup Config.
+            backup_manifest_filename: Filename of backup manifest.
             server: Server config.
 
         Returns:
         """
-        return  # TODO: Implement restore functionally. See TODOs.
-
-        destination_path = Path(__file__)  # TODO: Get proper destination path.
-        source_manifest_path = Path(__file__)  # TODO: Get manifest of backup.
-        backup_reposititory_path = Path(__file__)  # TODO: Get backup repo path.
+        print(server.settings["path"])
+        destination_path = Path(server.settings["path"])
+        source_manifest_path = Path(
+            backup_config["backup_location"],
+            "snapshot_backups",
+            "manifests",
+            backup_manifest_filename,
+        )
+        # /snapshot_backups/manifests/manifest.manifest
+        backup_repository_path = source_manifest_path.parent.parent
 
         # Ensure destination is not a file.
         if destination_path.is_file():

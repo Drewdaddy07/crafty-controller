@@ -508,7 +508,7 @@ class FileHelpers:
         return repository_location / "files" / hash_hex[:2] / hash_hex[-126:]
 
     @staticmethod
-    def discover_files(target_path: Path) -> list[Path]:
+    def discover_files(target_path: Path, exclusions) -> list[Path]:
         """
         Returns a list of all files in a target path, ignores empty directories.
 
@@ -523,10 +523,21 @@ class FileHelpers:
             raise NotADirectoryError(f"{target_path} is not a directory.")
 
         discovered_files = []
+        excluded_dirs = []
+        excluded_files = []
+
+        for excl_dir in exclusions:
+            temp_path = Path(excl_dir).resolve()
+            if temp_path.is_file():
+                excluded_files.append(temp_path)
+            else:
+                excluded_dirs.append(temp_path)
 
         # Use pathlib built in rglob to find all files.
         for p in target_path.rglob("*"):
-            if p.is_file():
+            if p.is_dir():
+                continue
+            if p not in excluded_files and p.parents not in excluded_dirs:
                 discovered_files.append(p)
         return discovered_files
 
