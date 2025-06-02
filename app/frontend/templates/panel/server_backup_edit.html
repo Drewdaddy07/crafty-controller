@@ -67,6 +67,7 @@
                   </label>
                   <label class="btn btn-secondary">
                     <input type="radio" class="btn-check" name="backup_type" id="snapshot" value="snapshot"
+                      data-disclaimer="{{ translate('serverBackups', 'snapshotDisclaimer', data['lang']) }}"
                       autocomplete="off"> Snapshot
                   </label>
                 </div>
@@ -242,7 +243,8 @@
                           <i class="fas fa-trash" aria-hidden="true"></i>
                           {{ translate('serverBackups', 'delete', data['lang']) }}
                         </button>
-                        <button data-file="{{ backup['path'] }}" class="btn btn-warning restore_button">
+                        <button data-file="{{ backup['path'] }}" data-type="{{data['backup_config']['backup_type']}}"
+                          class="btn btn-warning restore_button">
                           <i class="fas fa-undo-alt" aria-hidden="true"></i>
                           {{ translate('serverBackups', 'restore', data['lang']) }}
                         </button>
@@ -403,6 +405,13 @@
     }
   }
 
+  $("#snapshot").on("change", function () {
+    if ($("#snapshot").is(':checked')) {
+      console.log($("#snapshot").data("disclaimer"))
+      bootbox.alert($("#snapshot").data("disclaimer"))
+    }
+  })
+
   $(document).ready(function () {
     $(".backup-explain").on("click", function (e) {
       e.preventDefault();
@@ -546,9 +555,12 @@
 
     $(".restore_button").click(function () {
       var file_to_restore = $(this).data("file");
-      bootbox.dialog({
-        title: "{{ translate('serverBackups', 'restore', data['lang']) }} " + file_to_restore,
-        message: `
+      if ($(this).data("type") === "snapshot") {
+        restore_backup(file_to_restore, serverId, 1)
+      } else {
+        bootbox.dialog({
+          title: "{{ translate('serverBackups', 'restore', data['lang']) }} " + file_to_restore,
+          message: `
       <div id="restore-box">
         <div class="custom-control custom-switch">
           <input class="custom-control-input" type="radio" name="restoreOption" id="optionInPlace" value=1>
@@ -566,24 +578,25 @@
         </div>
       </div>
     `,
-        buttons: {
-          cancel: {
-            label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
+          buttons: {
+            cancel: {
+              label: '<i class="fas fa-times"></i> {{ translate("serverBackups", "cancel", data['lang']) }}'
       },
-          confirm: {
-            label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "restore", data['lang']) }}',
-            className: 'btn-outline-danger',
-            callback: function () {
-              var selectedOption = $('input[name="restoreOption"]:checked').val();
-              if (!selectedOption || typeof (selectedOption) == "undefined") {
-                bootbox.alert(`{{ translate("serverBackups", "radioRequired", data['lang']) }}`)
-              } else {
-                restore_backup(file_to_restore, serverId, selectedOption)
+            confirm: {
+              label: '<i class="fas fa-check"></i> {{ translate("serverBackups", "restore", data['lang']) }}',
+              className: 'btn-outline-danger',
+              callback: function () {
+                var selectedOption = $('input[name="restoreOption"]:checked').val();
+                if (!selectedOption || typeof (selectedOption) == "undefined") {
+                  bootbox.alert(`{{ translate("serverBackups", "radioRequired", data['lang']) }}`)
+                } else {
+                  restore_backup(file_to_restore, serverId, selectedOption)
+                }
               }
             }
           }
-        }
-      });
+        });
+      }
     });
 
     $("#backup_now_button").click(function () {
