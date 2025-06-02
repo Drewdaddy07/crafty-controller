@@ -37,7 +37,7 @@
         "getMFA": "Sécurisez vos serveurs !"
     },
     "credits": {
-        "developmentTeam": "Équipe de Développement",
+        "developmentTeam": "Équipe de développement",
         "hugeDesc": "Un énorme",
         "pageDescription": "Sans ces personnes, vous n'auriez pas Crafty",
         "pageTitle": "Crédits",
@@ -402,7 +402,7 @@
         "serverExecutionCommandDesc": "Ce qui sera lancé dans un terminal en arrière plan",
         "serverIP": "Adresse IP du serveur",
         "serverIPDesc": "IP à laquelle Crafty doit se connecter pour les statistiques (Essayez une IP réelle plutôt que 127.0.0.1 en cas de problème)",
-        "serverLogLocation": "Emplacement des Logs du serveur",
+        "serverLogLocation": "Emplacement des logs du serveur",
         "serverLogLocationDesc": "Chemin absolu du fichier de logs",
         "serverName": "Nom du serveur",
         "serverNameDesc": "Nom que vous souhaitez donner à ce serveur",
@@ -427,7 +427,7 @@
         "desc": "C'est ici que vous pouvez modifier la configuration de votre serveur",
         "perms": [
             "Il est recommandé de <code>NE PAS</code> changer le chemin d'un serveur géré par Crafty.",
-            "Changer le chemin <code>PEUT</code> casser des choses, surtout sur les systèmes d'opération de type Linux où les permissions sur les fichiers sont plus restreintes.",
+            "Changer le chemin <code>PEUT</code> casser des choses, surtout sur les systèmes d'exploitation de type Linux où les permissions sur les fichiers sont plus restreintes.",
             "<br /><br/>",
             "Si vous devez modifier l'emplacement d'un serveur, vous pouvez le faire tant que vous accordez à l'utilisateur 'crafty' les permissions de lecture et d'écriture sur le chemin du serveur.",
             "<br />",
