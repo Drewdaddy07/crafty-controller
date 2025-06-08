@@ -1,4 +1,3 @@
-import html
 import logging
 import json
 from jsonschema import validate
@@ -298,8 +297,6 @@ class ApiServersServerIndexHandler(BaseApiHandler):
                 if key == "execution_command" and java_flag:
                     continue
                 setattr(server_obj, key, data[key])
-        if "name" in server_obj:
-            server_obj["name"] = html.escape(server_obj["name"])
         self.controller.servers.update_server(server_obj)
 
         self.controller.management.add_to_audit_log(

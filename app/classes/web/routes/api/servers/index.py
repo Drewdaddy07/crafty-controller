@@ -1,4 +1,3 @@
-import html
 import logging
 
 from jsonschema import ValidationError, validate
@@ -876,7 +875,6 @@ class ApiServersIndexHandler(BaseApiHandler):
                 },
             )
             return
-        data["name"] = html.escape(data["name"])
         try:
             new_server_id = self.controller.create_api_server(data, user["user_id"])
         except Exception as e:
