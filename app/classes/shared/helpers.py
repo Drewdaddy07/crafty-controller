@@ -201,7 +201,7 @@ class Helpers:
 
             response_data = response.json()["result"]
 
-            if not "links" in response_data:
+            if "links" not in response_data:
                 raise KeyError("Unable to find links key in Bedrock response payload")
             bedrock_data = {}
             for link in response_data["links"]:
@@ -212,7 +212,6 @@ class Helpers:
                     preview = "preview" if match.group(1) else "stable"
                     operating_system = match.group(2).lower()
                     bedrock_data[f"{operating_system}_{preview}"] = url
-            print(bedrock_data)
             if os.name == "nt":
                 return bedrock_data["windows_stable"]
 
