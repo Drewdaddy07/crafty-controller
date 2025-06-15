@@ -1,14 +1,8 @@
 # Changelog
-## --- [4.4.11] - 2025/TBD
-### New features
-TBD
+## --- [4.4.11] - 2025/06/15
 ### Bug fixes
 - Fix issue causing some server creations to silently fail ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/862))
 - Check if `servers/` dir exists before attempting to migrate server stats db(s) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/863))
-### Tweaks
-TBD
-### Lang
-TBD
 <br><br>
 
 ## --- [4.4.10] - 2025/06/15
