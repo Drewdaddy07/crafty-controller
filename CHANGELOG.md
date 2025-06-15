@@ -1,4 +1,15 @@
 # Changelog
+## --- [4.4.11] - 2025/TBD
+### New features
+TBD
+### Bug fixes
+TBD
+### Tweaks
+TBD
+### Lang
+TBD
+<br><br>
+
 ## --- [4.4.10] - 2025/06/15
 ### Bug fixes
 - Revert min length of username from `4 > 3` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/853))
