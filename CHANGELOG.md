@@ -3,7 +3,7 @@
 ### New features
 TBD
 ### Bug fixes
-TBD
+- Fix issue causing some server creations to silently fail ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/862))
 ### Tweaks
 TBD
 ### Lang
