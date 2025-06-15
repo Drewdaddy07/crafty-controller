@@ -1,7 +1,5 @@
 # Changelog
-## --- [4.4.10] - 2025/TBD
-### New features
-TBD
+## --- [4.4.10] - 2025/06/15
 ### Bug fixes
 - Revert min length of username from `4 > 3` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/853))
 - Remove unnecessary poll for player information on `server_details` page load ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/856))
