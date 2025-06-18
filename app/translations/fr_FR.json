@@ -720,7 +720,8 @@
         "backupName": "Le nom de la sauvegarde doit être une chaîne de caractères d’au moins 3 caractères.",
         "enumErr": "Échec de la validation. Les données acceptables incluent : ",
         "filesPageLen": "La longueur doit être supérieure à 1 pour cette propriété",
-        "insufficientPerms": "Erreur de permission : permissions manquantes pour cette ressource"
+        "insufficientPerms": "Erreur de permission : permissions manquantes pour cette ressource",
+        "mfaName": "La saisie doit être une chaîne de caractères d'au moins 3 caractères pour ce champ"
     },
     "webhooks": {
         "areYouSureDel": "Êtes-vous sûr de vouloir supprimer ce webhook ?",
