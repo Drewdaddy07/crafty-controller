@@ -134,8 +134,8 @@ class FileHelpers:
                 # Delete file if it is a file:
                 try:
                     sub.unlink()
-                except:
-                    logger.error(f"Unable to delete file {sub}")
+                except Exception as e:
+                    logger.error(f"Unable to delete file {sub}: {e}")
         try:
             # This removes the top-level folder:
             path.rmdir()
