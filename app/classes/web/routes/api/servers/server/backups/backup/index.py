@@ -6,7 +6,6 @@ from jsonschema.exceptions import ValidationError
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.helpers.file_helpers import FileHelpers
 from app.classes.web.base_api_handler import BaseApiHandler
-from app.classes.helpers.helpers import Helpers
 
 logger = logging.getLogger(__name__)
 
