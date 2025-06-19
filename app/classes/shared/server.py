@@ -1132,7 +1132,6 @@ class ServerInstance:
         self.run_threaded_server(user_id)
 
     def server_restore_threader(self, backup_id, backup_file, in_place=False):
-        backup_config = HelpersManagement.get_backup_config(backup_id)
         # import the server again based on zipfile
         backup_config = HelpersManagement.get_backup_config(backup_id)
         backup_location = os.path.join(
