@@ -1332,23 +1332,24 @@ class ServerInstance:
             self.stop_threaded_server()
         else:
             was_started = False
+        ws_params = {
+                    "isUpdating": self.check_update(),
+                    "server_id": self.server_id,
+                    "wasRunning": was_started,
+                    }
         if len(WebSocketManager().clients) > 0:
             # There are clients
             self.check_update()
             message = (
                 '<a data-id="' + str(self.server_id) + '" class=""> UPDATING...</i></a>'
             )
+            ws_params["string"] = message
         for user in server_users:
             WebSocketManager().broadcast_user_page(
                 "/panel/server_detail",
                 user,
                 "update_button_status",
-                {
-                    "isUpdating": self.check_update(),
-                    "server_id": self.server_id,
-                    "wasRunning": was_started,
-                    "string": message,
-                },
+                ws_params
             )
         current_executable = os.path.join(
             Helpers.get_os_understandable_path(self.settings["path"]),
