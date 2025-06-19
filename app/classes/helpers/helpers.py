@@ -331,8 +331,7 @@ class Helpers:
     def check_file_perms(path):
         try:
             with open(path, "r", encoding="utf-8"):
-                pass
-            logger.info(f"{path} is readable")
+                logger.info(f"{path} is readable")
             return True
         except PermissionError:
             return False
