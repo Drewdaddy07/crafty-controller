@@ -1394,8 +1394,8 @@ class Helpers:
                     decoded_str = decoded_bytes.decode("utf-8")
                     texture_json = json.loads(decoded_str)
                     skin_url = texture_json["textures"]["SKIN"]["url"]
-            skin_response = requests.get(skin_url, stream=True, timeout=10)
-            if skin_response.status_code == 200:
-                return base64.b64encode(skin_response.content)
+                    skin_response = requests.get(skin_url, stream=True, timeout=10)
+                    if skin_response.status_code == 200:
+                        return base64.b64encode(skin_response.content)
         else:
             return
