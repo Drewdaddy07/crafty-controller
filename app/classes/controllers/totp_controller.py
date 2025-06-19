@@ -100,8 +100,8 @@ class TOTPController:
         """clears out totp codes older than 1 minute when one is sent"""
         now = datetime.now(tz=timezone.utc)
         # Clean up expired entries reclaim some memory
-        for key in list(self.used_totp_codes.keys()):
-            for item in list(self.used_totp_codes[key].keys()):
+        for key in self.used_totp_codes.keys():
+            for item in self.used_totp_codes[key].keys():
                 if now - self.used_totp_codes[key][item] > timedelta(seconds=60):
                     del self.used_totp_codes[key][item]
 
@@ -188,7 +188,7 @@ class TOTPController:
         minutes. This runs on a schedule every 24 hours from tasks.py
         """
         logger.info("Checking and purging stale pending MFA")
-        for totp_id in list(self.pending_totp.keys()):
+        for totp_id in self.pending_totp.keys():
             if datetime.now(tz=timezone.utc) - self.pending_totp[totp_id][
                 "iat"
             ] > timedelta(minutes=60):
