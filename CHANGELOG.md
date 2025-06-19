@@ -1,5 +1,5 @@
 # Changelog
-## --- [4.4.10] - 2025/TBD
+## --- [4.4.12] - 2025/TBD
 ### New features
 TBD
 ### Bug fixes
@@ -8,6 +8,28 @@ TBD
 TBD
 ### Lang
 TBD
+<br><br>
+
+## --- [4.4.11] - 2025/06/15
+### Bug fixes
+- Fix issue causing some server creations to silently fail ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/862))
+- Check if `servers/` dir exists before attempting to migrate server stats db(s) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/863))
+<br><br>
+
+## --- [4.4.10] - 2025/06/15
+### Bug fixes
+- Revert min length of username from `4 > 3` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/853))
+- Remove unnecessary poll for player information on `server_details` page load ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/856))
+- [`CVE-2025-5990`] Security fix: resolve stored XSS vulnerabilities in 2x input forms ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/860))
+### Tweaks
+- Add border around QR code to improve scanning ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/853))
+- Add error when user does not provide a valid username ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/853))
+- Moves db_stats directory from the servers directories to the db directory in config ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/850))
+- Bump tornado for CVE-2025-47287 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/858))
+- Bump requests for CVE-2024-47081 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/859))
+- Update Bedrock Server binary download url ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/857))
+### Lang
+- Correct spelling of `login.accountDisabled` on English localization ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/855))
 <br><br>
 
 ## --- [4.4.9] - 2025/05/20
