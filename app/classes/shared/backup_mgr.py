@@ -44,7 +44,7 @@ class BackupManager:
     def restore_starter( #pylint: disable=too-many-positional-arguments
         self, backup_config, backup_location, backup_file, svr_obj, in_place
     ):
-        SERVER_PATH = svr_obj.settings["path"]
+        server_path = svr_obj.settings["path"]
         if Helpers.validate_traversal(backup_location, backup_file):
             if svr_obj.check_running():
                 svr_obj.stop_server()
@@ -53,15 +53,15 @@ class BackupManager:
             else:
                 if not in_place:  # If user does not want to backup in place we will
                     # clean the server dir
-                    for item in os.listdir(SERVER_PATH):
+                    for item in os.listdir(server_path):
                         if (
-                            os.path.isdir(os.path.join(SERVER_PATH, item))
+                            os.path.isdir(os.path.join(server_path, item))
                             and item != "db_stats"
                         ):
-                            self.file_helper.del_dirs(os.path.join(SERVER_PATH, item))
+                            self.file_helper.del_dirs(os.path.join(server_path, item))
                         else:
-                            self.file_helper.del_file(os.path.join(SERVER_PATH, item))
-                self.file_helper.restore_archive(backup_location, SERVER_PATH)
+                            self.file_helper.del_file(os.path.join(server_path, item))
+                self.file_helper.restore_archive(backup_location, server_path)
 
     def backup_starter(self, backup_config, server):
         """Notify users of backup starting, and start the backup.
