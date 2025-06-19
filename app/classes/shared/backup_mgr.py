@@ -5,7 +5,6 @@ import logging
 import os
 import shutil
 import time
-from logging import raiseExceptions
 from pathlib import Path
 
 # TZLocal is set as a hidden import on win pipeline
