@@ -1333,10 +1333,10 @@ class ServerInstance:
         else:
             was_started = False
         ws_params = {
-                    "isUpdating": self.check_update(),
-                    "server_id": self.server_id,
-                    "wasRunning": was_started,
-                    }
+            "isUpdating": self.check_update(),
+            "server_id": self.server_id,
+            "wasRunning": was_started,
+        }
         if len(WebSocketManager().clients) > 0:
             # There are clients
             self.check_update()
@@ -1346,10 +1346,7 @@ class ServerInstance:
             ws_params["string"] = message
         for user in server_users:
             WebSocketManager().broadcast_user_page(
-                "/panel/server_detail",
-                user,
-                "update_button_status",
-                ws_params
+                "/panel/server_detail", user, "update_button_status", ws_params
             )
         current_executable = os.path.join(
             Helpers.get_os_understandable_path(self.settings["path"]),
