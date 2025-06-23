@@ -41,14 +41,16 @@
                             <div id="selectHead" class="form-adapability">
                                 <select id="ba" class="form-control">
                                     <option value="0">Basic</option>
+                                    {% if data['super_user'] %}
                                     <option value="1">Advanced</option>
+                                    {% end %}
                                 </select>
                             </div>
                             <br>
                             <div id="basic">
                                 <div
                                     class="card-header header-sm d-flex justify-content-between align-items-center form-adapability">
-                                    <span class="text-secondary" style="font-size: .9vw;">{{
+                                    <span id="update-url" class="text-secondary" style="font-size: .9vw;">{{
                                         data['server_stats']['server_id']['executable_update_url'] }}</span> 🔒
                                 </div>
                                 <br>
@@ -72,6 +74,7 @@
                                 {% end %}
                                 {% end %}
                             </div>
+                            {% if data['super_user'] %}
                             <div class="form-group form-adapability">
                                 <label for="executable">{{ translate('serverConfig', 'serverExecutable',
                                     data['lang'])
@@ -85,6 +88,7 @@
                                     placeholder="{{ translate('serverConfig', 'serverExecutable', data['lang']) }}"
                                     required>
                             </div>
+                            {% end %}
                         </div>
                         <div class="col-sm-3 grid-margin">
                             <div class="card">
@@ -151,12 +155,49 @@
         });
 
         $("#submit").on("click", async function () {
-            let res = await fetch(`/api/v2/crafty/JarCache/0`, {
-                method: 'GET',
-                headers: {
-                    'X-XSRFToken': token
-                },
-            });
+            if ($("#ba").val() === "0") {
+                let payload = { "category": $("#server_jar").val(), "type": $("#server_type").val(), "version": $("#server").val() }
+                let formDataJsonString = JSON.stringify(payload);
+                let res = await fetch(`/api/v2/servers/${serverId}/update/config/`, {
+                    method: 'PATCH',
+                    body: formDataJsonString,
+                    headers: {
+                        'X-XSRFToken': token
+                    },
+                });
+                let responseData = await res.json()
+                if (responseData.status === "ok") {
+                    $("#update-url").text(responseData.data["executable_update_url"])
+
+                } else {
+
+                    bootbox.alert({
+                        title: responseData.error,
+                        message: responseData.error_data
+                    });
+                }
+            } else {
+                let payload = { "executable_update_url": "" }
+                formDataJsonString = JSON.stringify(payload)
+                let res = await fetch(`/api/v2/servers/${serverId}/update/config/`, {
+                    method: 'PATCH',
+                    body: formDataJsonString,
+                    headers: {
+                        'X-XSRFToken': token
+                    },
+                });
+                let responseData = await res.json()
+                if (responseData.status === "ok") {
+                    $("#update-url").text(responseData.data["executable_update_url"])
+
+                } else {
+
+                    bootbox.alert({
+                        title: responseData.error,
+                        message: responseData.error_data
+                    });
+                }
+            }
         });
     </script>
     {% end %}
