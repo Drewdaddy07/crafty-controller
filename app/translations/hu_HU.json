@@ -1,1 +1,192 @@
-{}
+{
+    "404": {
+        "notFound": "Oldal nem található",
+        "contact": "Kapcsolatfelvétel a Crafty Supporttal Discordon",
+        "unableToFind": "Nem találjuk az oldalt amit keresel. Kérlek próbáld meg újra, vagy frissítsd az oldalt."
+    },
+    "accessDenied": {
+        "noAccess": "Nincs hozzáférésed ehhez a fájlhoz",
+        "accessDenied": "Hozzáférés megtagadva",
+        "contact": "Kapcsolatfelvétel a Crafty Supporttal Discordon",
+        "contactAdmin": "Vedd fel a kapcsolatot a szerver adminisztrátorával hogy hozzáférhess ehhez a forráshoz, vagy ha úgy gondolod ehhez a forráshoz hozzá kéne férned, vedd fel a kapcsolatot a Supporttal."
+    },
+    "apiKeys": {
+        "apiKeys": "API kulcsok",
+        "auth": "Engedélyezett? ",
+        "buttons": "Gombok",
+        "config": "Konfiguráció",
+        "crafty": "Crafty: ",
+        "createNew": "Új API Token létrehozás",
+        "created": "Létrehozva",
+        "deleteKeyConfirmation": "Törölni szeretnéd ezt az API kulcsot? Nem lehet visszavonni.",
+        "deleteKeyConfirmationTitle": "Törlöd a ${keyId} API kulcsot?",
+        "fullAccess": "Teljes hozzáférés",
+        "getToken": "Szerezz egy Tokent",
+        "name": "Név",
+        "nameDesc": "Mi legyen a neve ennek az API Tokennek? ",
+        "no": "Nem",
+        "perms": "Engedélyek",
+        "server": "Szerver: ",
+        "yes": "Igen",
+        "pageTitle": "Felhasználó API kulcs szerkesztés",
+        "permName": "Engedély neve"
+    },
+    "base": {
+        "getMFA": "Tedd biztonságossá szervered!",
+        "createMFA": "Adj hozzá többlépcsős hitelesítést a fiókodhoz!",
+        "doesNotWorkWithoutJavascript": "<strong>Figyelem: </strong>Crafty nem fog működni ha a JavaScript ki van kapcsolva!"
+    },
+    "credits": {
+        "developmentTeam": "Fejlesztő csapat",
+        "hugeDesc": "Egy nagy",
+        "pageTitle": "Közreműködők",
+        "patreonDesc": "Patreon / Ko-fi támogatónknak!",
+        "patreonOther": "Egyéb",
+        "patreonSupporter": "Patreon / Ko-fi támogatók",
+        "patreonUpdate": "Utolsó frissítés:",
+        "retiredStaff": "Visszavonult Staff",
+        "subscriptionLevel": "Szint",
+        "thankYou": "KÖSZÖNJÜK",
+        "translationDesc": "közösségünknek akik fordítanak! [ Aktív = 🟢 Inaktív/Visszavonult = ⚪ ]",
+        "translationName": "Név",
+        "translationTitle": "Nyelv fordítás",
+        "supportTeam": "Támogató és Dokumentációs Csapat",
+        "subscriberName": "Név",
+        "translator": "Fordítók",
+        "pageDescription": "Ezek az emberek nélkül most nem létezne Crafty"
+    },
+    "customLogin": {
+        "apply": "Jelentkezés",
+        "customLoginPage": "Bejelentkező felület testreszabása",
+        "delete": "Törlés",
+        "labelLoginImage": "Válaszd ki a Bejelentkező háttérképet",
+        "loginBackground": "Bejelentkező háttérkép",
+        "loginOpacity": "Válaszd ki a bejelentkező ablak áttetszőségét",
+        "pageTitle": "Egyedi bejelentkező felület",
+        "preview": "Előnézet",
+        "select": "Kiválasztás",
+        "selectImage": "Válassz ki egy képet",
+        "backgroundUpload": "Feltöltés a háttérben",
+        "loginImage": "Bejelentkező háttérkép feltöltése."
+    },
+    "dashboard": {
+        "actions": "Tevékenységek",
+        "allServers": "Összes szerver",
+        "avg": "Átlag",
+        "backups": "Biztonsági mentések",
+        "bePatientRestart": "Kérjük várj türelemmel, amíg újraindítjuk a szervert.<br /> Ez a képernyő egy pillanat múlva frissül",
+        "bePatientStop": "Kérjük várj türelemmel, amíg leállítjuk a szervert.<br /> Ez a képernyő egy pillanat múlva frissül",
+        "cannotSee": "Nem látsz mindent?",
+        "cannotSeeOnMobile": "Nem látsz mindent telefonon?",
+        "cannotSeeOnMobile2": "Próbáld meg oldalirányban görgetni a táblázatot.",
+        "clone": "Klónozás",
+        "cpuCores": "CPU magok",
+        "cpuCurFreq": "CPU jelenlegi órajel",
+        "cpuMaxFreq": "CPU maximum órajel",
+        "cpuUsage": "CPU használat",
+        "crashed": "Összeomlott",
+        "dashboard": "Vezérlőpult",
+        "delay-explained": "A szolgáltatás nemrég indult, és késlelteti a minecraft szerver indítását",
+        "host": "Házigazda",
+        "installing": "Telepítés...",
+        "kill": "Folyamat azonnali megszakítása",
+        "killing": "Folyamat megszakítása...",
+        "lastBackup": "Utolsó:",
+        "max": "Maximum",
+        "memUsage": "Memória használat",
+        "motd": "MOTD",
+        "nextBackup": "Következő:",
+        "no-servers": "Nincs elérhető szerver. A kezdéshez kattints",
+        "offline": "Nem elérhető",
+        "online": "Elérhető",
+        "players": "Játékosok",
+        "restart": "Újraindítás",
+        "servers": "Szerverek",
+        "size": "Szervermappa mérete",
+        "start": "Indítás",
+        "status": "Állapot",
+        "stop": "Leállítás",
+        "storage": "Tárhely",
+        "version": "Verzió",
+        "welcome": "Üdvözlünk a Crafty Controllerben",
+        "newServer": "Új szerver létrehozása",
+        "sendingCommand": "Parancs küldése",
+        "server": "Szerver",
+        "starting": "Késleltetett indítás",
+        "bePatientClone": "Kérjük várj türelemmel, amíg klónozzuk a szervert.<br /> Ez a képernyő egy pillanat múlva frissül",
+        "bePatientStart": "Kérjük várj türelemmel, amíg elindítjuk a szervert.<br /> Ez a képernyő egy pillanat múlva frissül",
+        "cloneConfirm": "Biztos, hogy klónozni szeretnéd ezt a szervert? Ez a folyamat eltarthat egy ideig."
+    },
+    "datatables": {
+        "i18n": {
+            "aria": {
+                "sortDescending": ": aktiválja az oszlop lefelé történő rendezéséhez",
+                "sortAscending": ": aktiváld az oszlop felfelé történő rendezéséhez"
+            },
+            "buttons": {
+                "collection": "Összegyújtés <span class='ui-button-icon-primary ui-icon ui-icon-triangle-1-s'/>",
+                "colvis": "Oszlop láthatósága",
+                "colvisRestore": "Láthatóság visszaállítása",
+                "copy": "Másolás",
+                "copySuccess": {
+                    "1": "Egy sor másolva a vágólapra",
+                    "_": "%d sor másolva a vágólapra"
+                },
+                "copyTitle": "Másolás a vágólapra",
+                "csv": "CSV",
+                "excel": "Excel",
+                "pageLength": {
+                    "-1": "Összes sor mutatása",
+                    "1": "1 sor mutatása",
+                    "_": "%d sor mutatása"
+                },
+                "pdf": "PDF",
+                "print": "Nyomtatás",
+                "copyKeys": "Nyomd meg a ctrl vagy u2318 + C a táblázat adatainak a rendszer vágólapjára történő másolásához.<br><br>A megszakításhoz kattintson erre az üzenetre, vagy nyomja meg az escape billentyűt."
+            },
+            "decimal": ".",
+            "emptyTable": "Nincs adat a táblában",
+            "info": "_START_ to _END_ of _TOTAL_ bejegyzések megjelenítése",
+            "infoFiltered": "(Szűrve a _MAX_ total bejegyzésből)",
+            "infoPostFix": "|",
+            "lengthMenu": "_MENU_ bejegyzés mutatása",
+            "loadingRecords": "Betöltés...",
+            "paginate": {
+                "first": "Első",
+                "last": "Utolsó",
+                "next": "Következő",
+                "previous": "Előző"
+            },
+            "processing": "Feldolgozás...",
+            "search": "Keresés:",
+            "select": {
+                "cells": {
+                    "1": "%d cella kiválasztva",
+                    "_": "%d cellák kiválasztva",
+                    "0": "Kattints egy cellára a kiválasztáshoz"
+                },
+                "columns": {
+                    "0": "Kattints egy oszlopra a kiválasztáshoz",
+                    "1": "%d oszlop kiválasztva",
+                    "_": "%d oszlopok kiválasztva"
+                },
+                "rows": {
+                    "_": "%d sorok kiválasztva",
+                    "1": "%d sor kiválasztva",
+                    "0": "Kattints egy sorra a kiválasztáshoz"
+                }
+            },
+            "thousands": ",",
+            "zeroRecords": "Nem található adat",
+            "infoEmpty": "0 bejegyzés mutatása"
+        },
+        "loadingRecords": "Betöltés..."
+    },
+    "error": {
+        "agree": "Elfogadás",
+        "bigBucket1": "Big Bucket állapotfelmérés sikertelen. Kérlek ellenőrizd",
+        "bigBucket2": "a legtöbb friss információért.",
+        "cancel": "Mégsem",
+        "bedrockError": "Bedrock letöltés nem elérhető. Kérlek ellenőrizd"
+    }
+}
