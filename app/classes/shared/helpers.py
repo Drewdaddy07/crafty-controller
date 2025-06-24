@@ -23,6 +23,7 @@ from datetime import datetime, timezone, timedelta
 
 import libgravatar
 from packaging import version as pkg_version
+from hashlib import sha256
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import serialization, hashes
@@ -1140,6 +1141,20 @@ class Helpers:
                 f"Check generated exception due to file does not exist error: {e}"
             )
             return False
+
+    @staticmethod
+    def create_sha_256_hash(file_path: pathlib.Path) -> str:
+        sha256_hash = sha256()
+        try:
+            with open(file_path, "rb") as f:
+                # Read the file in chunks to handle large files efficiently
+                for chunk in iter(lambda: f.read(4096), b""):
+                    sha256_hash.update(chunk)
+            return sha256_hash.hexdigest()
+        except FileNotFoundError:
+            return "File not found."
+        except Exception as e:
+            return f"An error occurred: {e}"
 
     def create_self_signed_cert(self, cert_dir=None):
         """
