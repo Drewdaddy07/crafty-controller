@@ -642,7 +642,10 @@
         "updating": "Updating..."
     },
     "serverUpdate": {
-        "updateCtr": "Update Center"
+        "monitorUpdate": "Alert On New Version",
+        "newVersion": "New Version Available",
+        "updateCtr": "Update Center",
+        "upToDate": "Up To Date"
     },
     "serverWizard": {
         "absoluteServerPath": "Absolute path to your server",
