@@ -96,19 +96,35 @@
                                     <h4 class="card-title text-center">Update Information
                                     </h4>
                                     <blockquote class="blockquote">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="update_watcher"
+                                                    name="update_watcher" {% if data['server_data']['update_watcher'] %}
+                                                    checked="" {% end %} value="1">
+                                                <label class="custom-control-label" for="update_watcher">&nbsp;&nbsp;{{
+                                                    translate('serverUpdate',
+                                                    'monitorUpdate', data['lang']) }}</label>
+                                            </div>
+                                        </div>
                                         <p class="mb-0">
+                                            {% if data["server_data"]["update_watcher"] %}
                                             {% if not data['update'] %}
-                                            Up to date ✅
+                                            {{
+                                            translate('serverUpdate',
+                                            'upToDate', data['lang']) }} ✅
                                             {% else %}
-                                            New Version Available ⚠️
+                                            {{
+                                            translate('serverUpdate',
+                                            'newVersion', data['lang']) }} ⚠️
                                             {% end %}
                                             <br>
                                             <br>
+                                            Next Check: {{ data['update_next_run']}}
+                                            <br>
+                                            <br>
+                                            {% end %}
                                             Current Executable: <br> <span id="span_executable"> {{
                                                 data['server_data']['executable'] }} </span>
-                                            <br>
-                                            <br>
-                                            Next Check: {{ data['update_next_run']}}
                                             <br>
                                             <br>
                                         </p>
@@ -153,6 +169,29 @@
             } else {
                 $("#basic").addClass("d-none");
                 $("#advanced").removeClass("d-none");
+            }
+        });
+
+        $("#update_watcher").on("change", async function () {
+            let payload = JSON.stringify({ "update_watcher": $("#update_watcher").prop('checked') })
+            let res = await fetch(`/api/v2/servers/${serverId}/update/config/`, {
+                method: 'PATCH',
+                body: payload,
+                headers: {
+                    'X-XSRFToken': token
+                },
+            });
+            responseData = await res.json();
+            if (responseData.status === "ok") {
+                console.log("good")
+                location.reload();
+
+            } else {
+
+                bootbox.alert({
+                    title: responseData.error,
+                    message: responseData.error_data
+                });
             }
         });
 

@@ -34,6 +34,12 @@ update_schema = {
             "error": "typeString",
             "fill": True,
         },
+        "update_watcher": {
+            "title": "Enable Update Notifications",
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,
@@ -468,24 +474,27 @@ class ApiServersServerUpdateConfig(BaseApiHandler):
                 },
             )
         big_bucket = {}
+        server_obj = self.controller.servers.get_server_obj(server_id)
         with open(self.helper.big_bucket_cache, "r", encoding="utf-8") as f:
             big_bucket = json.load(f)
-        server_details = data.get("version").split("|")
-        try:
-            url = big_bucket["categories"][server_details[0]]["types"][
-                server_details[1]
-            ]["versions"][server_details[2]]["url"]
-        except KeyError as why:
-            return self.finish_json(
-                500,
-                {
-                    "status": "error",
-                    "error": "KEY ERROR",
-                    "error_data": f"{str(why)}",
-                },
-            )
-        server_obj = self.controller.servers.get_server_obj(server_id)
-        server_obj.executable_update_url = url[0]
+        if "version" in data:
+            server_details = data.get("version").split("|")
+            try:
+                url = big_bucket["categories"][server_details[0]]["types"][
+                    server_details[1]
+                ]["versions"][server_details[2]]["url"]
+            except KeyError as why:
+                return self.finish_json(
+                    500,
+                    {
+                        "status": "error",
+                        "error": "KEY ERROR",
+                        "error_data": f"{str(why)}",
+                    },
+                )
+            server_obj.executable_update_url = url[0]
+        if "update_watcher" in data:
+            server_obj.update_watcher = data.get("update_watcher")
 
         self.controller.servers.update_server(server_obj)
 
@@ -497,5 +506,9 @@ class ApiServersServerUpdateConfig(BaseApiHandler):
         )
 
         return self.finish_json(
-            200, {"status": "ok", "data": {"executable_update_url": url[0]}}
+            200,
+            {
+                "status": "ok",
+                "data": {"executable_update_url": server_obj.executable_update_url},
+            },
         )
