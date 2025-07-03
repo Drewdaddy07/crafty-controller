@@ -134,30 +134,6 @@ class PanelHandler(BaseHandler):
                 roles.add(role.role_id)
         return roles
 
-    def download_file(self, name: str, file: str):
-        self.set_header("Content-Type", "application/octet-stream")
-        self.set_header("Content-Disposition", f"attachment; filename={name}")
-        chunk_size = 1024 * 1024 * 4  # 4 MiB
-
-        with open(file, "rb") as f:
-            while True:
-                chunk = f.read(chunk_size)
-                if not chunk:
-                    break
-                try:
-                    self.write(chunk)  # write the chunk to response
-                    self.flush()  # send the chunk to client
-                except iostream.StreamClosedError:
-                    # this means the client has closed the connection
-                    # so break the loop
-                    break
-                finally:
-                    # deleting the chunk is very important because
-                    # if many clients are downloading files at the
-                    # same time, the chunks in memory will keep
-                    # increasing and will eat up the RAM
-                    del chunk
-
     def check_subpage_perms(self, user_perms, subpage):
         if SUBPAGE_PERMS.get(subpage, False) in user_perms:
             return True
@@ -764,33 +740,6 @@ class PanelHandler(BaseHandler):
                     player["banned_on"] = (temp_date).strftime("%Y/%m/%d %H:%M:%S")
 
             template = f"panel/server_{subpage}.html"
-
-        elif page == "download_backup":
-            file = self.get_argument("file", "")
-            backup_id = self.get_argument("backup_id", "")
-
-            server_id = self.check_server_id()
-            if server_id is None:
-                return
-            backup_config = self.controller.management.get_backup_config(backup_id)
-            server_info = self.controller.servers.get_server_data_by_id(server_id)
-            backup_location = os.path.join(backup_config["backup_location"], backup_id)
-            backup_file = os.path.abspath(
-                os.path.join(
-                    Helpers.get_os_understandable_path(backup_location),
-                    file,
-                )
-            )
-            if not self.helper.is_subdir(
-                backup_file,
-                Helpers.get_os_understandable_path(backup_location),
-            ) or not os.path.isfile(backup_file):
-                self.redirect("/panel/error?error=Invalid path detected")
-                return
-
-            self.download_file(file, backup_file)
-
-            self.redirect(f"/panel/server_detail?id={server_id}&subpage=backup")
 
         elif page == "panel_config":
             auth_servers = {}
@@ -1670,76 +1619,8 @@ class PanelHandler(BaseHandler):
         elif page == "activity_logs":
             template = "panel/activity_logs.html"
 
-        elif page == "download_file":
-            file = Helpers.get_os_understandable_path(
-                urllib.parse.unquote(self.get_argument("path", ""))
-            )
-            name = urllib.parse.unquote(self.get_argument("name", ""))
-            server_id = self.check_server_id()
-            if server_id is None:
-                return
-
-            server_info = self.controller.servers.get_server_data_by_id(server_id)
-
-            if not self.helper.is_subdir(
-                file,
-                Helpers.get_os_understandable_path(server_info["path"]),
-            ) or not os.path.isfile(file):
-                self.redirect("/panel/error?error=Invalid path detected")
-                return
-
-            self.download_file(name, file)
-            self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
-
         elif page == "wiki":
             template = "panel/wiki.html"
-
-        elif page == "download_support_package":
-            temp_zip_storage = exec_user["support_logs"]
-
-            self.set_header("Content-Type", "application/octet-stream")
-            self.set_header(
-                "Content-Disposition", "attachment; filename=" + "support_logs.zip"
-            )
-            chunk_size = 1024 * 1024 * 4  # 4 MiB
-            if temp_zip_storage != "":
-                with open(temp_zip_storage, "rb") as f:
-                    while True:
-                        chunk = f.read(chunk_size)
-                        if not chunk:
-                            break
-                        try:
-                            self.write(chunk)  # write the chunk to response
-                            self.flush()  # send the chunk to client
-                        except iostream.StreamClosedError:
-                            # this means the client has closed the connection
-                            # so break the loop
-                            break
-                        finally:
-                            # deleting the chunk is very important because
-                            # if many clients are downloading files at the
-                            # same time, the chunks in memory will keep
-                            # increasing and will eat up the RAM
-                            del chunk
-                self.redirect("/panel/dashboard")
-            else:
-                self.redirect("/panel/error?error=No path found for support logs")
-                return
-
-        elif page == "support_logs":
-            logger.info(
-                f"Support logs requested. "
-                f"Packinging logs for user with ID: {exec_user['user_id']}"
-            )
-            logs_thread = threading.Thread(
-                target=self.controller.package_support_logs,
-                daemon=True,
-                args=(exec_user,),
-                name=f"{exec_user['user_id']}_logs_thread",
-            )
-            logs_thread.start()
-            self.redirect("/panel/dashboard")
-            return
         if self.helper.crafty_starting:
             template = "panel/loading.html"
         self.render(
