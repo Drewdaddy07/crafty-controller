@@ -213,11 +213,10 @@
                     {% for backup in data['backup_list'] %}
                     <tr>
                       <td>
-                        <a href="/panel/download_backup?file={{ backup['path'] }}&id={{ data['server_stats']['server_id']['server_id'] }}&backup_id={{ data['backup_config']['backup_id']}}"
-                          class="btn btn-primary">
+                        <button class="btn btn-primary download" data-file="{{backup['path']}}">
                           <i class="fas fa-download" aria-hidden="true"></i>
                           {{ translate('serverBackups', 'download', data['lang']) }}
-                        </a>
+                        </button>
                         <br>
                         <br>
                         <button data-file="{{ backup['path'] }}"
@@ -526,6 +525,11 @@
           }
         }
       });
+    });
+
+    $(".download").click(async function () {
+      let file = $(".download").data("file");
+      window.open(`/api/v2/servers/${serverId}/backups/backup/${backup_id}/download/${encodeURIComponent(file)}`, '_blank');
     });
 
     $(".restore_button").click(function () {
