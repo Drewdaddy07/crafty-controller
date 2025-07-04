@@ -1,5 +1,4 @@
 import os
-import json
 from pathlib import Path
 from app.classes.web.base_api_handler import BaseApiHandler
 

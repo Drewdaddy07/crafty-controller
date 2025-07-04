@@ -1,9 +1,7 @@
-import io
 import os
 import logging
 import json
 import html
-import zipfile
 from pathlib import Path
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
