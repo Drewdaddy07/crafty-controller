@@ -6,14 +6,9 @@ import typing as t
 import json
 import logging
 import httpx
-import threading
-import urllib.parse
 from zoneinfo import ZoneInfoNotFoundError
 import nh3
-import requests
 import tornado.web
-import tornado.escape
-from tornado import iostream
 
 # TZLocal is set as a hidden import on win pipeline
 from tzlocal import get_localzone
