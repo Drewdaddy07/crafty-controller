@@ -113,7 +113,7 @@
 
     // Link section
     const a = document.createElement("a");
-    a.href = sanitizeUrl(value.link);
+    a.href = value.link;
     a.target = "_blank";
 
     const title = document.createElement("h6");
@@ -138,10 +138,6 @@
     li.appendChild(a);
 
     return li;
-  }
-
-  function sanitizeUrl(url) {
-    return /^https?:\/\//i.test(url) ? url : "#";
   }
 
   function updateAnnouncements(data) {
