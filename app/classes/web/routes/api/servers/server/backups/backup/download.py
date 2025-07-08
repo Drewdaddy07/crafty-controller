@@ -11,6 +11,11 @@ GENERAL_AUTH_ERROR = "Authorization Error"
 
 class ApiServersServerBackupsBackupDownloadHandler(BaseApiHandler):
     async def get(self, server_id: str, backup_id: str, encoded_file_name: str):
+        logger.debug(
+            "Download file request received. server_id: %s, encoded file path: %s",
+            server_id,
+            encoded_file_name,
+        )
         auth_data = self.authenticate_user()
         if not auth_data:
             return
@@ -65,6 +70,13 @@ class ApiServersServerBackupsBackupDownloadHandler(BaseApiHandler):
                     "error_data": "File does not exist",
                 },
             )
+
+        self.controller.management.add_to_audit_log(
+            auth_data[4]["user_id"],
+            f"started backup file {file_name} download from server {server_id}.",
+            server_id,
+            self.request.remote_ip,
+        )
         await self.download_file(file_name)
 
         # Do not remove file after download. user may still want it

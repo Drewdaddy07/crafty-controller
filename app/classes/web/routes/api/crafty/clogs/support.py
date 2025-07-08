@@ -33,6 +33,12 @@ class ApiCraftySupportIndexHandler(BaseApiHandler):
         # All server permission checking occurs in the package function
         self.controller.package_support_logs(auth_data[4])
 
+        self.controller.management.add_to_audit_log(
+            auth_data[4]["user_id"],
+            "started support log download.",
+            None,
+            self.request.remote_ip,
+        )
         await self.download_file(
             Path(
                 self.controller.project_root,

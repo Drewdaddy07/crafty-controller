@@ -805,6 +805,11 @@ class ApiServersServerFilesZipHandler(BaseApiHandler):
 
 class ApiServersServerFileDownload(BaseApiHandler):
     async def get(self, server_id: str, encoded_file_path: str):
+        logger.debug(
+            "Download file request received. server_id: %s, encoded file path: %s",
+            server_id,
+            encoded_file_path,
+        )
         auth_data = self.authenticate_user()
         if not auth_data:
             return
@@ -879,6 +884,12 @@ class ApiServersServerFileDownload(BaseApiHandler):
             self.file_helper.make_archive(archive_path, file_path)
             download_path = archive_path.with_suffix(".zip")
 
+        self.controller.management.add_to_audit_log(
+            auth_data[4]["user_id"],
+            f"started file download for {download_path} from server {server_id}.",
+            server_id,
+            self.request.remote_ip,
+        )
         await self.download_file(download_path)  # Make sure to check for permissions
         # and traversal before calling download. There is no permission checking
         # in this function
