@@ -881,6 +881,7 @@ class ApiServersServerFileDownload(BaseApiHandler):
             )
             archive_path.parent.mkdir(parents=True, exist_ok=True)
 
+            self.file_helper.has_enough_storage()
             self.file_helper.make_archive(archive_path, file_path)
             download_path = archive_path.with_suffix(".zip")
 

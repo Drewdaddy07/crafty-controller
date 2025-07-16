@@ -1,4 +1,5 @@
 import os
+import psutil
 import shutil
 import logging
 import pathlib
@@ -149,6 +150,12 @@ class FileHelpers:
     def check_mime_types(self, file_path):
         m_type, _value = self.mime_types.guess_type(file_path)
         return m_type
+
+    def has_enough_storage(self):
+        paths = pathlib.Path("C:/")
+        print(repr(paths))
+        disk_stats = psutil.disk_usage(str(paths))
+        print(disk_stats)
 
     @staticmethod
     def calculate_file_hash(file_path: str) -> str:
