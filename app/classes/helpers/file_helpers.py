@@ -167,7 +167,8 @@ class FileHelpers:
         It will generate a SHA256 hash for the path and return it.
         """
         sha256_hash = hashlib.sha256()
-        with open(file_path, "rb") as f:
+        file_path_resolved = pathlib.Path(file_path).resolve()
+        with open(file_path_resolved, "rb") as f:
             for byte_block in iter(lambda: f.read(4096), b""):
                 sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
