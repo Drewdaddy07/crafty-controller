@@ -1,9 +1,13 @@
 # Changelog
 ## --- [4.4.12] - 2025/TBD
+
+### Refactor
+- Modularize helpers (file / crypto) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/795))
 ### New features
-TBD
+- Snapshot Style Backups ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/795))
 ### Bug fixes
-TBD
+- Fixed inconsistent password schema error handling ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/868))
+- Fix cvalidation to stop users being able to disable their own account ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/870))
 ### Tweaks
 TBD
 ### Lang
