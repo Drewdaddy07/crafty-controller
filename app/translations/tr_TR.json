@@ -197,7 +197,6 @@
         "eulaMsg": "Minecraft EULA'yı kabul etmelisiniz. ",
         "eulaTitle": "EULA'yı Kabul Et",
         "fileError": "Dosya türü bir resim olmalıdır.",
-        "fileTooLarge": "Yükleme başarısız oldu. Dosya yüklemesi çok büyük. Yardım için sistem yöneticisine başvurun.",
         "hereIsTheError": "Hata burada",
         "installerJava": "{} indirilemedi : Forge sunucu yüklemeleri Java gerektirir. Java'nın yüklü olmadığını tespit ettik. Lütfen Java'yı yükleyin ve ardından sunucuyu yükleyin.",
         "internet": "Crafty'yi çalıştıran makinenin internet bağlantısı olmadığını tespit ettik. Sunucuya istemci bağlantıları sınırlı olabilir.",
@@ -222,7 +221,6 @@
     },
     "login": {
         "defaultPath": "Girdiğiniz şifre varsayılan şifrenin konumudur, varsayılan şifre değil. Lütfen o konumda bulunan varsayılan şifreyi bulunuz.",
-        "disabled": "Bu kullanıcı hesabı engellenmiştir. Daha fazla bilgi için lütfen sunucu yöneticiniz ile konuşunuz.",
         "forgotPassword": "Şifremi Unuttum",
         "incorrect": "Hatalı kullanıcı adı, şifre veya MFA",
         "login": "Oturum Aç",

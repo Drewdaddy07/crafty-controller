@@ -195,7 +195,6 @@
         "eulaMsg": "U MUST SAY YESH. COPY OV TEH MOJANG EULA IZ LINKD UNDR DIS MESAGE.",
         "eulaTitle": "SAYZ YESH TWOO TEH LEGAL-WEEGALS",
         "fileError": "PLZ GIMME PICTURE FILEZ",
-        "fileTooLarge": "SOZ, FISH TOO BIGZ.",
         "hereIsTheError": "HER IZ TEH OOF",
         "installerJava": "FAILZ TO INSTALL {} : U NEEDZ JAVA. JAVA NO HERE. GET JAVA AND TRY AGAIN.",
         "internet": "WE HAS DETECTD TEH BIG BOX RUNNIN CRAFTY HAS NO CONNECSHUN 2 TEH INTERNET. HOOMAN CONNECSHUNS 2 TEH SERVR CUD BE LIMITD.",
@@ -219,7 +218,6 @@
     },
     "login": {
         "defaultPath": "Silleh hooman, dat iz da dafault secret path, not da passwurd. Plz find da default passwurd in dat spot.",
-        "disabled": "User account no play. Plz boop ur system hooman for moar infoz.",
         "forgotPassword": "FORGWOTS YOUR SEEKRET",
         "incorrect": "U gotz wrong name or passwurd",
         "login": "WOG INZ",

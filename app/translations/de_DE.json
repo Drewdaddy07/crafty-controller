@@ -195,7 +195,6 @@
         "eulaMsg": "Sie müssen der EULA zustimmen. Eine Kopie der Minecraft EULA ist unter dieser Nachricht verlinkt.",
         "eulaTitle": "Der EULA zustimmen",
         "fileError": "Dateityp muss ein Bild sein.",
-        "fileTooLarge": "Hochladen fehlgeschlagen. Datei ist zu groß. Wenden Sie sich an Ihren Systemadministrator für weitere Unterstütung.",
         "hereIsTheError": "Das ist der Fehler",
         "installerJava": "Fehler beim Installieren von {} : Forge-Server-Installationen erfordern Java. Wir haben festgestellt, dass Java nicht installiert ist. Bitte installieren Sie Java und dann den Server.",
         "internet": "Wir haben festgestellt, dass der Rechner, auf dem Crafty läuft, keine Verbindung zum Internet hat. Client-Verbindungen zum Server können dadurch eingeschränkt sein.",
@@ -219,7 +218,6 @@
     },
     "login": {
         "defaultPath": "Der eingegebene Text ist der Pfad zum Passwort, nicht das Passwort selbst. Das Standartpasswort kann unter diesen Pfad eingesehen werden.",
-        "disabled": "Account gesperrt. Für weitere Informationen den Serveradministrator kontaktieren.",
         "forgotPassword": "Passwort vergessen",
         "incorrect": "Benutzername oder Passwort falsch",
         "login": "Einloggen",

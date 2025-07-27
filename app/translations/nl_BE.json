@@ -195,7 +195,6 @@
         "eulaMsg": "U moet akkoord gaan met de EULA. Een kopie van de Minecraft EULA is gelinkt onder dit bericht.",
         "eulaTitle": "Akkoord gaan met EULA",
         "fileError": "Bestandstype moet een afbeelding zijn.",
-        "fileTooLarge": "Uploaden mislukt. Bestand uploaden te groot. Neem contact op met de systeembeheerder voor assistentie",
         "hereIsTheError": "Hier is de fout",
         "installerJava": "Kan {} niet installeren: Forge Server-installaties vereisen Java. We hebben gedetecteerd dat Java niet is geïnstalleerd. Installeer Java en installeer vervolgens de server.",
         "internet": "We hebben gedetecteerd dat de machine waarop Crafty draait geen verbinding met internet heeft. Clientverbindingen met de server kunnen beperkt zijn.",
@@ -219,7 +218,6 @@
     },
     "login": {
         "defaultPath": "Het ingevoerde wachtwoord is het pad naar de standaardreferentie, niet het wachtwoord zelf. Raadpleeg de standaardwachtwoord op de aangegeven locatie.",
-        "disabled": "Gebruikersaccount uitgeschakeld. Neem voor meer informatie contact op met uw systeembeheerder.",
         "forgotPassword": "Wachtwoord vergeten",
         "incorrect": "Verkeerde gebruikersnaam of wachtwoord",
         "login": "Log In",

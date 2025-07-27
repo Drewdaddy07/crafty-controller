@@ -197,7 +197,6 @@
         "eulaMsg": "你必须同意 ",
         "eulaTitle": "同意最终用户许可协议（EULA）",
         "fileError": "文件类型必须是图片。",
-        "fileTooLarge": "上传失败。上传的文件过大。联系系统管理员以获取协助。",
         "hereIsTheError": "错误如下",
         "installerJava": "安装 {} 失败：安装 Forge 服务器需要 Java。我们检测到 Java 未安装。请先安装 java 然后再安装服务器。",
         "internet": "我们检测到运行 Crafty 的设备没有网络连接。客户端到服务器的连接可能受限。",
@@ -222,7 +221,6 @@
     },
     "login": {
         "defaultPath": "您输入的密码是默认凭据的路径，不是其中的密码。请在此路径中找到默认密码。",
-        "disabled": "用户账号已禁用。请联系您的系统管理员以了解更多信息。",
         "forgotPassword": "忘记密码",
         "incorrect": "用户名、密码或 MFA 错误",
         "login": "登录",
