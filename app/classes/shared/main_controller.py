@@ -22,16 +22,18 @@ from app.classes.models.users import HelperUsers
 from app.classes.models.roles import HelperRoles
 from app.classes.models.management import HelpersManagement
 from app.classes.models.servers import HelperServers
+from app.classes.models.totp import HelperTOTP
 from app.classes.controllers.crafty_perms_controller import CraftyPermsController
 from app.classes.controllers.management_controller import ManagementController
 from app.classes.controllers.users_controller import UsersController
 from app.classes.controllers.roles_controller import RolesController
 from app.classes.controllers.server_perms_controller import ServerPermsController
 from app.classes.controllers.servers_controller import ServersController
+from app.classes.controllers.totp_controller import TOTPController
 from app.classes.shared.authentication import Authentication
 from app.classes.shared.console import Console
-from app.classes.shared.helpers import Helpers
-from app.classes.shared.file_helpers import FileHelpers
+from app.classes.helpers.helpers import Helpers
+from app.classes.helpers.file_helpers import FileHelpers
 from app.classes.shared.import_helper import ImportHelpers
 from app.classes.minecraft.bigbucket import BigBucket
 from app.classes.shared.websocket_manager import WebSocketManager
@@ -40,8 +42,11 @@ from app.classes.steamcmd.serverapps import SteamApps
 
 logger = logging.getLogger(__name__)
 
+MODDED_TYPES = ["forge-installer", "neoforge-installer"]
+
 
 class Controller:
+
     def __init__(self, database, helper, file_helper, import_helper):
         self.helper: Helpers = helper
         self.file_helper: FileHelpers = file_helper
@@ -51,8 +56,10 @@ class Controller:
         self.steam_apps: SteamApps = SteamApps(helper)
 
         self.users_helper: HelperUsers = HelperUsers(database, self.helper)
+        self.totp_helper: HelperTOTP = HelperTOTP(database)
         self.roles_helper: HelperRoles = HelperRoles(database)
         self.servers_helper: HelperServers = HelperServers(database)
+        self.totp_helper: HelperTOTP = HelperTOTP(database)
         self.management_helper: HelpersManagement = HelpersManagement(
             database, self.helper
         )
@@ -61,6 +68,7 @@ class Controller:
         self.management: ManagementController = ManagementController(
             self.management_helper
         )
+        self.totp: TOTPController = TOTPController(self.totp_helper, self.helper)
         self.roles: RolesController = RolesController(
             self.users_helper, self.roles_helper
         )
@@ -455,7 +463,7 @@ class Controller:
             if root_create_data["create_type"] == "download_jar":
                 if Helpers.is_os_windows():
                     # Let's check for and setup for install server commands
-                    if create_data["type"] == "forge-installer":
+                    if create_data["type"] in MODDED_TYPES:
                         server_command = (
                             f"java -Xms{Helpers.float_to_string(min_mem)}M "
                             f"-Xmx{Helpers.float_to_string(max_mem)}M "
@@ -468,7 +476,7 @@ class Controller:
                             f'-jar "{server_file}" nogui'
                         )
                 else:
-                    if create_data["type"] == "forge-installer":
+                    if create_data["type"] in MODDED_TYPES:
                         server_command = (
                             f"java -Xms{Helpers.float_to_string(min_mem)}M "
                             f"-Xmx{Helpers.float_to_string(max_mem)}M "
@@ -672,6 +680,7 @@ class Controller:
                 role_id = self.roles.add_role(
                     f"Creator of Server with id={new_server_id}",
                     exec_user["user_id"],
+                    False,
                 )
                 self.server_perms.add_role_server(new_server_id, role_id, "11111111")
                 self.users.add_role_to_user(exec_user["user_id"], role_id)
@@ -1033,6 +1042,9 @@ class Controller:
 
                 # remove the server from servers list
                 self.servers.servers_list.pop(counter)
+
+                # After server is removed from servers list delete database files
+                self.servers.remove_server_db_files(server_id)
 
             counter += 1
 

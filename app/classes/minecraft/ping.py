@@ -193,4 +193,4 @@ def ping_raknet(ip, port):
         brp = RaknetPing(ip, port, client_guid)
         return brp.ping()
     except:
-        logger.debug("Unable to get RakNet stats")
+        logger.exception("Unable to get RakNet stats")

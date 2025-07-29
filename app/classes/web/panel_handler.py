@@ -8,10 +8,10 @@ import logging
 import threading
 import urllib.parse
 from zoneinfo import ZoneInfoNotFoundError
+import anyio
+import httpx
 import nh3
-import requests
 import tornado.web
-import tornado.escape
 from tornado import iostream
 
 # TZLocal is set as a hidden import on win pipeline
@@ -22,7 +22,7 @@ from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.controllers.roles_controller import RolesController
-from app.classes.shared.helpers import Helpers
+from app.classes.helpers.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.web.base_handler import BaseHandler
 from app.classes.web.webhooks.webhook_factory import WebhookFactory
@@ -243,7 +243,7 @@ class PanelHandler(BaseHandler):
             datetime.datetime.fromtimestamp(now).strftime("%Y-%m-%d %H:%M:%S")
         )
 
-        api_key, _token_data, exec_user = self.current_user
+        api_key, token_data, exec_user = self.current_user
         superuser = exec_user["superuser"]
         if api_key is not None:
             superuser = superuser and api_key.full_access
@@ -315,6 +315,10 @@ class PanelHandler(BaseHandler):
 
         page_data: t.Dict[str, t.Any] = {
             # todo: make this actually pull and compare version data
+            "mfa": token_data.get(
+                "mfa"
+            ),  # set value if the token has MFA set to true or not
+            # for warning banner
             "update_available": self.helper.update_available,
             "docker": self.helper.is_env_docker(),
             "background": self.controller.cached_login,
@@ -376,15 +380,16 @@ class PanelHandler(BaseHandler):
             template = "public/error.html"
 
         elif page == "credits":
-            with open(
+            async with await anyio.open_file(
                 self.helper.credits_cache, encoding="utf-8"
             ) as credits_default_local:
                 try:
-                    remote = requests.get(
-                        "https://craftycontrol.com/credits-v2",
-                        allow_redirects=True,
-                        timeout=10,
-                    )
+                    async with httpx.AsyncClient() as client:
+                        remote = await client.get(
+                            "https://craftycontrol.com/credits-v2",
+                            follow_redirects=True,
+                            timeout=10,
+                        )
                     credits_dict: dict = remote.json()
                     if not credits_dict["staff"]:
                         logger.error("Issue with upstream Staff, using local.")
@@ -605,10 +610,6 @@ class PanelHandler(BaseHandler):
             except Exception as e:
                 logger.error(f"Failed to get server waiting to start: {e}")
                 page_data["waiting_start"] = False
-            if not self.failed_server:
-                page_data["get_players"] = server.get_server_players()
-            else:
-                page_data["get_players"] = []
             page_data["permissions"] = {
                 "Commands": EnumPermissionsServer.COMMANDS,
                 "Terminal": EnumPermissionsServer.TERMINAL,
@@ -870,9 +871,9 @@ class PanelHandler(BaseHandler):
 
         elif page == "config_json":
             if exec_user["superuser"]:
-                with open(self.helper.settings_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                page_data["config-json"] = data
+                page_data["config-json"] = self.helper.get_categorized_settings(
+                    self.helper.get_all_settings()
+                )
                 page_data["availables_languages"] = []
                 page_data["all_languages"] = []
                 page_data["all_partitions"] = self.helper.get_all_mounts()
@@ -1296,8 +1297,8 @@ class PanelHandler(BaseHandler):
             ).is_backingup
             self.controller.servers.refresh_server_settings(server_id)
             try:
-                page_data["backup_list"] = server.list_backups(
-                    page_data["backup_config"]
+                page_data["backup_list"] = server.backup_mgr.list_backups(
+                    page_data["backup_config"], server.server_id
                 )
             except:
                 page_data["backup_list"] = []
@@ -1507,6 +1508,31 @@ class PanelHandler(BaseHandler):
 
             template = "panel/panel_edit_user_apikeys.html"
 
+        elif page == "edit_user_otp":
+            user_id = self.get_argument("id", None)
+            user_obj = self.controller.users.get_user_object(user_id)
+            page_data["user"] = self.controller.users.get_user_by_id(user_id)
+
+            codes = []
+            user_totp = list(user_obj.totp_user)
+
+            for totp in user_totp:
+                codes.append({"name": totp.name, "id": totp.id})
+
+            page_data["totp"] = codes
+            # self.controller.crafty_perms.list_defined_crafty_permissions()
+
+            if user_id is None:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return
+            if int(user_id) != exec_user["user_id"] and not exec_user["superuser"]:
+                self.redirect(
+                    "/panel/error?error=You are not authorized to view this page."
+                )
+                return
+
+            template = "panel/panel_edit_user_otp.html"
+
         elif page == "remove_user":
             # pylint: disable=no-member
             user_id = nh3.clean(self.get_argument("id", None))
@@ -1555,6 +1581,7 @@ class PanelHandler(BaseHandler):
             page_data["role"]["role_id"] = -1
             page_data["role"]["created"] = "N/A"
             page_data["role"]["last_update"] = "N/A"
+            page_data["role"]["mfa_required"] = False
             page_data["role"]["servers"] = set()
             page_data["user-roles"] = user_roles
             page_data["users"] = self.controller.users.get_all_users()
@@ -1662,7 +1689,7 @@ class PanelHandler(BaseHandler):
                 self.redirect("/panel/error?error=Invalid path detected")
                 return
 
-            self.download_file(name, file)
+            await self.download_file(name, file)
             self.redirect(f"/panel/server_detail?id={server_id}&subpage=files")
 
         elif page == "wiki":
@@ -1677,14 +1704,14 @@ class PanelHandler(BaseHandler):
             )
             chunk_size = 1024 * 1024 * 4  # 4 MiB
             if temp_zip_storage != "":
-                with open(temp_zip_storage, "rb") as f:
+                async with await anyio.open_file(temp_zip_storage, "rb") as f:
                     while True:
-                        chunk = f.read(chunk_size)
+                        chunk = await f.read(chunk_size)
                         if not chunk:
                             break
                         try:
                             self.write(chunk)  # write the chunk to response
-                            self.flush()  # send the chunk to client
+                            await self.flush()  # send the chunk to client
                         except iostream.StreamClosedError:
                             # this means the client has closed the connection
                             # so break the loop
@@ -1695,7 +1722,6 @@ class PanelHandler(BaseHandler):
                             # same time, the chunks in memory will keep
                             # increasing and will eat up the RAM
                             del chunk
-                self.redirect("/panel/dashboard")
             else:
                 self.redirect("/panel/error?error=No path found for support logs")
                 return

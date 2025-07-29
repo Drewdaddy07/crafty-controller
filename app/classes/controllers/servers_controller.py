@@ -6,12 +6,13 @@ import pathlib
 import typing as t
 
 from app.classes.controllers.roles_controller import RolesController
-from app.classes.shared.file_helpers import FileHelpers
+from app.classes.helpers.file_helpers import FileHelpers
 
 from app.classes.shared.singleton import Singleton
 from app.classes.shared.server import ServerInstance
 from app.classes.shared.console import Console
-from app.classes.shared.helpers import Helpers
+from app.classes.shared.backup_mgr import BackupManager
+from app.classes.helpers.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
 
 from app.classes.minecraft.stats import Stats
@@ -39,6 +40,9 @@ class ServersController(metaclass=Singleton):
         self.stats = Stats(self.helper, self)
         self.web_sock = WebSocketManager()
         self.server_subpage = {}
+        self.backups_mgr = BackupManager(
+            self.helper, self.file_helper, self.management_helper
+        )
 
     # **********************************************************************************
     #                                   Generic Servers Methods
@@ -140,6 +144,9 @@ class ServersController(metaclass=Singleton):
 
     def remove_server(self, server_id):
         roles_list = PermissionsServers.get_roles_from_server(server_id)
+        logger.info(
+            "Delete request: removing roles access associated with %s", server_id
+        )
         for role in roles_list:
             role_id = role.role_id
             role_data = RolesController.get_role_with_servers(role_id)
@@ -148,9 +155,29 @@ class ServersController(metaclass=Singleton):
             PermissionsServers.delete_roles_permissions(role_id, role_data["servers"])
         # Remove roles from server
         PermissionsServers.remove_roles_of_server(server_id)
+        logger.info(
+            "Delete request: Removing all server backup policies for server %s",
+            server_id,
+        )
         self.management_helper.remove_all_server_backups(server_id)
+        logger.info("Delete Request: Removing server from database %s", server_id)
         # Finally remove server
         self.servers_helper.remove_server(server_id)
+
+    def remove_server_db_files(self, server_id: str):
+        """Removes server DB files. This is called by the remove server method.
+
+        Args:
+            server_id (str): ID of server being deleted.
+        """
+        logger.info(
+            "Delete request: Purging server stats database and playercache from "
+            "Crafty storage for %s",
+            server_id,
+        )
+        self.file_helper.del_dirs(
+            self.helper.root_dir, "app", "config", "db", "servers", str(server_id)
+        )
 
     @staticmethod
     def get_server_data_by_id(server_id):
@@ -214,6 +241,7 @@ class ServersController(metaclass=Singleton):
                     self.management_helper,
                     self.stats,
                     self.file_helper,
+                    self.backups_mgr,
                 ),
             }
 

@@ -902,7 +902,7 @@ class ApiServersIndexHandler(BaseApiHandler):
                 offending_key = why.path[0] if why.path else None
             err = f"""{offending_key} {self.translator.translate(
                 "validators",
-                why.schema.get("error"),
+                why.schema.get("error", "additionalProperties"),
                 self.controller.users.get_user_lang_by_id(auth_data[4]["user_id"]),
             )} {why.schema.get("enum", "")}"""
             return self.finish_json(
@@ -939,7 +939,7 @@ class ApiServersIndexHandler(BaseApiHandler):
         except Exception as e:
             self.controller.servers.stats.record_stats()
 
-            self.finish_json(
+            return self.finish_json(
                 503,
                 {
                     "status": "error",

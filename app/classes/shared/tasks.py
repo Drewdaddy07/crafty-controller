@@ -16,8 +16,8 @@ from app.classes.models.management import HelpersManagement
 from app.classes.models.users import HelperUsers
 from app.classes.controllers.users_controller import UsersController
 from app.classes.shared.console import Console
-from app.classes.shared.file_helpers import FileHelpers
-from app.classes.shared.helpers import Helpers
+from app.classes.helpers.file_helpers import FileHelpers
+from app.classes.helpers.helpers import Helpers
 from app.classes.shared.main_controller import Controller
 from app.classes.web.tornado_handler import Webserver
 from app.classes.shared.websocket_manager import WebSocketManager
@@ -215,6 +215,13 @@ class TasksManager:
             "interval",
             minutes=5,
             id="auth_tracker_write",
+            start_date=datetime.datetime.now(),
+        )
+        self.scheduler.add_job(
+            self.controller.totp.purge_pending,
+            "interval",
+            hours=24,
+            id="mfa_purge",
             start_date=datetime.datetime.now(),
         )
         # self.scheduler.add_job(

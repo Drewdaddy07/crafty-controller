@@ -52,7 +52,7 @@ class UsersController:
             "username": {
                 "type": "string",
                 "maxLength": 20,
-                "minLength": 4,
+                "minLength": 3,
                 "pattern": "^[a-z0-9_]+$",
                 "examples": ["admin"],
                 "title": "Username",
@@ -62,9 +62,14 @@ class UsersController:
             "password": {
                 "type": "string",
                 "minLength": self.helper.minimum_password_length,
+                "pattern": "(?=.*[^0-9])",
                 "examples": ["crafty"],
                 "title": "Password",
-                "error": "passLength",
+                "error": {
+                    "minLength": "passLength",
+                    "type": "numbericPassword",
+                    "pattern": "numbericPassword",
+                },
             },
             "email": {
                 "type": "string",
@@ -166,6 +171,10 @@ class UsersController:
     @staticmethod
     def get_user_by_id(user_id):
         return HelperUsers.get_user(user_id)
+
+    @staticmethod
+    def get_user_object(user_id) -> object:
+        return HelperUsers.get_by_id(user_id)
 
     @staticmethod
     def update_server_order(user_id, user_server_order):
