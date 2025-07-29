@@ -1080,18 +1080,6 @@ class Helpers:
         with open(self.session_file, "w", encoding="utf-8") as f:
             json.dump(session_data, f, indent=4)
 
-    # because this is a recursive function, we will return bytes,
-    # and set human readable later
-    @staticmethod
-    def get_dir_size(path: str):
-        total = 0
-        for entry in os.scandir(path):
-            if entry.is_dir(follow_symlinks=False):
-                total += Helpers.get_dir_size(entry.path)
-            else:
-                total += entry.stat(follow_symlinks=False).st_size
-        return total
-
     @staticmethod
     def list_dir_by_date(path: str, reverse=False):
         return [

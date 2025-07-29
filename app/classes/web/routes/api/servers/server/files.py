@@ -881,7 +881,23 @@ class ApiServersServerFileDownload(BaseApiHandler):
             )
             archive_path.parent.mkdir(parents=True, exist_ok=True)
 
-            self.file_helper.has_enough_storage()
+            target_total_size = self.file_helper.get_dir_size(
+                Path(download_path), raw_bytes=True
+            )
+            free_drive_storage = self.file_helper.get_drive_free_space(
+                Path(download_path)
+            )
+            if not self.file_helper.has_enough_storage(
+                target_total_size, free_drive_storage
+            ):
+                return self.finish_json(
+                    507,
+                    {
+                        "status": "error",
+                        "error": "Out Of Space",
+                        "error_data": "System Does Not Have enough space for download",
+                    },
+                )
             self.file_helper.make_archive(archive_path, file_path)
             download_path = archive_path.with_suffix(".zip")
 
