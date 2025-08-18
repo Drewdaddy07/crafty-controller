@@ -197,7 +197,6 @@
         "eulaMsg": "Musisz się zgodzić na EULA. Kopia EULA Minecraft jest zalinkowana pod tą wiadomością. ",
         "eulaTitle": "Zgódź się na EULA",
         "fileError": "Plik musi być zdjęciem.",
-        "fileTooLarge": "Upload nie udany. Plik jest za duży. Skontaktuj się z administratorem dla pomocy.",
         "hereIsTheError": "Tu jest problem",
         "installerJava": "Nie udało się zainstalować {} : Serwery Forge wymagają Java. Wykryliśmy że Java nie jest zainstalowana. Proszę zainstaluj Javę a następnie serwer.",
         "internet": "Zauważyliśmy że Crafty nie ma dostępu do internetu. Połączenie klientów z Craftym może być utrudnione.",
@@ -222,7 +221,6 @@
     },
     "login": {
         "defaultPath": "Hasło które wprowadziłeś jest podstawową ścieżką w której przechowywane są dane logowania. Znajdź podstawowe hasło w tej lokalizacji.",
-        "disabled": "Konto tego użytkownika jest wyłączone. Skontaktuj się z administratorem by uzyskać więcej informacji.",
         "forgotPassword": "Zapomniałem hasła",
         "incorrect": "Niepoprawny login lub hasło/Niepoprawna nazwa użytkownika, hasło lub kod MFA (wieloskładnikowy/2FA)",
         "login": "Zaloguj się",
