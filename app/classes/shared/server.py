@@ -1278,6 +1278,8 @@ class ServerInstance:
             logger.info("Cache file refreshed")
 
     def cache_players(self):
+        if not self.check_running():
+            return
         server_players = self.get_server_players()
         for p in self.player_cache[:]:
             if p["status"] == "Online" and p["name"] not in server_players:
@@ -1474,7 +1476,7 @@ class ServerInstance:
 
     def start_dir_calc_task(self):
         server_dt = HelperServers.get_server_data_by_id(self.server_id)
-        self.server_size = self.stats.get_server_dir_size(server_dt["path"])
+        self.server_size = self.file_helper.get_dir_size(server_dt["path"])
         self.dir_scheduler.add_job(
             self.calc_dir_size,
             "interval",
@@ -1490,7 +1492,7 @@ class ServerInstance:
 
     def calc_dir_size(self):
         server_dt = HelperServers.get_server_data_by_id(self.server_id)
-        self.server_size = self.stats.get_server_dir_size(server_dt["path"])
+        self.server_size = self.file_helper.get_dir_size(server_dt["path"])
 
     # **********************************************************************************
     #                               Minecraft Servers Statistics
