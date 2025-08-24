@@ -1,13 +1,7 @@
 # Changelog
-## --- [4.5.1] - 2025/TBD
-### New features
-TBD
+## --- [4.5.1] - 2025/08/25
 ### Bug fixes
 - Fix bug where all file methods that were not `GET` methods, were returning "method not allowed" ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/882))
-### Tweaks
-TBD
-### Lang
-TBD
 <br><br>
 
 ## --- [4.5.0] - 2025/08/24
