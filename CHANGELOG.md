@@ -1,6 +1,5 @@
 # Changelog
-## --- [4.4.12] - 2025/08/24
-
+## --- [4.5.0] - 2025/08/24
 ### Refactor
 - Modularize helpers (file / crypto) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/795))
 - Refactor Downloads for API-v2 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/871))
