@@ -4,7 +4,7 @@ import tornado.web
 import tornado.escape
 
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
-from app.classes.shared.helpers import Helpers
+from app.classes.helpers.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.web.base_handler import BaseHandler
 
@@ -95,6 +95,8 @@ class ServerHandler(BaseHandler):
             ),  # set value if the token has MFA set to true or not
             # for warning banner
             "update_available": self.helper.update_available,
+            "support_perm": self.helper.get_setting("general_user_log_access")
+            or exec_user["superuser"],
             "version_data": self.helper.get_version_string(),
             "user_data": exec_user,
             "user_role": exec_user_role,

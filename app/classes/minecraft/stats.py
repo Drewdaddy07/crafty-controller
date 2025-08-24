@@ -10,7 +10,7 @@ from app.classes.minecraft.mc_ping import ping
 from app.classes.models.management import HostStats
 from app.classes.models.servers import HelperServers
 from app.classes.shared.null_writer import NullWriter
-from app.classes.shared.helpers import Helpers
+from app.classes.helpers.helpers import Helpers
 
 with redirect_stderr(NullWriter()):
     import psutil
@@ -212,16 +212,6 @@ class Stats:
                 continue
 
         return disk_data
-
-    @staticmethod
-    def get_server_dir_size(server_path):
-        total_size = 0
-
-        total_size = Helpers.get_dir_size(server_path)
-
-        level_total_size = Helpers.human_readable_file_size(total_size)
-
-        return level_total_size
 
     def get_server_players(self, server_id):
         server = HelperServers.get_server_data_by_id(server_id)

@@ -3,7 +3,7 @@ import json
 from jsonschema import ValidationError, validate
 import orjson
 from playhouse.shortcuts import model_to_dict
-from app.classes.shared.file_helpers import FileHelpers
+from app.classes.helpers.file_helpers import FileHelpers
 from app.classes.web.base_api_handler import BaseApiHandler
 
 config_json_schema = {
@@ -121,6 +121,11 @@ config_json_schema = {
         },
         "max_login_attempts": {"type": "integer", "error": "typeInt", "fill": True},
         "superMFA": {"type": "boolean", "error": "typeBool", "fill": True},
+        "general_user_log_access": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,
