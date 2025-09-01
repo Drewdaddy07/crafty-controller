@@ -234,7 +234,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                                 "path": dpath,
                                 "dir": False,
                                 "excluded": True,
-                                "size": file_size,
+                                "size": Helpers.human_readable_file_size(file_size),
                             }
                     else:
                         if os.path.isdir(rel):
@@ -252,7 +252,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                                 "path": dpath,
                                 "dir": False,
                                 "excluded": False,
-                                "size": file_size,
+                                "size": Helpers.human_readable_file_size(file_size),
                             }
                 else:
                     if os.path.isdir(rel):
@@ -270,7 +270,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                             "path": dpath,
                             "dir": False,
                             "excluded": False,
-                            "size": file_size,
+                            "size": Helpers.human_readable_file_size(file_size),
                         }
             self.finish_json(200, {"status": "ok", "data": return_json})
         else:

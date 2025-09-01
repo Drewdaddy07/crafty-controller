@@ -266,13 +266,6 @@ end %} {% block content %}
   let path = "",
     serverFileContent = "";
 
-  function formatFileSize(bytes) {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  }
 
   async function clickOnFile(event) {
     const token = getCookie("_xsrf");
@@ -768,7 +761,7 @@ end %} {% block content %}
                             </div>
                             </input></div></li>`;
       } else {
-        const fileSize = value.size !== undefined ? formatFileSize(value.size) : '';
+        const fileSize = value.size !== undefined ? value.size : '';
         const sizeDisplay = fileSize ? `<span class="tree-file-size">${fileSize}</span>` : '';
         text += `<li
                         class="d-block tree-ctx-item tree-file"
