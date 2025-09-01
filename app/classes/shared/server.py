@@ -1403,7 +1403,7 @@ class ServerInstance:
                         unzip_path = self.helper.wtol_path(unzip_path)
 
                         # unzips archive that was downloaded.
-                        FileHelpers.unzip_file(unzip_path, server_update=True)
+                        self.file_helper.unzip_file(unzip_path, server_update=True)
 
                         # adjusts permissions for execution if os is not windows
                         if not self.helper.is_os_windows():
