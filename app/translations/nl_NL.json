@@ -34,7 +34,7 @@
     "base": {
         "doesNotWorkWithoutJavascript": "<strong>Warning: </strong>Crafty werkt niet naar behoren als JavaScript niet ingeschakeld is!",
         "getMFA": "Beveilig je servers!",
-        "createMFA": "Voeg Multi Factor Authenticatie toe aan je account!"
+        "createMFA": "Voeg Multifactorauthenticatie toe aan je account!"
     },
     "credits": {
         "developmentTeam": "Ontwikkelingsteam",
@@ -178,12 +178,11 @@
         "hereIsTheError": "Hier is de error",
         "internet": "We hebben gedetecteerd dat de serverhost geen internetverbinding heeft. Client connecties zijn mogelijk gelimiteerd.",
         "no-file": "We kunnen het opgevraagde bestand niet vinden. Check het pad nog eens. Heeft Crafty de juiste toestemmingen?",
-        "noJava": "Server {} kon niet starten, we hebben gedetecteerd dat Java niet geÃ¯nstalleerd is. Installeer Java en start de server opnieuw.",
+        "noJava": "Server {} kon niet starten met error: We hebben gedetecteerd dat Java niet geïnstalleerd is. Installeer Java en start vervolgens de server.",
         "not-downloaded": "We kunnen je executable-bestand niet vinden. Is het klaar met downloaden? Zijn de toestemmingen gezet op 'uitvoerbaar'?",
         "portReminder": "We zien dat dit de eerste keer is dat {} uitgevoerd wordt. Zorg dat poort {} door je router/firewall gestuurd wordt om er via het openbare internet bij te kunnen komen.",
         "start-error": "Server {} kon niet starten, error code: {}",
         "terribleFailure": "Een verschrikkelijke fout!",
-        "fileTooLarge": "Upload mislukt. Bestandsupload is te groot. Neem contact op met de systeembeheerder voor assistentie.",
         "bedrockError": "Bedrock-downloads zijn niet beschikbaar. Graag controleren",
         "agree": "Instemmen",
         "installerJava": "Installatie mislukt {}: Forge Server Installatie vereist Java. We hebben gedetecteerd dat Java niet geïnstalleerd is. Installeer eerst Java en vervolgens de server.",
@@ -211,7 +210,6 @@
         "login": "Inloggen",
         "password": "Wachtwoord",
         "username": "Gebruikersnaam",
-        "disabled": "Gebruikersaccount uitgeschakeld. Neem contact op met jouw systeembeheerder voor meer informatie.",
         "defaultPath": "Het wachtwoord dat je hebt ingevoerd is het standaardpad voor referenties, niet het wachtwoord. Zoek het standaardwachtwoord op die locatie.",
         "incorrect": "Incorrecte gebruikersnaam, wachtwoord of MFA",
         "viewStatus": "Bekijk Publieke Statuspagina",
@@ -297,7 +295,7 @@
         "serverName": "Servernaam",
         "serversDesc": "Servers waar deze rol toegang tot heeft",
         "selectManager": "Selecteer een manager voor deze rol",
-        "requireMFA": "Gebruikers met een rol moeten MFA (Multi Factor Authenticatie) aanzetten"
+        "requireMFA": "Gebruikers met een rol moeten MFA (Multifactorauthenticatie) aanzetten"
     },
     "serverBackups": {
         "backupAtMidnight": "Automatische back-up bij middernacht?",
@@ -345,7 +343,8 @@
         "storage": "Opslaglocatie",
         "inplace": "Back-upbestanden op hun plaats herstellen - bestanden die niet in de back-up zip zitten, blijven in de servermap",
         "replace": " Herstel back-upbestanden en stel de servermap opnieuw in, zodat deze exact overeenkomt met de structuur van de back-up",
-        "radioRequired": "Je moet een optie kiezen om je back-up te herstellen"
+        "radioRequired": "Je moet een optie kiezen om je back-up te herstellen",
+        "snapshotDisclaimer": "Back-ups van Snapshots zijn momenteel in beta. Back-ups van Snapshots zouden slechts één kopie van een bestand moeten maken en veel minder schrijfruimte gebruiken. Back-up en herstel werkt goed gedurende tests, maar je kan nog steeds onvoorziene problemen tegenkomen. Wees niet volledig afhankelijk van deze back-upmethode voor cruciale back-ups. Gelieve alle problemen te rapporteren."
     },
     "serverConfig": {
         "bePatientDelete": "Wees geduldig terwijl we de server uit het dashboard verwijderen. Dit scherm sluit in een ogenblik.",
@@ -364,7 +363,7 @@
         "noDelete": "Nee, ga terug",
         "noDeleteFiles": "Nee, verwijder alleen van dashboard",
         "removeOldLogsAfter": "Verwijder oude logboeken achteraf",
-        "removeOldLogsAfterDesc": "Na hoeveel dagen een logboek verwijderd wordt (0 is uit)",
+        "removeOldLogsAfterDesc": "Hoeveel dagen moeten logbestanden bewaard worden? (0 is uit)",
         "save": "Opslaan",
         "sendingDelete": "Server aan het verwijderen",
         "sendingRequest": "Verzoek aan het verzenden...",
@@ -377,7 +376,7 @@
         "serverExecutionCommand": "Servercommando",
         "serverExecutionCommandDesc": "Wat uitgevoerd wordt in een verborgen terminal om de server te starten",
         "serverIP": "Server IP",
-        "serverIPDesc": "IP waarmee Crafty moet verbinden voor statistieken (Probeer een echt IP i.p.v. 127.0.0.1 als je problemen ondervindt.)",
+        "serverIPDesc": "IP waarmee Crafty moet verbinden voor statistieken (Probeer een echt IP i.p.v. 127.0.0.1 als je problemen ondervindt)",
         "serverLogLocation": "Serverlogboek locatie",
         "serverLogLocationDesc": "Absoluut pad naar de serverlogboeken",
         "serverName": "Servernaam",
@@ -662,7 +661,8 @@
         "changeUser": "Gebruikersnaam Veranderen",
         "hints": "Aanzetten Hints?",
         "totpIdReq": "MFA ID Benodigd voor verzoek",
-        "totpHeader": "Multi Factor Authenticatie"
+        "totpHeader": "Multifactorauthenticatie",
+        "selfDisable": "Je kan niet je eigen account uitschakelen"
     },
     "customLogin": {
         "apply": "Toepassen",
@@ -703,10 +703,11 @@
         "typeIntMinVal0": "moet een geheel getal zijn met een minimumwaarde van 0.",
         "typeInteger": "moet een getal zijn.",
         "typeString": "moet van het type string zijn.",
-        "2FAerror": "Multi-factorcode moet 6 cijfers (b.v.b. 000000) of een back-upcode of 16 karakters, elke vier gescheiden door - (b.v.b. ABCD-EFGH-IJKL-MNOP) zijn",
+        "2FAerror": "Multifactorcode moet 6 cijfers (b.v.b. 000000) of een back-upcode of 16 karakters, elke vier gescheiden door - (b.v.b. ABCD-EFGH-IJKL-MNOP) zijn",
         "totp": "MFA-code moet 6 nummers zijn",
         "mfaName": "Invoer moet van type String zijn van minstens 3 karakters voor deze eigenschap",
-        "additionalProperties": "Aanvullende Eigenschappen mogen niet meegestuurd worden"
+        "additionalProperties": "Aanvullende Eigenschappen mogen niet meegestuurd worden",
+        "numbericPassword": "Numeriek Wachtwoord. Vereist minstens 1 alfabetisch karakter"
     },
     "serverMetrics": {
         "zoomHint1": "Om in te zoomen op de grafiek, houdt je de shift-toets ingedrukt en gebruik je vervolgens je scrollwiel.",
@@ -768,7 +769,7 @@
         "newName": "Voeg een vriendelijke naam in voor deze MFA-methode",
         "otpTitle": "MFA-Methodes",
         "renewRecovery": "Herstelcodes Vernieuwen",
-        "newOTP": "Nieuwe Multi-Factor Authenticatie Toevoegen",
+        "newOTP": "Nieuwe Multifactorauthenticatie Toevoegen",
         "verifyTitle": "MFA-methode verifiëren met authenticator",
         "goToPage": "Ga naar MFA-pagina",
         "otpReq": "MFA is benodigd voor deze gebruikers. Je kan niet je enigste MFA-methode verwijderen."

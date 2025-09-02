@@ -369,11 +369,6 @@
 <script>
   const token = getCookie("_xsrf");
 
-  $(document).on("submit", ".bootbox form", function (e) {
-    e.preventDefault();
-    $(".bootbox .btn-primary").click();
-  });
-
   if (webSocket) {
     webSocket.on('move_status', function (message) {
       if (message === "done") {

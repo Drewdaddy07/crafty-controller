@@ -1,6 +1,6 @@
 import base64
 import binascii
-from hashlib import blake2b, sha256
+from hashlib import blake2b
 from pathlib import Path
 
 
@@ -50,20 +50,6 @@ class CryptoHelper:
         except OSError as why:
             raise RuntimeError(f"Error accessing file: {path_to_file}.") from why
         return blake2.digest()
-
-    @staticmethod
-    def create_sha_256_hash(file_path: Path) -> str:
-        sha256_hash = sha256()
-        try:
-            with open(file_path, "rb") as f:
-                # Read the file in chunks to handle large files efficiently
-                for chunk in iter(lambda: f.read(4096), b""):
-                    sha256_hash.update(chunk)
-            return sha256_hash.hexdigest()
-        except FileNotFoundError:
-            return "File not found."
-        except Exception as e:
-            return f"An error occurred: {e}"
 
     @staticmethod
     def bytes_to_b64(input_bytes: bytes) -> str:

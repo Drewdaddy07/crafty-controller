@@ -197,7 +197,6 @@
         "bigBucket1": "Veliki Bucket Health Check nije prošao. Molimo proverite",
         "installerJava": "Nije uspelo instaliranje {}: Forge Server instalacije zahtevaju Java. Detektovali smo da Java nije instalirana. Molimo instalirajte Java, a zatim pokušajte ponovo da instalirate server.",
         "contact": "Kontaktirajte Crafty Control podršku preko Discord-a",
-        "fileTooLarge": "Otprema nije uspela. Fajl je prevelik. Kontaktirajte sistemskog administratora za pomoć.",
         "fileError": "Tip fajla mora biti slika.",
         "migration": "Glavni server za skladištenje Crafty-a se prenosi na novu lokaciju. Svi pokreti servera su suspendovani tokom ovog procesa. Molimo vas da sačekate dok završimo migraciju",
         "no-file": "Čini se da ne možemo pronaći traženi fajl. Proverite putanju još jednom. Da li Crafty ima odgovarajuće dozvole?",
@@ -219,7 +218,6 @@
         "allRightsReserved": "Sva prava zadržana"
     },
     "login": {
-        "disabled": "Korisnički nalog je onemogućen. Molimo vas da kontaktirate svog sistem administratora za više informacija.",
         "forgotPassword": "Zaboravili ste šifru",
         "incorrect": "Neispravno korisničko ime, lozinka ili MFA",
         "login": "Prijava",
