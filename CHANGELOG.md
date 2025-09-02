@@ -1,14 +1,8 @@
 # Changelog
-## --- [4.5.3] - 2025/TBD
-### New features
-TBD
+## --- [4.5.3] - 2025/09/03
 ### Bug fixes
 - Refactor Bedrock update to use `import_helper` `download_threaded_bedrock_server` fixing bedrock update ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/890))
 - Fix GC logic deleting downloaded files instead of only temp directories ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/891))
-### Tweaks
-TBD
-### Lang
-TBD
 <br><br>
 
 ## --- [4.5.2] - 2025/08/31
