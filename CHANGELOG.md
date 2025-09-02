@@ -3,7 +3,7 @@
 ### New features
 TBD
 ### Bug fixes
-TBD
+- Fix GC logic deleting downloaded files instead of only temp directories ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/891))
 ### Tweaks
 TBD
 ### Lang
