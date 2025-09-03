@@ -197,7 +197,6 @@
         "eulaMsg": "Debes aceptar el ",
         "eulaTitle": "Aceptar EULA",
         "fileError": "El tipo de archivo debe ser una imagen.",
-        "fileTooLarge": "Subida fallida. El archivo es demasiado grande. Contacte al administrador del sistema para obtener asistencia.",
         "hereIsTheError": "Aquí está el error.",
         "installerJava": "Fallo al instalar {} : La instalación de Forge requiere Java. Detectamos que Java no está instalado. Por favor instale java e inicie el servidor.",
         "internet": "Hemos detectado que la máquina ejecutando Crafty no tiene acceso a internet. Las conexiones de cliente al servidor podrían ser limitadas.",
@@ -221,7 +220,6 @@
     },
     "login": {
         "defaultPath": "La contraseña introducida es la ruta default de las credenciales, no la contraseña. Busca la contraseña accediendo a la carpeta de la ruta",
-        "disabled": "Cuenta del usuario desactivada. Porfavor contacta al administrador para mas informacion.",
         "forgotPassword": "Olvidé mi contraseña",
         "incorrect": "El nombre de usuario, la contraseña, o el A2F son incorrectos",
         "login": "Iniciar Sesión",

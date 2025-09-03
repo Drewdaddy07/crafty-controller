@@ -74,7 +74,11 @@ class Controller:
         )
         self.server_perms: ServerPermsController = ServerPermsController()
         self.servers: ServersController = ServersController(
-            self.helper, self.servers_helper, self.management_helper, self.file_helper
+            self.helper,
+            self.servers_helper,
+            self.management_helper,
+            self.file_helper,
+            self.import_helper,
         )
         self.users: UsersController = UsersController(
             self.helper, self.users_helper, self.authentication
@@ -180,16 +184,6 @@ class Controller:
             return
         self.users.set_prepare(exec_user["user_id"])
         logger.info("Checking for previous support logs.")
-        if exec_user["support_logs"] != "":
-            if os.path.exists(exec_user["support_logs"]):
-                logger.info(
-                    f"Found previous support log request at {exec_user['support_logs']}"
-                )
-                if self.helper.validate_traversal(
-                    os.path.join(self.project_root, "temp"), exec_user["support_logs"]
-                ):
-                    logger.debug("No transversal detected. Going for the delete.")
-                    self.del_support_file(exec_user["support_logs"])
         # pausing so on screen notifications can run for user
         time.sleep(7)
         WebSocketManager().broadcast_user(
@@ -203,10 +197,10 @@ class Controller:
         )
 
         self.helper.ensure_dir_exists(
-            os.path.join(self.project_root, "temp", str(exec_user["user_id"]), "zip")
+            os.path.join(self.project_root, "temp", str(exec_user["user_id"]))
         )
         temp_zip_storage = os.path.join(
-            self.project_root, "temp", str(exec_user["user_id"]), "zip"
+            self.project_root, "temp", str(exec_user["user_id"])
         )
         os.mkdir(temp_dir)
         temp_zip_storage = os.path.join(temp_zip_storage, "support_logs")
@@ -309,9 +303,6 @@ class Controller:
             )
 
         temp_zip_storage += ".zip"
-        WebSocketManager().broadcast_user(exec_user["user_id"], "send_logs_bootbox", {})
-
-        self.users.set_support_path(exec_user["user_id"], temp_zip_storage)
 
         self.users.stop_prepare(exec_user["user_id"])
         self.support_scheduler.remove_job("logs_" + str(exec_user["user_id"]))
@@ -605,7 +596,7 @@ class Controller:
         if data["create_type"] == "minecraft_java":
             if root_create_data["create_type"] == "download_jar":
                 # modded update urls from server jars will only update the installer
-                if create_data["type"] != "forge-installer":
+                if create_data["type"] not in MODDED_TYPES:
                     server_obj = self.servers.get_server_obj(new_server_id)
                     url = self.big_bucket.get_fetch_url(
                         create_data["category"],

@@ -1,15 +1,47 @@
 # Changelog
-## --- [4.4.12] - 2025/TBD
-
-### Refactor
-- Modularize helpers (file / crypto) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/795))
+## --- [4.5.4] - 2025/TBD
 ### New features
-- Snapshot Style Backups ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/795))
+TBD
 ### Bug fixes
-- Fixed inconsistent password schema error handling ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/868))
-- Fix cvalidation to stop users being able to disable their own account ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/870))
+TBD
 ### Tweaks
 TBD
+### Lang
+TBD
+<br><br>
+
+## --- [4.5.3] - 2025/09/03
+### Bug fixes
+- Refactor Bedrock update to use `import_helper` `download_threaded_bedrock_server` fixing bedrock update ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/890))
+- Fix GC logic deleting downloaded files instead of only temp directories ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/891))
+<br><br>
+
+## --- [4.5.2] - 2025/08/31
+### Bug fixes
+- Bedrock Builder | Utilize self call instead of static call for unzipping bedrock archives ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/884))
+- Fix Human Readable Sizes on Dashboard ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/885))
+- Correct Builder to support new Neoforge versioning scheme ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/886))
+<br><br>
+
+## --- [4.5.1] - 2025/08/25
+### Bug fixes
+- Fix bug where all file methods that were not `GET` methods, were returning "method not allowed" ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/882))
+<br><br>
+
+## --- [4.5.0] - 2025/08/24
+### Refactor
+- Modularize helpers (file / crypto) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/795))
+- Refactor Downloads for API-v2 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/871))
+### New features
+- Snapshot Style Backups ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/795))
+- Adds functionality for directory downloads ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/871))
+### Bug fixes
+- Fixed inconsistent password schema error handling ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/868))
+- Fix validation to stop users being able to disable their own account ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/870))
+- Fix annoucements not showing after `4.4.10` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/872))
+- Fix use of 'Enter' Key on Username Form ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/876))
+- Disable player stats collection when servers are offline ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/875))
+- Fix display issues of local zip import modal following CSS refactor ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/874))
 ### Lang
 - Fixed grammar, spelling/capitalization, and sentence structure issues ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/876))
 - Removed 2 unused statements ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/876))

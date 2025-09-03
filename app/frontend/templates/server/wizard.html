@@ -480,7 +480,7 @@
               </div>
             </div>
 
-            <div id="lower_half" class="d-none" hidden>
+            <div id="lower_half" class="d-none">
               <div class="form-group">
                 <label for="server">{{ translate('serverWizard', 'selectRoot', data['lang']) }} <small>{{
                     translate('serverWizard', 'explainRoot', data['lang']) }}</small></label>
@@ -682,8 +682,8 @@
       var classList = $('.waitMsg').first().attr('class').split(/\s+/);
 
       // Loop through classes and remove all elements with any of them
-      classList.forEach(function(cls) {
-          $('.' + cls).remove();
+      classList.forEach(function (cls) {
+        $('.' + cls).remove();
       });
       bootbox.alert({
         title: responseData.error,

@@ -97,6 +97,8 @@ class ServerHandler(BaseHandler):
             "update_available": self.helper.update_available,
             "steamCMD": True,
             "windows": self.helper.is_os_windows(),
+            "support_perm": self.helper.get_setting("general_user_log_access")
+            or exec_user["superuser"],
             "version_data": self.helper.get_version_string(),
             "user_data": exec_user,
             "user_role": exec_user_role,
