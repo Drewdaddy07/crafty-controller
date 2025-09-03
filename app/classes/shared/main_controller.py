@@ -32,8 +32,8 @@ from app.classes.controllers.servers_controller import ServersController
 from app.classes.controllers.totp_controller import TOTPController
 from app.classes.shared.authentication import Authentication
 from app.classes.shared.console import Console
-from app.classes.shared.helpers import Helpers
-from app.classes.shared.file_helpers import FileHelpers
+from app.classes.helpers.helpers import Helpers
+from app.classes.helpers.file_helpers import FileHelpers
 from app.classes.shared.import_helper import ImportHelpers
 from app.classes.minecraft.bigbucket import BigBucket
 from app.classes.shared.websocket_manager import WebSocketManager
@@ -175,16 +175,6 @@ class Controller:
             return
         self.users.set_prepare(exec_user["user_id"])
         logger.info("Checking for previous support logs.")
-        if exec_user["support_logs"] != "":
-            if os.path.exists(exec_user["support_logs"]):
-                logger.info(
-                    f"Found previous support log request at {exec_user['support_logs']}"
-                )
-                if self.helper.validate_traversal(
-                    os.path.join(self.project_root, "temp"), exec_user["support_logs"]
-                ):
-                    logger.debug("No transversal detected. Going for the delete.")
-                    self.del_support_file(exec_user["support_logs"])
         # pausing so on screen notifications can run for user
         time.sleep(7)
         WebSocketManager().broadcast_user(
@@ -198,10 +188,10 @@ class Controller:
         )
 
         self.helper.ensure_dir_exists(
-            os.path.join(self.project_root, "temp", str(exec_user["user_id"]), "zip")
+            os.path.join(self.project_root, "temp", str(exec_user["user_id"]))
         )
         temp_zip_storage = os.path.join(
-            self.project_root, "temp", str(exec_user["user_id"]), "zip"
+            self.project_root, "temp", str(exec_user["user_id"])
         )
         os.mkdir(temp_dir)
         temp_zip_storage = os.path.join(temp_zip_storage, "support_logs")
@@ -304,9 +294,6 @@ class Controller:
             )
 
         temp_zip_storage += ".zip"
-        WebSocketManager().broadcast_user(exec_user["user_id"], "send_logs_bootbox", {})
-
-        self.users.set_support_path(exec_user["user_id"], temp_zip_storage)
 
         self.users.stop_prepare(exec_user["user_id"])
         self.support_scheduler.remove_job("logs_" + str(exec_user["user_id"]))

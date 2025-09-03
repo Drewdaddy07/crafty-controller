@@ -62,9 +62,14 @@ class UsersController:
             "password": {
                 "type": "string",
                 "minLength": self.helper.minimum_password_length,
+                "pattern": "(?=.*[^0-9])",
                 "examples": ["crafty"],
                 "title": "Password",
-                "error": "passLength",
+                "error": {
+                    "minLength": "passLength",
+                    "type": "numbericPassword",
+                    "pattern": "numbericPassword",
+                },
             },
             "email": {
                 "type": "string",
@@ -182,10 +187,6 @@ class UsersController:
     @staticmethod
     def user_query(user_id):
         return HelperUsers.user_query(user_id)
-
-    @staticmethod
-    def set_support_path(user_id, support_path):
-        HelperUsers.set_support_path(user_id, support_path)
 
     @staticmethod
     def get_managed_users(exec_user_id):
