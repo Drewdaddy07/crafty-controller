@@ -101,6 +101,7 @@ class TOTPController:
         now = datetime.now(tz=timezone.utc)
         # Clean up expired entries reclaim some memory
         for key, totp_dict in list(self.used_totp_codes.items()):
+            # Iterate over copy of dict (list) to prevent size change during iteration
             for item, timestamp in list(totp_dict.items()):
                 if now - timestamp > timedelta(seconds=60):
                     # needs to ref the self var to remove expired entries
