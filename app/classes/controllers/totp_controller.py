@@ -100,8 +100,8 @@ class TOTPController:
         """clears out totp codes older than 1 minute when one is sent"""
         now = datetime.now(tz=timezone.utc)
         # Clean up expired entries reclaim some memory
-        for key, totp_dict in self.used_totp_codes.items():
-            for item, timestamp in totp_dict.items():
+        for key, totp_dict in list(self.used_totp_codes.items()):
+            for item, timestamp in list(totp_dict.items()):
                 if now - timestamp > timedelta(seconds=60):
                     # needs to ref the self var to remove expired entries
                     del self.used_totp_codes[  # pylint: disable=unnecessary-dict-index-lookup
