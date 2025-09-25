@@ -133,16 +133,14 @@
                                         {% if data['server_stats']['updating'] %}
                                         <i id="update-spinner" class="fa fa-spinner fa-spin"></i>&nbsp;<button
                                             onclick="send_command(serverId, 'update_executable');"
-                                            id="update_executable" style="max-width: 7rem;"
-                                            class="btn btn-outline-warning">{{
+                                            id="update_executable" class="btn btn-outline-warning">{{
                                             translate('serverConfig',
                                             'update', data['lang']) }}</button>
                                         {% else %}
                                         <i style="visibility: hidden;" id="update-spinner"
                                             class="fa fa-spinner fa-spin"></i>&nbsp;<button
                                             onclick="send_command(serverId, 'update_executable');"
-                                            id="update_executable" style="max-width: 7rem;"
-                                            class="btn btn-outline-warning">{{
+                                            id="update_executable" class="btn btn-outline-warning">{{
                                             translate('serverConfig',
                                             'update', data['lang']) }}</button>
                                         {% end %}
