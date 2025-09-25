@@ -1,5 +1,5 @@
 # Changelog
-## --- [4.5.4] - 2025/TBD
+## --- [4.5.5] - 2025/TBD
 ### New features
 - Snapshot Style Backups ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/795))
 ### Bug fixes
@@ -10,6 +10,13 @@ TBD
 ### Lang
 - Fixed grammar, spelling/capitalization, and sentence structure issues ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/876))
 - Removed 2 unused statements ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/876))
+<br><br>
+
+## --- [4.5.4] - 2025/09/15
+### Bug fixes
+- Refactor upload chunk removal to ensure file operations are asynchronous ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/894))
+### Tweaks
+- Remove all 3rd party font requests ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/893))
 <br><br>
 
 ## --- [4.5.3] - 2025/09/03
