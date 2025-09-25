@@ -1458,7 +1458,7 @@ class ServerInstance:
         current_hash = self.helper.crypto_helper.calculate_file_hash_sha256(
             str(
                 Path(
-                    str(self.settings.get("server_path")),
+                    str(self.settings.get("path")),
                     str(self.settings.get("executable")),
                 )
             )
