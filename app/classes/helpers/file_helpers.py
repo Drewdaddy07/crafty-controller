@@ -161,19 +161,6 @@ class FileHelpers:
         return m_type
 
     @staticmethod
-    def calculate_file_hash_sha256(file_path: str) -> str:
-        """
-        Takes one parameter of file path.
-        It will generate a SHA256 hash for the path and return it.
-        """
-        sha256_hash = hashlib.sha256()
-        file_path_resolved = pathlib.Path(file_path).resolve()
-        with open(file_path_resolved, "rb") as f:
-            for byte_block in iter(lambda: f.read(4096), b""):
-                sha256_hash.update(byte_block)
-        return sha256_hash.hexdigest()
-
-    @staticmethod
     def calculate_buffer_hash(buffer: BinaryIO) -> str:
         """
         Takes one argument of a stream buffer. Will return a

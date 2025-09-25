@@ -204,7 +204,7 @@ class ApiFilesUploadHandler(BaseApiHandler):
                     await file.write(chunk)
             # We'll check the file hash against the sent hash once the file is
             # written. We cannot check this buffer.
-            calculated_hash = self.file_helper.calculate_file_hash_sha256(
+            calculated_hash = self.helper.crypto_helper.calculate_file_hash_sha256(
                 os.path.join(self.upload_dir, self.filename)
             )
             logger.info(
