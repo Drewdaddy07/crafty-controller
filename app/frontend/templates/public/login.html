@@ -182,13 +182,13 @@
       let formDataObject = Object.fromEntries(formData.entries());
       let body = {
         "username": formDataObject.username,
-        "password": formDataObject.password,
+        "password": toString(formDataObject.password),
       }
       if (formDataObject.totp != "") {
         let key = $("#2fa-type").val();
         body = {
           "username": formDataObject.username,
-          "password": formDataObject.password,
+          "password": toString(formDataObject.password),
           [key]: formDataObject.totp,
         }
       }

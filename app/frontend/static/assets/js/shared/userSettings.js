@@ -44,7 +44,7 @@ $(".edit_password").on("click", async function () {
                 headers: {
                     'X-XSRFToken': token
                 },
-                body: JSON.stringify({ "password": password }),
+                body: JSON.stringify({ "password": toString(password) }),
             });
             let responseData = await res.json();
             if (responseData.status === "ok") {
