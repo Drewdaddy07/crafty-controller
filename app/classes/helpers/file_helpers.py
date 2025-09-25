@@ -1,5 +1,4 @@
 import datetime
-import hashlib
 import io
 import logging
 import mimetypes
@@ -13,7 +12,6 @@ import urllib.request
 import zipfile
 import zlib
 from pathlib import Path
-from typing import BinaryIO
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 import certifi
@@ -159,16 +157,6 @@ class FileHelpers:
     def check_mime_types(self, file_path):
         m_type, _value = self.mime_types.guess_type(file_path)
         return m_type
-
-    @staticmethod
-    def calculate_buffer_hash(buffer: BinaryIO) -> str:
-        """
-        Takes one argument of a stream buffer. Will return a
-        sha256 hash of the buffer
-        """
-        sha256_hash = hashlib.sha256()
-        sha256_hash.update(buffer)
-        return sha256_hash.hexdigest()
 
     @staticmethod
     def copy_dir(src_path, dest_path, dirs_exist_ok=False):

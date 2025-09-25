@@ -2,6 +2,7 @@ import base64
 import binascii
 from hashlib import blake2b, sha256
 from pathlib import Path
+from typing import BinaryIO
 
 
 class CryptoHelper:
@@ -11,6 +12,16 @@ class CryptoHelper:
 
     def say_hello_world(self):
         print(self.test)
+
+    @staticmethod
+    def calculate_buffer_hash(buffer: BinaryIO) -> str:
+        """
+        Takes one argument of a stream buffer. Will return a
+        sha256 hash of the buffer
+        """
+        sha256_hash = sha256()
+        sha256_hash.update(buffer)
+        return sha256_hash.hexdigest()
 
     @staticmethod
     def calculate_file_hash_sha256(file_path: str) -> str:

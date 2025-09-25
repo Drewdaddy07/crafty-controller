@@ -256,7 +256,9 @@ class ApiFilesUploadHandler(BaseApiHandler):
             )
 
         # Calculate the hash of the buffer and compare it against the expected hash
-        calculated_hash = self.file_helper.calculate_buffer_hash(self.request.body)
+        calculated_hash = self.helper.crypto_helper.calculate_buffer_hash(
+            self.request.body
+        )
         if str(self.chunk_hash) != str(calculated_hash):
             logger.error(
                 f"File upload failed. Filename: {self.filename}"
