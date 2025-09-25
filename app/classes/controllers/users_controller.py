@@ -65,11 +65,7 @@ class UsersController:
                 "pattern": "(?=.*[^0-9])",
                 "examples": ["crafty"],
                 "title": "Password",
-                "error": {
-                    "minLength": "passLength",
-                    "type": "numbericPassword",
-                    "pattern": "numbericPassword",
-                },
+                "error": "passProp",
             },
             "email": {
                 "type": "string",
