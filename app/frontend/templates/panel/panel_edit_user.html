@@ -414,7 +414,8 @@ data['lang']) }}{% end %}
         console.log(key)
         return value
       } else if (key === "password"){
-        return toString(value)
+        value = value.toString()
+        return value
       }
       else {
         console.log(key, value)
