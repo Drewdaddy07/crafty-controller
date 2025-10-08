@@ -71,8 +71,6 @@ $(".edit_password").on("click", async function () {
                             });
                         }
                     })();
-
-                    return false;
                 }
             }
         }
