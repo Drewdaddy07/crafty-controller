@@ -1,4 +1,21 @@
 # Changelog
+## --- [4.5.5] - 2025/10/14
+### Bug fixes
+- Fix MFA login failure when the totp `dict`'s attempted codes list changes size while being processed ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/899))
+- Resolve additional json being appended to downloaded files ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/902))
+- Fix certain users not showing up following a change made in `4.5.0` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Fix password dialogue closing with no indicator the password did not change when the passwords did not match ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Fix empty 'Reason' when banning user from crafty UI ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/904))
+### Tweaks
+- Remove triple option for validation and use sole robust error ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Allow numeric passwords ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Enable use of `<enter>` key for password form submission ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Add extended debug logging to help troubleshoot MFA issues ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/898))
+- Change upload progress bar to monitor chunk processing ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/896))
+### Lang
+- Consolidate "passLength" & "numbericPassword" to single "passProp" translation for validators ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+<br><br>
+
 ## --- [4.5.4] - 2025/09/15
 ### Bug fixes
 - Refactor upload chunk removal to ensure file operations are asynchronous ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/894))
