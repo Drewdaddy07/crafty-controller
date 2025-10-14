@@ -1,4 +1,15 @@
 # Changelog
+## --- [4.5.6] - 2025/TBD
+### New features
+TBD
+### Bug fixes
+TBD
+### Tweaks
+TBD
+### Lang
+TBD
+<br><br>
+
 ## --- [4.5.5] - 2025/10/14
 ### Bug fixes
 - Fix MFA login failure when the totp `dict`'s attempted codes list changes size while being processed ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/899))
