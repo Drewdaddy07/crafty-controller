@@ -671,7 +671,6 @@
         "uses": "Anzahl der erlaubten Verwendungen (-1==Keine Begrenzung)"
     },
     "validators": {
-        "passLength": "Passwort zu kurz. Mindestlänge: 8",
         "typeInteger": "muss eine Zahl sein.",
         "typeList": "muss eine Liste (array) sein ",
         "roleManager": "Rollenmanager muss vom Typ Ganzzahl (Manager ID) oder ohne Wert sein",
