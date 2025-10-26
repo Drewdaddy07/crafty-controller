@@ -429,8 +429,8 @@ class TasksManager:
                     curr_time = job_data["start_time"].split(":")
                     new_job = self.scheduler.add_job(
                         self.controller.management.queue_command,
-                        "interval",
-                        day=str(job_data["interval"]),
+                        "cron",
+                        day="*/" + str(job_data["interval"]),
                         hour=curr_time[0],
                         minute=curr_time[1],
                         id=str(sch_id),
