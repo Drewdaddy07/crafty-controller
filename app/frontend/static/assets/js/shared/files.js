@@ -178,7 +178,11 @@ function process_tree_response(response) {
 
         // Column 2: MIME or "Dir"
         const td2 = document.createElement("td");
-        td2.textContent = value.mime ? value.mime : "Dir";
+        if (value.mime || value.dir) {
+            td2.textContent = value.mime ? value.mime : "Dir"; // safe text
+        } else {
+            td2.innerHTML = `<i class="fa fa-question-circle" aria-hidden="true"></i>`;
+        }
 
         // Column 3: modified date
         const td3 = document.createElement("td");
