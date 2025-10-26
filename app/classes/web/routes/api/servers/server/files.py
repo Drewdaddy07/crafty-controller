@@ -5,6 +5,7 @@ import html
 from pathlib import Path
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+from datetime import datetime
 
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.helpers.helpers import Helpers
@@ -215,6 +216,8 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                 filename = html.escape(raw_filename)
                 rel = os.path.join(folder, raw_filename)
                 dpath = os.path.join(folder, filename)
+                can_open, mime = self.file_helper.probably_can_open_file(dpath)
+                modified_time = datetime.fromtimestamp(Path(dpath).stat().st_mtime)
                 if backup_id:
                     if str(
                         dpath
@@ -250,12 +253,16 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                             "path": dpath,
                             "dir": True,
                             "excluded": False,
+                            "modified": modified_time.strftime("%Y/%m/%d %H:%M"),
                         }
                     else:
                         return_json[filename] = {
                             "path": dpath,
                             "dir": False,
                             "excluded": False,
+                            "can_open": can_open,
+                            "mime": mime,
+                            "modified": modified_time.strftime("%Y/%m/%d %H:%M"),
                         }
             self.finish_json(200, {"status": "ok", "data": return_json})
         else:
