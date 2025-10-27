@@ -9,11 +9,6 @@
     font-size: 18px;
 }
 
-/* Visible state */
-.context-menu.show {
-    display: block;
-}
-
 .menu-item {
     padding: 8px 12px;
     cursor: pointer;
