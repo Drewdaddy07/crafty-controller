@@ -2,7 +2,7 @@ import os
 import logging
 import json
 import html
-from pathlib import Path
+from pathlib import Path, PurePath
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from datetime import datetime
@@ -178,8 +178,11 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                     "error_data": str(e),
                 },
             )
+        server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
+        if not Path(data["path"]).is_absolute():
+            data["path"] = str(Path(server_path, data["path"]))
         if not Helpers.validate_traversal(
-            self.controller.servers.get_server_data_by_id(server_id)["path"],
+            server_path,
             data["path"],
         ):
             return self.finish_json(
@@ -250,14 +253,22 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                 else:
                     if os.path.isdir(rel):
                         return_json[filename] = {
-                            "path": dpath,
+                            "path": str(
+                                PurePath.relative_to(
+                                    PurePath(dpath), PurePath(server_path)
+                                )
+                            ),
                             "dir": True,
                             "excluded": False,
                             "modified": modified_time.strftime("%Y/%m/%d %H:%M"),
                         }
                     else:
                         return_json[filename] = {
-                            "path": dpath,
+                            "path": str(
+                                PurePath.relative_to(
+                                    PurePath(dpath), PurePath(server_path)
+                                )
+                            ),
                             "dir": False,
                             "excluded": False,
                             "can_open": can_open,
