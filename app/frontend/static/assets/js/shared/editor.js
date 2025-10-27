@@ -120,6 +120,10 @@ let extensionChanges = [
         regex: /^toml$/,
         replaceWith: "ace/mode/txt",
     },
+    {
+        regex: /^bat$/,
+        replaceWith: "ace/mode/sh",
+    },
 ];
 
 
