@@ -705,7 +705,8 @@
         "2FAerror": "Multifactorcode moet 6 cijfers (b.v.b. 000000) of een back-upcode of 16 karakters, elke vier gescheiden door - (b.v.b. ABCD-EFGH-IJKL-MNOP) zijn",
         "totp": "MFA-code moet 6 nummers zijn",
         "mfaName": "Invoer moet van type String zijn van minstens 3 karakters voor deze eigenschap",
-        "additionalProperties": "Aanvullende Eigenschappen mogen niet meegestuurd worden"
+        "additionalProperties": "Aanvullende Eigenschappen mogen niet meegestuurd worden",
+        "passProp": "Wachtwoord moet tekst zijn met een minimale lengte van 8 karakters."
     },
     "serverMetrics": {
         "zoomHint1": "Om in te zoomen op de grafiek, houdt je de shift-toets ingedrukt en gebruik je vervolgens je scrollwiel.",
