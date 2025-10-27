@@ -4,4 +4,9 @@
 
 #editor {
     height: 75vh;
+    border-radius: 25px;
+}
+
+.content-wrapper {
+    width: 100vw;
 }
