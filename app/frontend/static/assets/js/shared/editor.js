@@ -1,5 +1,6 @@
 const urlParams = new URLSearchParams(window.location.search);
 const serverId = urlParams.get("server_id");
+let serverFileContent = "";
 
 let editor = ace.edit("editor", {
     mode: "ace/mode/javascript",  // or your language
@@ -157,6 +158,8 @@ async function get_file() {
 }
 $(document).ready(function () {
     console.log("Getting file")
+    add_server_name();
+    set_font_size(localStorage.getItem("font-size") || 12)
     get_file();
 });
 
@@ -192,4 +195,86 @@ function setFileName(name) {
         document.querySelector("#file_warn").innerText =
             "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}";
     }
+}
+
+async function add_server_name() {
+    const token = getCookie("_xsrf");
+    let res = await fetch(`/api/v2/servers/${serverId}`, {
+        method: 'GET',
+        headers: {
+            'X-XSRFToken': token
+        },
+    });
+    let responseData = await res.json();
+    if (responseData.status === "ok") {
+        console.log(responseData)
+        $("#server-name-nav").text(`${responseData.data['server_name']}`);
+    }
+}
+
+const setSaveStatus = (saved) => {
+    if (saved) {
+        $("#saveButton").addClass("btn-outline-success");
+        $("#saveButton").removeClass("btn-secondary");
+        $("#saveButtonText").text($("#saveButton").data("saved"));
+    } else {
+        $("#saveButton").addClass("btn-secondary");
+        $("#saveButton").removeClass("btn-outline-success");
+        $("#saveButtonText").text($("#saveButton").data("changes"));
+    }
+};
+["change", "undo", "redo"].forEach((event) =>
+    editor.on(event, (event) =>
+        setSaveStatus(serverFileContent === editor.session.getValue())
+    )
+);
+
+async function save() {
+    let text = editor.session.getValue();
+
+    const token = getCookie("_xsrf");
+    let res = await fetch(`/api/v2/servers/${serverId}/files`, {
+        method: "PATCH",
+        headers: {
+            "X-XSRFToken": token,
+        },
+        body: JSON.stringify({ path: path, contents: text }),
+    });
+    let responseData = await res.json();
+    if (responseData.status === "ok") {
+        serverFileContent = text;
+        setSaveStatus(true);
+    } else {
+        bootbox.alert({
+            title: responseData.error,
+            message: responseData.error_data
+        });
+    }
+}
+
+function set_font_size(size) {
+    console.log(size.toString() + "px")
+    editor.setOptions({
+        fontSize: size.toString() + "px"
+    });
+}
+
+function loadMenuContent() {
+    const menu = $("#context-menu");
+    menu.empty(); // clear previous content
+
+    const fontSize = localStorage.getItem("font-size") || 12;
+    const sizeDiv = $("<div>").addClass("menu-item");
+    const br1 = $("<br/>")
+    const inputLabel = $("<h6>").html(`<i class="fa-solid fa-text-height"></i>`);
+
+    const input = $("<input>").attr({ type: "range", value: fontSize, min: 8, max: 32, id: "font-size" });
+    sizeDiv.append(inputLabel);
+    sizeDiv.append(input);
+    menu.append(sizeDiv);
+    $("#font-size").on("input", function () {
+        let font_size = $("#font-size").val();
+        localStorage.setItem("font-size", font_size)
+        set_font_size(font_size)
+    });
 }
