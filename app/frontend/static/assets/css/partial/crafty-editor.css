@@ -10,3 +10,7 @@
 .content-wrapper {
     width: 100vw;
 }
+
+#saveButton {
+    width: 50%;
+}
