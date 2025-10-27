@@ -209,12 +209,9 @@ function process_tree_response(response) {
         getTreeView($(this).data("path"))
     });
     $(".file").click(function (e) {
-        console.log("file clicked")
-        return
         // Prevent the click from firing if it’s on the context menu button
         if ($(e.target).closest(".context-button").length) return;
-        console.log("directory")
-        getTreeView($(this).data("path"))
+        window.open(`/panel/edit_file?server_id=${serverId}&file=${encodeURI($(this).data("path"))}`, "_blank")
     });
     $(".tree-nav").click(function (e) {
         console.log("nav clicked")
