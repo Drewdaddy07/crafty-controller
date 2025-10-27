@@ -28,6 +28,8 @@ editor.commands.addCommand({
     },
 });
 
+is_saved = true;
+
 let extensionChanges = [
     {
         regex: /^js$/,
@@ -160,6 +162,7 @@ $(document).ready(function () {
     console.log("Getting file")
     add_server_name();
     set_editor_font_size(localStorage.getItem("font-size") || 12)
+    setKeybinds(localStorage.getItem("keybind") || "null")
     get_file();
 });
 
@@ -217,10 +220,12 @@ const setSaveStatus = (saved) => {
         $("#saveButton").addClass("btn-outline-success");
         $("#saveButton").removeClass("btn-secondary");
         $("#saveButtonText").text($("#saveButton").data("saved"));
+        is_saved = true;
     } else {
         $("#saveButton").addClass("btn-secondary");
         $("#saveButton").removeClass("btn-outline-success");
         $("#saveButtonText").text($("#saveButton").data("changes"));
+        is_saved = false;
     }
 };
 ["change", "undo", "redo"].forEach((event) =>
@@ -262,7 +267,11 @@ function set_editor_font_size(size) {
 function loadMenuContent() {
     const menu = $("#context-menu");
     menu.empty(); // clear previous content
+    load_text_size_control(menu);
+    load_keybind_control(menu);
+}
 
+function load_text_size_control(menu) {
     const fontSize = localStorage.getItem("font-size") || 12;
     const sizeDiv = $("<div>").addClass("menu-item");
     const br1 = $("<br/>")
@@ -278,3 +287,81 @@ function loadMenuContent() {
         set_editor_font_size(font_size)
     });
 }
+
+function load_keybind_control(menu) {
+    const controlContainer = $("<div>").addClass("menu-item");
+    const keyboardOptions = [
+        { label: "Default", handler: "null" },
+        { label: "Vim", handler: "ace/keyboard/vim" },
+        { label: "Emacs", handler: "ace/keyboard/emacs" },
+        { label: "Sublime", handler: "ace/keyboard/sublime" },
+        { label: "VSCode", handler: "ace/keyboard/vscode" },
+    ];
+    let cur_selection = localStorage.getItem("keybind") || "null"
+    keyboardOptions.forEach(opt => {
+        const btn = document.createElement("button");
+        let className = "btn-outline-info"
+        if (cur_selection == opt.handler) {
+            className = "btn-outline-success";
+        }
+        btn.className = `btn ${className}`;
+        btn.textContent = opt.label;
+        btn.setAttribute("data-handler-name", opt.handler);
+
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            const clickedBtn = e.currentTarget; // always the button you attached the handler to
+
+            // Reset all buttons in the same container to secondary
+            const container = clickedBtn.parentElement; // .menu-item
+            container.querySelectorAll("button").forEach(b => {
+                b.classList.remove("btn-outline-success");
+                b.classList.add("btn-outline-info");
+            });
+
+            // Highlight clicked button
+            clickedBtn.classList.remove("btn-outline-info");
+            clickedBtn.classList.add("btn-outline-success");
+
+            // Call your existing handler
+            setKeyboard(clickedBtn);
+        });
+
+        controlContainer.append(btn);
+        menu.append(controlContainer)
+    });
+}
+
+function setKeybinds(handlerName) {
+    if (handlerName == "null") handlerName = null;
+    editor.setKeyboardHandler(handlerName, () => {
+        if (handlerName == "ace/keyboard/vim") {
+            require("ace/keyboard/vim").Vim.defineEx("write", "w", function () {
+                save();
+            });
+        }
+    });
+}
+
+function setKeyboard(target) {
+    var handlerName = target.getAttribute("data-handler-name");
+    localStorage.setItem("keybind", handlerName);
+    setKeybinds(handlerName);
+
+    const $clickedBtn = $(this);
+    const $container = $clickedBtn.closest(".menu-item");
+
+    // Reset all buttons in this container to secondary
+    $container.find("button").removeClass("btn-primary").addClass("btn-secondary");
+
+    // Highlight the clicked button
+    $clickedBtn.removeClass("btn-secondary").addClass("btn-primary");
+}
+
+window.addEventListener('beforeunload', (e) => {
+    if (!is_saved) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+});
