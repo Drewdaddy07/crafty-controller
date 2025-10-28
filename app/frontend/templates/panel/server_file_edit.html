@@ -22,8 +22,10 @@ end %} {% block content %}
         <div class="editorManager">
             <h2 id="fileError"></h2>
             <div id="editorParent"><span class="badge badge-outline-info"><i
-                        class="fa-solid fa-file-export"></i>&nbsp;&nbsp;<span id="editingFile"></span></span>&nbsp;{%
-                include parts/context_menu.html %}
+                        class="fa-solid fa-file-export"></i>&nbsp;&nbsp;<span id="editingFile"></span></span>&nbsp;<div
+                    class="gear-menu">
+                    <i class="fa-solid fa-gear context-icon"></i>
+                </div>
                 <div id="editor" onresize="editor.resize()" style="resize: both; width: 100%">
                 </div>
                 <br />
@@ -37,6 +39,7 @@ end %} {% block content %}
             </div>
         </div>
     </div>
+    {% include parts/context_menu.html %}
     <script src="/static/assets/vendors/ace-builds/src-min/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="/static/assets/js/shared/editor.js"></script>
     {% end %}
