@@ -179,8 +179,9 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                 },
             )
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
+        request_path = data["path"]
         if not Path(data["path"]).is_absolute():
-            data["path"] = str(Path(server_path, data["path"]))
+            data["path"] = str(Path(server_path, request_path))
         if not Helpers.validate_traversal(
             server_path,
             data["path"],
@@ -198,6 +199,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             folder = data["path"]
             return_json = {
                 "root_path": {
+                    "local_path": request_path,
                     "path": folder,
                     "top": data["path"]
                     == self.controller.servers.get_server_data_by_id(server_id)["path"],
@@ -610,6 +612,10 @@ class ApiServersServerFilesCreateHandler(BaseApiHandler):
                     "error_data": f"{str(err)}",
                 },
             )
+        server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
+        request_path = data["path"]
+        if not Path(data["path"]).is_absolute():
+            data["path"] = str(Path(server_path, request_path))
         path = data["path"]
         new_item_name = data["new_name"]
         new_item_path = os.path.join(os.path.split(path)[0], new_item_name)

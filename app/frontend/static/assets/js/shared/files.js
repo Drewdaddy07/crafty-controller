@@ -1,4 +1,6 @@
 
+let selected_row = null;
+
 const LOADING_TABLE = `<tr class="skeleton-row">
                                     <td>
                                         <div class="skeleton-line" style="width: 60%;"></div>
@@ -132,12 +134,9 @@ function fileIcon(value) {
 
 function process_tree_response(response) {
     const tbody = document.querySelector("tbody");
-    console.log(response)
     let path = response.data.root_path.path;
-    let file_nav = ``;
-    console.log(path)
+    console.log(response.data.root_path)
     path = path.split("\\").join("/"); //Remove \ marks
-    console.log(path)
     path_list = path.split("/");
 
     const container = document.querySelector("#table-nav"); // your container
@@ -164,61 +163,134 @@ function process_tree_response(response) {
     Object.entries(response.data).forEach(([key, value]) => {
         if (key === "root_path" || key === "db_stats") return;
 
-        const tr = document.createElement("tr");
-        tr.className = value.dir ? "directory" : "file";
-        tr.dataset.path = value.path;
-        tr.dataset.can_open = value.can_open;
+        const $tr = $("<tr>")
+            .addClass(value.dir ? "directory" : "file")
+            .attr("data-path", value.path)
+            .attr("data-can_open", value.can_open);
 
         // Column 1: icon + filename
-        const td1 = document.createElement("td");
-        const iconSpan = document.createElement("span");
-        iconSpan.innerHTML = fileIcon(value);
-        td1.appendChild(iconSpan);
-        td1.appendChild(document.createTextNode("\u00A0\u00A0\u00A0"));
-        td1.appendChild(document.createTextNode(key));
+        const $td1 = $("<td>")
+            .addClass("column-1")
+            .attr("data-name", key)
+            .append($("<span>").html(fileIcon(value)))
+            .append("\u00A0\u00A0\u00A0")
+            .append(document.createTextNode(key));
 
         // Column 2: MIME or "Dir"
-        const td2 = document.createElement("td");
+        const $td2 = $("<td>");
         if (value.mime || value.dir) {
-            td2.textContent = value.mime ? value.mime : "Dir"; // safe text
+            $td2.text(value.mime ? value.mime : "Dir");
         } else {
-            td2.innerHTML = `<i class="fa fa-question-circle" aria-hidden="true"></i>`;
+            $td2.html('<i class="fa fa-question-circle" aria-hidden="true"></i>');
         }
 
         // Column 3: modified date
-        const td3 = document.createElement("td");
-        td3.textContent = value.modified;
+        const $td3 = $("<td>").text(value.modified);
 
         // Column 4: size
-        const td4 = document.createElement("td");
-        td4.textContent = value.size || "-";
+        const $td4 = $("<td>").text(value.size || "-");
 
         // Column 5: context button
-        const td5 = document.createElement("td");
-        td5.className = "context-button";
-        td5.textContent = "...";
+        const $td5 = $("<td>")
+            .addClass("context-button")
+            .text("...");
 
-        [td1, td2, td3, td4, td5].forEach(td => tr.appendChild(td));
+        // Append all columns to the row
+        $tr.append($td1, $td2, $td3, $td4, $td5);
 
-        tbody.appendChild(tr);
+        // Append row to tbody (also as jQuery object)
+        $(tbody).append($tr);
     });
     $(".directory").click(function (e) {
         console.log("dir clicked")
         // Prevent the click from firing if it’s on the context menu button
         if ($(e.target).closest(".context-button").length) return;
+        if ($(this).children(".column-1").hasClass("editing")) return;
         console.log("directory")
-        getTreeView($(this).data("path"))
+        getTreeView($(this).attr("data-path"))
     });
     $(".file").click(function (e) {
         // Prevent the click from firing if it’s on the context menu button
         if ($(e.target).closest(".context-button").length) return;
         if (!$(this).data("can_open")) return;
-        window.open(`/panel/edit_file?server_id=${serverId}&file=${encodeURI($(this).data("path"))}`, "_blank")
+        if ($(this).children(".column-1").hasClass("editing")) return;
+        window.open(`/panel/edit_file?server_id=${serverId}&file=${encodeURI($(this).attr("data-path"))}`, "_blank")
     });
     $(".tree-nav").click(function (e) {
         // Prevent the click from firing if it’s on the context menu button
         if ($(e.target).closest(".context-button").length) return;
-        console.log("nav")
-        getTreeView($(this).data("path"))
+        getTreeView($(this).attr("data-path"))
+    });
+}
+
+function loadMenuContent(tr) {
+    const ctxMenuItems = ["rename", "unzip", "download", "delete"];
+    console.log("Loading menu 1")
+    const menu = $("#context-menu");
+    menu.empty(); // clear previous content
+    const path = $(tr).attr("data-path")
+    selected_row = tr
+    let zipFile = false;
+    if (path) {
+        zipFile = String(path).endsWith(".zip");
+    }
+    for (const arr_item of ctxMenuItems) {
+        if (arr_item === "unzip" && !zipFile) {
+            continue;
+        }
+        const itemContainer = $("<div>").addClass("menu-item").attr("id", arr_item);
+        const item = $("<h6>").html(`<span class="${arr_item}-btn">${$("#files_table").data(arr_item)}</span>`);
+        itemContainer.append(item);
+        menu.append(itemContainer);
+    }
+    $("<input>").val()
+    add_rename_listener();
+
+}
+async function renameItem(path, name) {
+    const token = getCookie("_xsrf");
+    let res = await fetch(`/api/v2/servers/${serverId}/files/create/`, {
+        method: "PATCH",
+        headers: {
+            "X-XSRFToken": token,
+        },
+        body: JSON.stringify({ path: path, new_name: name }),
+    });
+    let responseData = await res.json();
+    if (responseData.status === "ok") {
+        console.log("sent ok")
+    } else {
+        bootbox.alert({
+            title: responseData.error,
+            message: responseData.error_data
+        });
+    }
+}
+
+function add_rename_listener() {
+    $("#rename").on("click", function () {
+        const rename_input = $("<input>").val($(selected_row).children(".column-1").attr("data-name")).attr("id", "rename-input").addClass("form-control");
+        $(selected_row).children(".column-1").empty().addClass("editing")
+        $(selected_row).children(".column-1").append(rename_input)
+        $("#rename-input").on("keyup", function (e) {
+            if (e.key === "Enter") {
+                let icon = '<i class="fa-regular fa-file-excel text-danger"></i>'
+                if ($(selected_row).hasClass("directory")) icon = '<i class="fa-regular fa-folder text-info"></i>';
+                if ($(selected_row).hasClass("file")) icon = '<i class="fa-regular fa-file text-success"></i>';
+                let new_name = $("#rename-input").val()
+                if ($(selected_row).children(".column-1").attr("data-name") != new_name) {
+                    console.log("sending path" + new_name)
+                    renameItem($(selected_row).attr("data-path"), new_name)
+                    new_path = $(selected_row).attr("data-path").replace($(selected_row).children(".column-1").attr("data-name"), new_name)
+                    $(selected_row).attr("data-path", new_path)
+                }
+                // Column 1: icon + filename
+                $(selected_row).children(".column-1").empty().removeClass("editing");
+                $(selected_row).children(".column-1").append($("<span>").html(icon))
+                    .append("\u00A0\u00A0\u00A0")
+                    .append(document.createTextNode(new_name));
+                $(selected_row).children(".column-1").attr("data-name", new_name)
+            }
+        })
     });
 }
