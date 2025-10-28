@@ -110,7 +110,6 @@ file_delete_schema = {
     "properties": {
         "filename": {
             "type": "string",
-            "minLength": 5,
             "error": "typeString",
             "fill": True,
         },
@@ -334,9 +333,11 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             return self.finish_json(
                 400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
             )
+        print(type(data["filename"]))
         try:
             validate(data, file_delete_schema)
         except ValidationError as why:
+            print(why)
             offending_key = ""
             if why.schema.get("fill", None):
                 offending_key = why.path[0] if why.path else None
@@ -353,6 +354,10 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                     "error_data": f"{str(err)}",
                 },
             )
+        server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
+        request_path = data["filename"]
+        if not Path(data["filename"]).is_absolute():
+            data["filename"] = str(Path(server_path, request_path))
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
             data["filename"],
@@ -362,10 +367,18 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                 {
                     "status": "error",
                     "error": "TRAVERSAL DETECTED",
-                    "error_data": str(e),
+                    "error_data": str("Traversal"),
                 },
             )
-
+        if data["filename"] == server_path:
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "TRAVERSAL DETECTED",
+                    "error_data": str("Traversal"),
+                },
+            )
         if os.path.isdir(data["filename"]):
             proc = FileHelpers.del_dirs(data["filename"])
         else:

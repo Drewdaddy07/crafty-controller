@@ -141,7 +141,7 @@ function process_tree_response(response) {
 
     const container = document.querySelector("#table-nav"); // your container
     $(container).html("") // clear previous content
-
+    $(container).attr("data-cur-path", path)
     path_list.forEach((part, index) => {
         // Create the span
         const span = document.createElement("span");
@@ -245,6 +245,7 @@ function loadMenuContent(tr) {
     }
     $("<input>").val()
     add_rename_listener();
+    add_delete_listener();
 
 }
 async function renameItem(path, name) {
@@ -278,7 +279,7 @@ async function renameItem(path, name) {
 function add_rename_listener() {
     $("#rename").on("click", function () {
         const path = $(selected_row).attr("data-path");
-        const name = $(selected_row).children(".column-1").attr("data-name")
+        const name = $(selected_row).children(".column-1").attr("data-name");
         bootbox.prompt({
             title:
                 "{% raw translate('serverFiles', 'renameItemQuestion', data['lang']) %}",
@@ -294,4 +295,89 @@ function add_rename_listener() {
             },
         });
     });
+}
+
+
+$("#create-dir").on("click", function () {
+    bootbox.prompt(
+        "{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}",
+        function (result) {
+            if (!result) return;
+            const cur_dir = $("#table-nav").attr("data-cur-path");
+            createDir(cur_dir, result, function () {
+                getTreeView(cur_dir);
+            });
+        }
+    );
+})
+
+async function createDir(parent, name, callback) {
+    const token = getCookie("_xsrf");
+    let res = await fetch(`/api/v2/servers/${serverId}/files/create/`, {
+        method: "PUT",
+        headers: {
+            "X-XSRFToken": token,
+        },
+        body: JSON.stringify({ parent: parent, name: name, directory: true }),
+    });
+    let responseData = await res.json();
+    if (responseData.status === "ok") {
+        const cur_dir = $("#table-nav").attr("data-cur-path");
+        getTreeView(cur_dir);
+    } else {
+        bootbox.alert({
+            title: responseData.error,
+            message: responseData.error_data
+        });
+    }
+}
+
+function add_delete_listener() {
+    $("#delete").on("click", function () {
+        const path = $(selected_row).attr("data-path");
+        console.log(path)
+        bootbox.confirm({
+            size: "",
+            title:
+                "{% raw translate('serverFiles', 'deleteItemQuestion', data['lang']) %}",
+            closeButton: false,
+            message:
+                "{% raw translate('serverFiles', 'deleteItemQuestionMessage', data['lang']) %}",
+            buttons: {
+                confirm: {
+                    label: "{{ translate('serverFiles', 'yesDelete', data['lang']) }}",
+                    className: "btn-danger",
+                },
+                cancel: {
+                    label: "{{ translate('serverFiles', 'noDelete', data['lang']) }}",
+                    className: "btn-link",
+                },
+            },
+            callback: function (result) {
+                if (!result) return;
+                deleteItem(path);
+            },
+        });
+    });
+}
+
+
+async function deleteItem(path) {
+    const token = getCookie("_xsrf");
+    let res = await fetch(`/api/v2/servers/${serverId}/files`, {
+        method: "DELETE",
+        headers: {
+            "X-XSRFToken": token,
+        },
+        body: JSON.stringify({ filename: String(path) }),
+    });
+    let responseData = await res.json();
+    if (responseData.status === "ok") {
+        $(selected_row).remove()
+    } else {
+        bootbox.alert({
+            title: responseData.error,
+            message: responseData.error_data
+        });
+    }
 }
