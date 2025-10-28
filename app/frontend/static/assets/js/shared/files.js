@@ -259,6 +259,14 @@ async function renameItem(path, name) {
     let responseData = await res.json();
     if (responseData.status === "ok") {
         console.log("sent ok")
+        $(selected_row).children(".column-1").empty()
+        let icon = '<i class="fa-regular fa-file-excel text-danger"></i>'
+        if ($(selected_row).hasClass("directory")) icon = '<i class="fa-regular fa-folder text-info"></i>';
+        if ($(selected_row).hasClass("file")) icon = '<i class="fa-regular fa-file text-success"></i>';
+        $(selected_row).children(".column-1").append($("<span>").html(icon))
+            .append("\u00A0\u00A0\u00A0")
+            .append(document.createTextNode(name));
+        $(selected_row).children(".column-1").attr("data-name", name)
     } else {
         bootbox.alert({
             title: responseData.error,
@@ -269,28 +277,21 @@ async function renameItem(path, name) {
 
 function add_rename_listener() {
     $("#rename").on("click", function () {
-        const rename_input = $("<input>").val($(selected_row).children(".column-1").attr("data-name")).attr("id", "rename-input").addClass("form-control");
-        $(selected_row).children(".column-1").empty().addClass("editing")
-        $(selected_row).children(".column-1").append(rename_input)
-        $("#rename-input").on("keyup", function (e) {
-            if (e.key === "Enter") {
-                let icon = '<i class="fa-regular fa-file-excel text-danger"></i>'
-                if ($(selected_row).hasClass("directory")) icon = '<i class="fa-regular fa-folder text-info"></i>';
-                if ($(selected_row).hasClass("file")) icon = '<i class="fa-regular fa-file text-success"></i>';
-                let new_name = $("#rename-input").val()
-                if ($(selected_row).children(".column-1").attr("data-name") != new_name) {
-                    console.log("sending path" + new_name)
-                    renameItem($(selected_row).attr("data-path"), new_name)
-                    new_path = $(selected_row).attr("data-path").replace($(selected_row).children(".column-1").attr("data-name"), new_name)
-                    $(selected_row).attr("data-path", new_path)
+        const path = $(selected_row).attr("data-path");
+        const name = $(selected_row).children(".column-1").attr("data-name")
+        bootbox.prompt({
+            title:
+                "{% raw translate('serverFiles', 'renameItemQuestion', data['lang']) %}",
+            value: name,
+            callback: function (result) {
+                if (!result) return;
+                if ($(selected_row).children(".column-1").attr("data-name") != result) {
+                    console.log("sending path" + result)
+                    renameItem($(selected_row).attr("data-path"), result)
+                    new_path = $(selected_row).attr("data-path").replace($(selected_row).children(".column-1").attr("data-name"), result)
+                    $(selected_row).attr("data-path", result)
                 }
-                // Column 1: icon + filename
-                $(selected_row).children(".column-1").empty().removeClass("editing");
-                $(selected_row).children(".column-1").append($("<span>").html(icon))
-                    .append("\u00A0\u00A0\u00A0")
-                    .append(document.createTextNode(new_name));
-                $(selected_row).children(".column-1").attr("data-name", new_name)
-            }
-        })
+            },
+        });
     });
 }
