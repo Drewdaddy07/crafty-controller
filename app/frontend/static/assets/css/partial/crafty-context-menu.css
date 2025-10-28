@@ -4,7 +4,7 @@
     display: inline-block;
 }
 
-.gear-icon {
+.context-icon {
     cursor: pointer;
     font-size: 18px;
 }
@@ -30,6 +30,7 @@
     opacity: 0;
     transform: translateY(-5px);
     transition: opacity 0.15s ease, transform 0.15s ease;
+    min-width: 10vw;
 }
 
 .context-menu.show {
