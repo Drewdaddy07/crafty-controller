@@ -1,8 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const gearIcon = document.querySelector(".gear-icon");
+    const icon = document.querySelector(".context-icon");
     const menu = document.querySelector(".context-menu");
+    const contextArea = document.querySelector("#context-container")
     // Show context menu at click position
     function showMenu(x, y) {
+        console.log("Showing menu")
         // Make visible to get dimensions
         menu.style.display = "flex";
         menu.style.position = "fixed";
@@ -29,25 +31,39 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Left-click on gear icon
-    gearIcon.addEventListener("click", (event) => {
-        event.stopPropagation();
-        loadMenuContent();
-        const isVisible = menu.classList.contains("show");
-        document.querySelectorAll(".context-menu.show").forEach((m) => m.classList.remove("show"));
+    try {
+        // Left-click on gear icon
+        icon.addEventListener("click", (event) => {
+            event.stopPropagation();
+            loadMenuContent();
+            const isVisible = menu.classList.contains("show");
+            document.querySelectorAll(".context-menu.show").forEach((m) => m.classList.remove("show"));
 
-        if (!isVisible) showMenu(event.clientX, event.clientY);
-    });
-
+            if (!isVisible) showMenu(event.clientX, event.clientY);
+        });
+    } catch {
+        console.log("Could Not find icon to set context")
+    }
     // Right-click anywhere
-    document.addEventListener("contextmenu", (event) => {
-        event.preventDefault();
-        showMenu(event.clientX, event.clientY);
-    });
+    try {
+        contextArea.addEventListener("contextmenu", (event) => {
+            const th = event.target.closest("th");
+            const tr = event.target.closest("tr");
+
+            if (!th && tr) { //only allow right click menu on folder items
+                tr
+                event.preventDefault();
+                loadMenuContent(tr);
+                showMenu(event.clientX, event.clientY);
+            }
+        });
+    } catch {
+        console.log("Could not find context area to set")
+    }
 
     // Click outside closes menu
     document.addEventListener("click", (event) => {
-        if (!menu.contains(event.target) && !gearIcon.contains(event.target)) {
+        if (!event.target.classList.contains("edit-configure")) {
             menu.classList.remove("show");
             menu.style.display = "none";
         }

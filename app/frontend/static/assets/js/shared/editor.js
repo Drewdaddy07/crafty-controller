@@ -273,11 +273,11 @@ function loadMenuContent() {
 
 function load_text_size_control(menu) {
     const fontSize = localStorage.getItem("font-size") || 12;
-    const sizeDiv = $("<div>").addClass("menu-item");
+    const sizeDiv = $("<div>").addClass("menu-item").addClass("edit-configure");
     const br1 = $("<br/>")
     const inputLabel = $("<h6>").html(`<i class="fa-solid fa-text-height"></i>`);
 
-    const input = $("<input>").attr({ type: "range", value: fontSize, min: 8, max: 32, id: "font-size" });
+    const input = $("<input>").attr({ type: "range", value: fontSize, min: 8, max: 32, id: "font-size" }).addClass("edit-configure");
     sizeDiv.append(inputLabel);
     sizeDiv.append(input);
     menu.append(sizeDiv);
@@ -289,7 +289,7 @@ function load_text_size_control(menu) {
 }
 
 function load_keybind_control(menu) {
-    const controlContainer = $("<div>").addClass("menu-item");
+    const controlContainer = $("<div>").addClass("menu-item").addClass("edit-configure");
     const keyboardOptions = [
         { label: "Default", handler: "null" },
         { label: "Vim", handler: "ace/keyboard/vim" },
