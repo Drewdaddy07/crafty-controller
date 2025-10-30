@@ -208,11 +208,9 @@ function process_tree_response(response) {
         $(tbody).append($tr);
     });
     $(".directory").click(function (e) {
-        console.log("dir clicked")
         // Prevent the click from firing if it’s on the context menu button
         if ($(e.target).closest(".context-button").length) return;
         if ($(this).children(".column-1").hasClass("editing")) return;
-        console.log("directory")
         getTreeView($(this).attr("data-path"))
     });
     $(".file").click(function (e) {
@@ -231,7 +229,6 @@ function process_tree_response(response) {
 
 function loadMenuContent(tr) {
     const ctxMenuItems = ["rename", "unzip", "download", "delete"];
-    console.log("Loading menu 1")
     const menu = $("#context-menu");
     menu.empty(); // clear previous content
     const path = $(tr).attr("data-path")
@@ -436,6 +433,10 @@ function add_unzip_listener() {
 }
 
 $(document).ready(function () {
+
+    $('#status').collapse({
+        toggle: true
+    })
     const $dropZone = $("#drop-zone");
     const $table = $("#files_table");
 
