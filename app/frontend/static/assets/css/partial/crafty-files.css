@@ -2,7 +2,8 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 8px;
-    border-radius: 12px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
     background: var(--ram-bg);
     padding: 8px;
     cursor: pointer;
@@ -148,4 +149,27 @@
 /* Active state */
 #drop-zone.drop-hover #drop-zone-overlay {
     opacity: 1;
+}
+
+#status-icon {
+    position: sticky;
+    width: 20px;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.table-nav-container {
+    display: inline-block;
+    position: sticky;
+    gap: 8px;
+    background: var(--ram-bg);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 8px 12px;
+    width: 100%;
+}
+
+.tree-nav {
+    cursor: pointer;
 }
