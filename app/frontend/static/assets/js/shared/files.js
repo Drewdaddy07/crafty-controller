@@ -439,7 +439,6 @@ function add_unzip_listener() {
 $(document).ready(function () {
     const $dropZone = $("#drop-zone");
     const $table = $("#files_table");
-    const uploadPath = $table.data("path");
 
     $dropZone.on("dragover", function (e) {
         e.preventDefault();
@@ -460,8 +459,8 @@ $(document).ready(function () {
 
         const files = e.originalEvent.dataTransfer.files;
         if (files.length === 0) return;
-        console.log(files)
-        handleUpload(files, uploadPath);
+
+        handleUpload(files, $("#table-nav").attr("data-cur-path"));
     });
 });
 
