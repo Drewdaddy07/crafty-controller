@@ -178,13 +178,11 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                 },
             )
         # Check for absolute or relative path. Absolute paths should be deprecated
-        server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
         request_path = data["path"]
-        if request_path == server_id:  # If the user is requesting the server ID they
-            # want the root dir of that server
-            data["path"] = server_path
-        if not Path(data["path"]).is_absolute():
-            data["path"] = str(Path(server_path, request_path))
+        server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
+        data["path"] = self.file_helper.get_absolute_path(
+            server_path, server_id, data["path"]
+        )
         if not Helpers.validate_traversal(
             server_path,
             data["path"],
@@ -358,9 +356,9 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             )
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        request_path = data["filename"]
-        if not Path(data["filename"]).is_absolute():
-            data["filename"] = str(Path(server_path, request_path))
+        data["filename"] = self.file_helper.get_absolute_path(
+            server_path, server_id, data["filename"]
+        )
         if (
             not Helpers.validate_traversal(
                 self.controller.servers.get_server_data_by_id(server_id)["path"],
@@ -451,9 +449,9 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             )
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        request_path = data["path"]
-        if not Path(data["path"]).is_absolute():
-            data["path"] = str(Path(server_path, request_path))
+        data["path"] = self.file_helper.get_absolute_path(
+            server_path, server_id, data["path"]
+        )
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
             data["path"],
@@ -534,6 +532,11 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                     "error_data": f"{str(err)}",
                 },
             )
+        # Check for absolute or relative path. Absolute paths should be deprecated
+        server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
+        data["parent"] = self.file_helper.get_absolute_path(
+            server_path, server_id, data["parent"]
+        )
         path = os.path.join(data["parent"], data["name"])
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
@@ -629,10 +632,7 @@ class ApiServersServerFilesCreateHandler(BaseApiHandler):
             )
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        request_path = data["path"]
-        if not Path(data["path"]).is_absolute():
-            data["path"] = str(Path(server_path, request_path))
-        path = data["path"]
+        path = self.file_helper.get_absolute_path(server_path, server_id, data["path"])
         new_item_name = data["new_name"]
         new_item_path = os.path.join(os.path.split(path)[0], new_item_name)
         if not Helpers.validate_traversal(
@@ -726,11 +726,9 @@ class ApiServersServerFilesCreateHandler(BaseApiHandler):
             )
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        filepath = data["parent"]
-        request_path = filepath
-        if not Path(filepath).is_absolute():
-            filepath = str(Path(server_path, request_path))
-        file_path = Path(filepath)
+        file_path = self.file_helper.get_absolute_path(
+            server_path, server_id, data["parent"]
+        )
         path = os.path.join(file_path, data["name"])
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
@@ -750,7 +748,7 @@ class ApiServersServerFilesCreateHandler(BaseApiHandler):
                 {
                     "status": "error",
                     "error": "FILE EXISTS",
-                    "error_data": str(e),
+                    "error_data": "Item already exists in file tree",
                 },
             )
         if data["directory"]:
@@ -824,11 +822,12 @@ class ApiServersServerFilesZipHandler(BaseApiHandler):
                     "error_data": f"{str(err)}",
                 },
             )
-        folder = data["folder"]
+
+        # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        request_path = folder
-        if not Path(folder).is_absolute():
-            folder = str(Path(server_path, request_path))
+        folder = self.file_helper.get_absolute_path(
+            server_path, server_id, data["folder"]
+        )
         user_id = auth_data[4]["user_id"]
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
@@ -882,10 +881,7 @@ class ApiServersServerFileDownload(BaseApiHandler):
         filepath = html.unescape(encoded_file_path)
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        request_path = filepath
-        if not Path(filepath).is_absolute():
-            filepath = str(Path(server_path, request_path))
-        file_path = Path(filepath)
+        file_path = self.file_helper.get_absolute_path(server_path, server_id, filepath)
 
         if server_id not in [str(x["server_id"]) for x in auth_data[0]]:
             # if the user doesn't have access to the server, return an error

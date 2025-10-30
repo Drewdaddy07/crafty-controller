@@ -139,13 +139,13 @@ class ApiFilesUploadHandler(BaseApiHandler):
         if u_type == "server_upload":
             # Check for absolute or relative path. Absolute paths should be deprecated
             self.upload_dir = self.request.headers.get("location", None)
-            # If this is an upload from a server the path will be what
-            # Is requested
+            # Check for absolute or relative path. Absolute paths should be deprecated
             server_path = self.controller.servers.get_server_data_by_id(server_id)[
                 "path"
             ]
-            if not Path(self.upload_dir).is_absolute():
-                self.upload_dir = str(Path(server_path, self.upload_dir))
+            self.upload_dir = self.file_helper.get_absolute_path(
+                server_path, server_id, self.upload_dir
+            )
             full_path = os.path.join(self.upload_dir, self.filename)
             # Check to make sure the requested path is inside the server's directory
             if not self.helper.is_subdir(

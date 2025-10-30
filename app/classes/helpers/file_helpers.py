@@ -495,6 +495,27 @@ class FileHelpers:
                 Console.error(ex)
 
     @staticmethod
+    def get_absolute_path(server_path, server_id, path) -> str:
+        """Takes requested path and returns absolute path
+
+        Args:
+            server_id (str): requested server's ID
+            server_path (str): requested server's root path
+            path (str | path): requested file path
+
+        Returns:
+            _type_: Path
+        """
+        request_path = path
+        if request_path == server_id:  # If the user is requesting the server ID they
+            # want the root dir of that server
+            path = server_path
+        if not Path(path).is_absolute():
+            path = str(Path(server_path, request_path))
+
+        return str(path)
+
+    @staticmethod
     def unzip_server(zip_path, user_id):
         if Helpers.check_file_perms(zip_path):
             temp_dir = tempfile.mkdtemp()
