@@ -82,7 +82,7 @@ end %} {% block content %}
     const serverId = new URLSearchParams(document.location.search).get("id");
 
     $(document).ready(function () {
-        getTreeView($("#files_table").data("path"));
+        getTreeView(serverId); //Get server ID as path. We should get root server dir back
     })
 </script>
 <script src="/static/assets/js/shared/files.js"></script>

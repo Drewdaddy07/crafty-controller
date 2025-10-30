@@ -180,6 +180,9 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
         request_path = data["path"]
+        if request_path == server_id:  # If the user is requesting the server ID they
+            # want the root dir of that server
+            data["path"] = server_path
         if not Path(data["path"]).is_absolute():
             data["path"] = str(Path(server_path, request_path))
         if not Helpers.validate_traversal(

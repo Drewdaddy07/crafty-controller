@@ -133,30 +133,37 @@ function fileIcon(value) {
 
 function process_tree_response(response) {
     const tbody = document.querySelector("tbody");
-    let path = response.data.root_path.path;
-    console.log(response.data.root_path)
+    let path = response.data.root_path.local_path;
     path = path.split("\\").join("/"); //Remove \ marks
     path_list = path.split("/");
-
     const container = document.querySelector("#table-nav"); // your container
     $(container).html("") // clear previous content
-    $(container).attr("data-cur-path", path)
+    $(container).attr("data-cur-path", path);
+
+    const span = document.createElement("span");
+    span.className = "tree-nav";
+    local_path = serverId
+    span.dataset.path = local_path; // or set the actual path if needed
+    span.innerHTML = `<i class="fa-solid fa-server"></i>`; //Set root text as server icon
+    container.appendChild(span);
+
     path_list.forEach((part, index) => {
-        // Create the span
-        const span = document.createElement("span");
-        span.className = "tree-nav";
-        const previous = path_list.slice(0, index);
-        local_path = previous.join("/") + "/" + part
-        span.dataset.path = local_path; // or set the actual path if needed
-        span.textContent = part; // safe text
-
-        // Append the span
-        container.appendChild(span);
-
-        // Append the separator except after the last element
-        if (index < path_list.length - 1) {
+        if (!(part === serverId && index === 0)) {
             container.appendChild(document.createTextNode(" > "));
+            // Create the span
+            const span = document.createElement("span");
+            span.className = "tree-nav";
+            const previous = path_list.slice(0, index);
+            local_path = previous.join("/") + part
+            span.dataset.path = local_path; // or set the actual path if needed // if we're on the first iteration and it's the server ID ignore it
+            span.textContent = part; // safe text;
+
+
+            // Append the span
+            container.appendChild(span);
         }
+
+
     });
     $("#files-table-body").html("");
     Object.entries(response.data).forEach(([key, value]) => {
