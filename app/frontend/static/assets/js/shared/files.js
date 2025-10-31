@@ -146,8 +146,8 @@ function process_tree_response(response) {
     span.dataset.path = local_path; // or set the actual path if needed
     span.innerHTML = `<i class="fa-solid fa-server"></i>`; //Set root text as server icon
     container.appendChild(span);
-
-    path_list.forEach((part, index) => {
+    for (let [index, part] of path_list.entries()) {
+        console.log("part", part, "index", index)
         if (!(part === serverId && index === 0)) {
             container.appendChild(document.createTextNode(" > "));
             // Create the span
@@ -167,9 +167,7 @@ function process_tree_response(response) {
             // Append the span
             container.appendChild(span);
         }
-
-
-    });
+    }
     $("#files-table-body").html("");
     Object.entries(response.data).forEach(([key, value]) => {
         if (key === "root_path" || key === "db_stats") return;
