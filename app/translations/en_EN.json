@@ -512,8 +512,11 @@
         "terminal": "Terminal"
     },
     "serverFiles": {
+        "cancel": "Cancel",
         "clickUpload": "Click here to select your files",
         "close": "Close",
+        "copy": "Copy",
+        "copying": "Copying",
         "createDir": "Create directory",
         "createDirQuestion": "What name do you want for the new directory?",
         "createFile": "Create file",
@@ -529,6 +532,8 @@
         "files": "Files",
         "keybindings": "Keybindings",
         "loadingRecords": "Loading Files...",
+        "move": "Move",
+        "moving": "Moving",
         "noDelete": "No",
         "noscript": "The file manager does not work without JavaScript",
         "rename": "Rename",

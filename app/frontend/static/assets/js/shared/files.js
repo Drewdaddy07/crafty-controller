@@ -1,6 +1,9 @@
 
 let selected_row = null;
-
+let move = false;
+let copy = false;
+let move_copy_source = "";
+let move_copy_target = "";
 const LOADING_TABLE = `<tr class="skeleton-row">
                                     <td>
                                         <div class="skeleton-line" style="width: 60%;"></div>
@@ -221,6 +224,7 @@ function setup_table_body(response) {
 
 function process_tree_response(response) {
     setup_table_nav(response);
+    update_copy_move_nav();
     $("#files-table-body").html("");
     setup_table_body(response);
 
@@ -245,7 +249,7 @@ function process_tree_response(response) {
 }
 
 function loadMenuContent(tr) {
-    const ctxMenuItems = ["rename", "unzip", "download", "delete"];
+    const ctxMenuItems = ["rename", "unzip", "download", "copy", "move", "delete"];
     const menu = $("#context-menu");
     menu.empty(); // clear previous content
     const path = $(tr).attr("data-path")
@@ -268,6 +272,8 @@ function loadMenuContent(tr) {
     add_delete_listener();
     add_download_listener();
     add_unzip_listener();
+    add_move_listener();
+    add_copy_listener();
 
 }
 
@@ -589,9 +595,74 @@ async function calculateFileHash(file) {
 ///////////////////////////////////////////////////////////////////////////////////////
 //MOVE FILES FUNCTIONS
 ///////////////////////////////////////////////////////////////////////////////////////
-$(".move-dialogue").on("click", function () {
+function add_move_listener() {
+    $("#move").on("click", function () {
+        move = true;
+        copy = false;
+        move_copy_source = $(selected_row).attr("data-path");
+        setup_copy_move_table_nav();
+    });
+}
+function add_copy_listener() {
+    $("#copy").on("click", function () {
+        move = false;
+        copy = true;
+        move_copy_source = $(selected_row).attr("data-path");
+        setup_copy_move_table_nav();
+    });
+}
 
-});
+function setup_copy_move_table_nav() {
+    const container = $("#table-nav-buttons");
+    const nbsp = "&nbsp;&nbsp;&nbsp;";
+    let move = $("<button>").attr("id", "move").addClass("btn").addClass("btn-info").text($("#files_table").attr("data-move"));
+    if (copy) {
+        move = $("<button>").attr("id", "copy").addClass("btn").addClass("btn-info").text($("#files_table").attr("data-copy"));
+    }
+    const move_source = $("<span>").attr("id", "copy-move-source").text(move_copy_source.replace(serverId, "/"));
+    const move_target = $("<span>").attr("id", "copy-move-target");
+    const move_arrow = $("<span>").attr("id", "copy-move-arrow").html(`<i class="fa-solid fa-arrow-right"></i>`);
+    const cancel = $("<button>").attr("id", "copy-move-cancel").addClass("btn").addClass("btn-secondary").text($("#files_table").attr("data-cancel"));
+    container.html("");
+    container.append(move_source);
+    container.append(nbsp);
+    container.append(move_arrow)
+    container.append(nbsp);
+    container.append(move_target);
+    container.append(nbsp);
+    container.append(nbsp);
+    container.append(move);
+    container.append(nbsp);
+    container.append(cancel);
+
+    setup_move_cancel_listener();
+}
+
+function update_copy_move_nav() {
+
+    move_copy_target = $("#table-nav").attr("data-cur-path");
+    $("#copy-move-target").text(move_copy_target.replace(serverId, "/"));
+
+}
+
+function setup_move_cancel_listener() {
+    $("#copy-move-cancel").on("click", function () {
+        move = false;
+        copy = false;
+        const container = $("#table-nav-buttons");
+        const createDir = $("<button>").attr("id", "create-dir").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-dir"));
+        const createFile = $("<button>").attr("id", "create-file").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-file"));
+        const upload = $("<button>").attr("id", "create-dir").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-dir"));
+
+        container.html("")
+        container.append(createDir);
+        container.append("&nbsp;");
+        container.append(createFile)
+        container.append("&nbsp;");
+        container.append(upload);
+
+    });
+}
 ///////////////////////////////////////////////////////////////////////////////////////
 //COPY FILES FUNCTIONS
 ///////////////////////////////////////////////////////////////////////////////////////
