@@ -1,5 +1,6 @@
 const urlParams = new URLSearchParams(globalThis.location.search);
 const serverId = urlParams.get("server_id");
+const path = decodeURIComponent(urlParams.get("file"))
 let serverFileContent = "";
 
 let editor = ace.edit("editor", {
@@ -132,7 +133,6 @@ let extensionChanges = [
 
 async function get_file() {
     const token = getCookie("_xsrf");
-    let path = decodeURIComponent(urlParams.get("file"))
     setFileName(path)
     $("#server_uuid").text(serverId);
     let res = await fetch(`/api/v2/servers/${serverId}/files`, {
@@ -227,11 +227,13 @@ const setSaveStatus = (saved) => {
         is_saved = false;
     }
 };
-["change", "undo", "redo"].forEach((event) =>
-    editor.on(event, (event) =>
+
+let event_types = ["change", "undo", "redo"]
+for (let ev of event_types) {
+    editor.on(ev, (event) =>
         setSaveStatus(serverFileContent === editor.session.getValue())
     )
-);
+}
 
 async function save() {
     let text = editor.session.getValue();
