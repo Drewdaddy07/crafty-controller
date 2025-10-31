@@ -2,10 +2,17 @@ const urlParams = new URLSearchParams(globalThis.location.search);
 const serverId = urlParams.get("server_id");
 const path = decodeURIComponent(urlParams.get("file"))
 let serverFileContent = "";
-
+let themes = { "dark": "ace/theme/monokai", "light": "ace/theme/chrome", "default": "ace/theme/dracula" }
+let theme = themes["default"];
+for (const [key, value] of Object.entries(themes)) {
+    if ($("html").hasClass(key)) {
+        console.log(key)
+        theme = value
+    }
+}
 let editor = ace.edit("editor", {
     mode: "ace/mode/javascript",  // or your language
-    theme: "ace/theme/monokai",
+    theme: theme,
     selectionStyle: "text",
     enableBasicAutocompletion: true,
     enableLiveAutocompletion: true,
