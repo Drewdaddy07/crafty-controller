@@ -147,7 +147,6 @@ async function get_file() {
     if (responseData.status === "ok") {
         console.log("Got File Contents From Server");
         $("#editorParent").toggle(true); // show
-        $("#fileError").toggle(false); // hide
         editor.session.setValue(responseData.data);
         serverFileContent = responseData.data;
         setSaveStatus(true);
@@ -175,13 +174,11 @@ function setMode(extension) {
     }, extension);
 
     if (aceMode.startsWith("ace/mode/")) {
-        document.querySelector("#file_warn").innerText = "";
 
         console.log(aceMode || "ace/mode/text");
         editor.session.setMode(aceMode || "ace/mode/text");
     } else {
-        document.querySelector("#file_warn").innerText =
-            "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}";
+        bootbox.alert("{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}")
     }
 }
 function setFileName(fileName = "default.txt") {
@@ -194,8 +191,8 @@ function setFileName(fileName = "default.txt") {
         setMode(fileName.split(".").pop().replace("ace/mode/", ""));
     } else {
         setMode("txt");
-        document.querySelector("#file_warn").innerText =
-            "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}";
+        bootbox.alert(
+            "{% raw translate('serverFiles', 'unsupportedLanguage', data['lang']) %}");
     }
 }
 
