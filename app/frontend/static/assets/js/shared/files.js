@@ -272,14 +272,6 @@ async function renameItem(path, name) {
     let responseData = await res.json();
     if (responseData.status === "ok") {
         console.log("sent ok")
-        $(selected_row).children(".column-1").empty()
-        let icon = '<i class="fa-regular fa-file-excel text-danger"></i>'
-        if ($(selected_row).hasClass("directory")) icon = '<i class="fa-regular fa-folder text-info"></i>';
-        if ($(selected_row).hasClass("file")) icon = '<i class="fa-regular fa-file text-success"></i>';
-        $(selected_row).children(".column-1").append($("<span>").html(icon))
-            .append("\u00A0\u00A0\u00A0")
-            .append(document.createTextNode(name));
-        $(selected_row).children(".column-1").attr("data-name", name)
     } else {
         bootbox.alert({
             title: responseData.error,
@@ -300,8 +292,17 @@ function add_rename_listener() {
                 if ($(selected_row).children(".column-1").attr("data-name") != result) {
                     console.log("sending path" + result)
                     renameItem($(selected_row).attr("data-path"), result)
-                    new_path = $(selected_row).attr("data-path").replace($(selected_row).children(".column-1").attr("data-name"), result)
-                    $(selected_row).attr("data-path", result)
+                    console.log($(selected_row).children(".column-1").attr("data-name"), result)
+                    $(selected_row).attr("data-path", $(selected_row).attr("data-path").replace($(selected_row).children(".column-1").attr("data-name"), result))
+
+                    $(selected_row).children(".column-1").empty()
+                    let icon = '<i class="fa-regular fa-file-excel text-danger"></i>'
+                    if ($(selected_row).hasClass("directory")) icon = '<i class="fa-regular fa-folder text-info"></i>';
+                    if ($(selected_row).hasClass("file")) icon = '<i class="fa-regular fa-file text-success"></i>';
+                    $(selected_row).children(".column-1").append($("<span>").html(icon))
+                        .append("\u00A0\u00A0\u00A0")
+                        .append(document.createTextNode(result));
+                    $(selected_row).children(".column-1").attr("data-name", result)
                 }
             },
         });
