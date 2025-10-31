@@ -29,7 +29,7 @@ editor.commands.addCommand({
     },
 });
 
-var is_saved = true;
+let is_saved = true;
 
 let extensionChanges = [
     {
@@ -189,7 +189,7 @@ function setFileName(fileName = "default.txt") {
     document.title = "Crafty Controller - " + fileName
 
 
-    if (fileName.match(".")) {
+    if (/\./.exec(fileName)) {
         // The pop method removes and returns the last element.
         setMode(fileName.split(".").pop().replace("ace/mode/", ""));
     } else {
