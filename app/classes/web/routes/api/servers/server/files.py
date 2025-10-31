@@ -881,7 +881,9 @@ class ApiServersServerFileDownload(BaseApiHandler):
         filepath = html.unescape(encoded_file_path)
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        file_path = self.file_helper.get_absolute_path(server_path, server_id, filepath)
+        file_path = Path(
+            self.file_helper.get_absolute_path(server_path, server_id, filepath)
+        )
 
         if server_id not in [str(x["server_id"]) for x in auth_data[0]]:
             # if the user doesn't have access to the server, return an error
