@@ -37,7 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
             event.stopPropagation();
             loadMenuContent();
             const isVisible = menu.classList.contains("show");
-            document.querySelectorAll(".context-menu.show").forEach((m) => m.classList.remove("show"));
+            const context_menu_items = document.querySelectorAll(".context-menu.show");
+            for (let item of context_menu_items) {
+                item.classList.remove("show");
+            }
 
             if (!isVisible) showMenu(event.clientX, event.clientY);
         });
