@@ -30,10 +30,11 @@ end %} {% block content %}
                 </div>
                 <br />
             </div>
-            <h3 id="file_warn"></h3>
+            <h3 id="file_warn" data-leave='{{translate("serverFilesEditor", "unsavedChanges" , data["lang"])}}'></h3>
             <div id="save-container" class="align-items-center text-center">
-                <button id="saveButton" class="btn btn-outline-success" data-saved="Saved" data-changes="Save Changes"
-                    onclick="save()">
+                <button id="saveButton" class="btn btn-outline-success"
+                    data-saved='{{translate("serverFilesEditor", "saved" , data["lang"])}}'
+                    data-changes='{{translate("serverFilesEditor", "save" , data["lang"])}}' onclick="save()">
                     <i class="fas fa-save"></i>&nbsp;&nbsp;<span id="saveButtonText"></span>
                 </button>
             </div>

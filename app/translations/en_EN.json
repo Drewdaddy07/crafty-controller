@@ -534,7 +534,6 @@
         "rename": "Rename",
         "renameItemQuestion": "What should the new name be?",
         "save": "Save",
-        "size": "Toggle Editor Size",
         "stayHere": "DO NOT LEAVE THIS PAGE!",
         "unsupportedLanguage": "Warning: This is not a supported file type",
         "unzip": "Unzip",
@@ -542,6 +541,11 @@
         "uploadTitle": "Upload Files to: ",
         "waitUpload": "Please wait while we upload your files... This may take a while.",
         "yesDelete": "Yes, I understand the consequences"
+    },
+    "serverFilesEditor": {
+        "saved": "Saved",
+        "save": "Save Changes",
+        "unsavedChanges": "Are you sure you'd like to leave? You have unsaved changes."
     },
     "serverMetrics": {
         "resetZoom": "Reset Zoom",
