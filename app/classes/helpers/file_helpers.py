@@ -25,6 +25,8 @@ from app.classes.shared.websocket_manager import WebSocketManager
 
 logger = logging.getLogger(__name__)
 
+PLAIN_TEXT = "text/plain"
+
 
 class FileHelpers:
     allowed_quotes = ['"', "'", "`"]
@@ -54,10 +56,10 @@ class FileHelpers:
         mimetypes.add_type("text/yaml", ".yml")
         mimetypes.add_type("text/yaml", ".yaml")
         mimetypes.add_type("text/toml", ".toml")
-        mimetypes.add_type("text/plain", ".ini")
-        mimetypes.add_type("text/plain", ".conf")
-        mimetypes.add_type("text/plain", ".properties")
-        mimetypes.add_type("text/plain", ".env")
+        mimetypes.add_type(PLAIN_TEXT, ".ini")
+        mimetypes.add_type(PLAIN_TEXT, ".conf")
+        mimetypes.add_type(PLAIN_TEXT, ".properties")
+        mimetypes.add_type(PLAIN_TEXT, ".env")
         mimetypes.add_type("application/x-bat", ".ps1")
 
     def probably_can_open_file(self, path: str) -> tuple:
