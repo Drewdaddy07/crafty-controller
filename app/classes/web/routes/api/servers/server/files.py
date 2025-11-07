@@ -825,13 +825,13 @@ class ApiServersServerFilesZipHandler(BaseApiHandler):
 
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        folder = self.file_helper.get_absolute_path(
+        target_file = self.file_helper.get_absolute_path(
             server_path, server_id, data["folder"]
         )
         user_id = auth_data[4]["user_id"]
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
-            folder,
+            target_file,
         ):
             return self.finish_json(
                 400,
@@ -841,8 +841,8 @@ class ApiServersServerFilesZipHandler(BaseApiHandler):
                     "error_data": str(e),
                 },
             )
-        if Helpers.check_file_exists(folder):
-            folder = self.file_helper.unzip_file(folder)
+        if Helpers.check_file_exists(target_file):
+            target_file = self.file_helper.unzip_file(target_file)
         else:
             if user_id:
                 return self.finish_json(
@@ -853,7 +853,6 @@ class ApiServersServerFilesZipHandler(BaseApiHandler):
                         "error_data": str(e),
                     },
                 )
-        return self.finish_json(200, {"status": "ok"})
 
 
 class ApiServersServerFileDownload(BaseApiHandler):
@@ -992,3 +991,87 @@ class ApiServersServerFileDownload(BaseApiHandler):
             os.remove(download_path)
 
         return None
+
+
+class ApiServersServerFilesOperationHandler(BaseApiHandler):
+    def post(self, server_id: str, operation: str):
+        auth_data = self.authenticate_user()
+        if not auth_data:
+            return
+
+        if server_id not in [str(x["server_id"]) for x in auth_data[0]]:
+            # if the user doesn't have access to the server, return an error
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "NOT_AUTHORIZED",
+                    "error_data": self.helper.translation.translate(
+                        "validators", "insufficientPerms", auth_data[4]["lang"]
+                    ),
+                },
+            )
+        mask = self.controller.server_perms.get_lowest_api_perm_mask(
+            self.controller.server_perms.get_user_permissions_mask(
+                auth_data[4]["user_id"], server_id
+            ),
+            auth_data[5],
+        )
+        server_permissions = self.controller.server_perms.get_permissions(mask)
+        if EnumPermissionsServer.FILES not in server_permissions:
+            # if the user doesn't have Files permission, return an error
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "NOT_AUTHORIZED",
+                    "error_data": self.helper.translation.translate(
+                        "validators", "insufficientPerms", auth_data[4]["lang"]
+                    ),
+                },
+            )
+        try:
+            data = json.loads(self.request.body)
+        except json.decoder.JSONDecodeError as e:
+            return self.finish_json(
+                400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
+            )
+        try:
+            validate(data, files_unzip_schema)
+        except ValidationError as why:
+            offending_key = ""
+            if why.schema.get("fill", None):
+                offending_key = why.path[0] if why.path else None
+            err = f"""{offending_key} {self.translator.translate(
+                "validators",
+                why.schema.get("error", "additionalProperties"),
+                self.controller.users.get_user_lang_by_id(auth_data[4]["user_id"]),
+            )} {why.schema.get("enum", "")}"""
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "INVALID_JSON_SCHEMA",
+                    "error_data": f"{str(err)}",
+                },
+            )
+
+        # Check for absolute or relative path. Absolute paths should be deprecated
+        server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
+        target_file = self.file_helper.get_absolute_path(
+            server_path, server_id, data["folder"]
+        )
+
+        if operation == "move":
+            target_destination = data.get("destionation")
+            if target_destination:
+                if Path(target_file).is_dir():
+                    FileHelpers.move_dir(target_file, target_destination)
+                FileHelpers.move_file(target_file, target_destination)
+        elif operation == "copy":
+            target_destination = data.get("destionation")
+            if target_destination:
+                if Path(target_file).is_dir():
+                    FileHelpers.copy_dir(target_file, target_destination)
+                FileHelpers.copy_file(target_file, target_destination)
+        return self.finish_json(200, {"status": "ok"})
