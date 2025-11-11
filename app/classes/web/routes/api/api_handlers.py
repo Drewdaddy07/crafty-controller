@@ -48,6 +48,7 @@ from app.classes.web.routes.api.servers.server.files import (
     ApiServersServerFilesCreateHandler,
     ApiServersServerFilesZipHandler,
     ApiServersServerFileDownload,
+    ApiServersServerFilesOperationHandler,
 )
 from app.classes.web.routes.api.crafty.upload.index import ApiFilesUploadHandler
 from app.classes.web.routes.api.servers.server.tasks.task.children import (
@@ -319,6 +320,11 @@ def api_handlers(handler_args):
         (
             r"/api/v2/servers/([a-z0-9-]+)/files/upload/?",
             ApiFilesUploadHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/servers/([a-z0-9-]+)/files/(move, copy)/?$",
+            ApiServersServerFilesOperationHandler,
             handler_args,
         ),
         (
