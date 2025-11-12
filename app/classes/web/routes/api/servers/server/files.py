@@ -875,16 +875,16 @@ class ApiServersServerFilesZipHandler(BaseApiHandler):
                 self.request.remote_ip,
             )
             return self.finish_json(200, {"status": "ok"})
-        else:
-            if user_id:
-                return self.finish_json(
-                    400,
-                    {
-                        "status": "error",
-                        "error": "FILE_DOES_NOT_EXIST",
-                        "error_data": str(e),
-                    },
-                )
+
+        if user_id:
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "FILE_DOES_NOT_EXIST",
+                    "error_data": str(e),
+                },
+            )
 
 
 class ApiServersServerFileDownload(BaseApiHandler):
