@@ -323,7 +323,7 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/servers/([a-z0-9-]+)/files/(move, copy)/?$",
+            r"/api/v2/servers/([a-z0-9-]+)/files/(move|copy)/?$",
             ApiServersServerFilesOperationHandler,
             handler_args,
         ),

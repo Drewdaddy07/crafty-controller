@@ -2,6 +2,7 @@ import os
 import logging
 import json
 import html
+from shutil import Error as shutilError
 from datetime import datetime
 from pathlib import Path, PurePath
 from jsonschema import validate
@@ -55,6 +56,24 @@ files_unzip_schema = {
     "type": "object",
     "properties": {
         "folder": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
+    },
+    "additionalProperties": False,
+    "minProperties": 1,
+}
+
+files_operation_schema = {
+    "type": "object",
+    "properties": {
+        "source_path": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
+        "target_path": {
             "type": "string",
             "error": "typeString",
             "fill": True,
@@ -994,19 +1013,35 @@ class ApiServersServerFileDownload(BaseApiHandler):
 
 
 class ApiServersServerFilesOperationHandler(BaseApiHandler):
-    def move_or_copy(self, operation: str, target_file: Path, data: dict):
+    def move_or_copy(self, operation: str, target_file: Path, source_path: Path):
         if operation == "move":
-            target_destination = data.get("destionation")
-            if target_destination:
-                if Path(target_file).is_dir():
-                    FileHelpers.move_dir(target_file, target_destination)
-                FileHelpers.move_file(target_file, target_destination)
+            if Path(source_path).is_dir():
+                try:
+                    FileHelpers.move_dir(source_path, target_file)
+                except shutilError as why:
+                    raise shutilError from why
+            else:
+                try:
+                    FileHelpers.move_file(source_path, target_file)
+                except shutilError as why:
+                    raise shutilError from why
         elif operation == "copy":
-            target_destination = data.get("destionation")
-            if target_destination:
-                if Path(target_file).is_dir():
-                    FileHelpers.copy_dir(target_file, target_destination)
-                FileHelpers.copy_file(target_file, target_destination)
+            if Path(source_path).is_dir():
+                print(target_file)
+                FileHelpers.copy_dir(source_path, target_file)
+            else:
+                FileHelpers.copy_file(source_path, target_file)
+
+    def can_move_or_copy(self, target_path: Path, source_path: Path) -> tuple:
+        if source_path == target_path:
+            # Check if user is trying to copy to exactly where the file already is
+            return (False, "sourceMatchTarget")
+
+        if source_path in target_path.parents:
+            # Check if user is trying  to copy directory into itself
+            return (False, "targetInSource")
+
+        return (True, "success")
 
     def post(self, server_id: str, operation: str):
         auth_data = self.authenticate_user()
@@ -1051,7 +1086,7 @@ class ApiServersServerFilesOperationHandler(BaseApiHandler):
                 400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
             )
         try:
-            validate(data, files_unzip_schema)
+            validate(data, files_operation_schema)
         except ValidationError as why:
             offending_key = ""
             if why.schema.get("fill", None):
@@ -1072,8 +1107,21 @@ class ApiServersServerFilesOperationHandler(BaseApiHandler):
 
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        target_file = self.file_helper.get_absolute_path(
-            server_path, server_id, data["folder"]
+        target_path = Path(
+            self.file_helper.get_absolute_path(
+                server_path, server_id, data["target_path"]
+            )
         )
-        self.move_or_copy(operation, target_file, data)
+        source_path = Path(
+            self.file_helper.get_absolute_path(
+                server_path, server_id, data["source_path"]
+            )
+        )
+
+        self.helper.validate_traversal(server_path, source_path)
+        self.helper.validate_traversal(server_path, target_path)
+        try:
+            self.move_or_copy(operation, target_path, source_path)
+        except shutilError as why:
+            return self.finish_json(500, {"status": "error", "error_data": why})
         return self.finish_json(200, {"status": "ok"})

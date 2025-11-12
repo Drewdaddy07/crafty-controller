@@ -611,10 +611,11 @@ function add_copy_listener() {
 
 function setup_copy_move_table_nav() {
     const container = $("#table-nav-buttons");
+    container.html("");
     const nbsp = "&nbsp;&nbsp;&nbsp;";
-    let move = $("<button>").attr("id", "move").addClass("btn").addClass("btn-info").text($("#files_table").attr("data-move"));
+    let move_button = $("<button>").attr("id", "move-op").addClass("btn").addClass("btn-info").text($("#files_table").attr("data-move"));
     if (copy) {
-        move = $("<button>").attr("id", "copy").addClass("btn").addClass("btn-info").text($("#files_table").attr("data-copy"));
+        move_button = $("<button>").attr("id", "copy-op").addClass("btn").addClass("btn-info").text($("#files_table").attr("data-copy"));
     }
     const move_source = $("<span>").attr("id", "copy-move-source").text(move_copy_source.replace(serverId, "/"));
     const move_target = $("<span>").attr("id", "copy-move-target");
@@ -628,11 +629,10 @@ function setup_copy_move_table_nav() {
     container.append(move_target);
     container.append(nbsp);
     container.append(nbsp);
-    container.append(move);
+    container.append(move_button);
     container.append(nbsp);
     container.append(cancel);
-
-    setup_move_cancel_listener();
+    setup_move_listener();
 }
 
 function update_copy_move_nav() {
@@ -642,23 +642,70 @@ function update_copy_move_nav() {
 
 }
 
-function setup_move_cancel_listener() {
+
+function close_copy_move() {
+    move = false;
+    copy = false;
+    const container = $("#table-nav-buttons");
+    const createDir = $("<button>").attr("id", "create-dir").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-dir"));
+    const createFile = $("<button>").attr("id", "create-file").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-file"));
+    const upload = $("<button>").attr("id", "create-dir").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-dir"));
+
+    container.html("")
+    container.append(createDir);
+    container.append("&nbsp;");
+    container.append(createFile)
+    container.append("&nbsp;");
+    container.append(upload);
+}
+
+function setup_move_listener() {
     $("#copy-move-cancel").on("click", function () {
-        move = false;
-        copy = false;
-        const container = $("#table-nav-buttons");
-        const createDir = $("<button>").attr("id", "create-dir").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-dir"));
-        const createFile = $("<button>").attr("id", "create-file").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-file"));
-        const upload = $("<button>").attr("id", "create-dir").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-dir"));
-
-        container.html("")
-        container.append(createDir);
-        container.append("&nbsp;");
-        container.append(createFile)
-        container.append("&nbsp;");
-        container.append(upload);
-
+        close_copy_move();
     });
+    if (copy) {
+        $("#copy-op").on("click", async function () {
+            const cur_dir = $("#table-nav").attr("data-cur-path");
+            let res = await fetch(`/api/v2/servers/${serverId}/files/copy/`, {
+                method: "POST",
+                headers: {
+                    "X-XSRFToken": token,
+                },
+                body: JSON.stringify({ source_path: move_copy_source, target_path: move_copy_target }),
+            });
+            let responseData = await res.json();
+            if (responseData.status === "ok") {
+                getTreeView(cur_dir);
+                close_copy_move();
+            } else {
+                bootbox.alert({
+                    title: responseData.error,
+                    message: responseData.error_data
+                });
+            }
+        });
+    } else {
+        $("#move-op").on("click", async function () {
+            const cur_dir = $("#table-nav").attr("data-cur-path");
+            let res = await fetch(`/api/v2/servers/${serverId}/files/move/`, {
+                method: "POST",
+                headers: {
+                    "X-XSRFToken": token,
+                },
+                body: JSON.stringify({ source_path: move_copy_source, target_path: move_copy_target }),
+            });
+            let responseData = await res.json();
+            if (responseData.status === "ok") {
+                getTreeView(cur_dir);
+                close_copy_move();
+            } else {
+                bootbox.alert({
+                    title: responseData.error,
+                    message: responseData.error_data
+                });
+            }
+        });
+    }
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 //COPY FILES FUNCTIONS
