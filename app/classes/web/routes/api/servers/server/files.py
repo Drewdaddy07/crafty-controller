@@ -400,6 +400,12 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
         # disabling pylint because return value could be truthy
         # but not a true boolean value
         if proc == True:  # pylint: disable=singleton-comparison
+            self.controller.management.add_to_audit_log(
+                auth_data[4]["user_id"],
+                f"Deleted item {data['filename']}",
+                server_id,
+                self.request.remote_ip,
+            )
             return self.finish_json(200, {"status": "ok"})
         return self.finish_json(
             500, {"status": "error", "error": "SERVER RUNNING", "error_data": str(proc)}
@@ -861,7 +867,14 @@ class ApiServersServerFilesZipHandler(BaseApiHandler):
                 },
             )
         if Helpers.check_file_exists(target_file):
-            target_file = self.file_helper.unzip_file(target_file)
+            self.file_helper.unzip_file(target_file)
+            self.controller.management.add_to_audit_log(
+                auth_data[4]["user_id"],
+                f"Unzipped file {target_file} in {data['folder']}",
+                server_id,
+                self.request.remote_ip,
+            )
+            return self.finish_json(200, {"status": "ok"})
         else:
             if user_id:
                 return self.finish_json(
@@ -1124,4 +1137,10 @@ class ApiServersServerFilesOperationHandler(BaseApiHandler):
             self.move_or_copy(operation, target_path, source_path)
         except shutilError as why:
             return self.finish_json(500, {"status": "error", "error_data": why})
+        self.controller.management.add_to_audit_log(
+            auth_data[4]["user_id"],
+            f"Moved item from {source_path} to {target_path}.",
+            server_id,
+            self.request.remote_ip,
+        )
         return self.finish_json(200, {"status": "ok"})
