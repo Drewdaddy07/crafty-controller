@@ -789,6 +789,7 @@
         "totp": "MFA Code must be 6 numbers",
         "typeBool": "must be true or false (type boolean)",
         "typeEmail": "must be of type email.",
+        "typeEpoch": "must be an epoch value",
         "typeIntMinVal0": "must be an integer with a minimum value of 0.",
         "typeInteger": "must be a number.",
         "typeList": "must be of type list/array ",

@@ -4,6 +4,7 @@ let move = false;
 let copy = false;
 let move_copy_source = "";
 let move_copy_target = "";
+let modified_time = 0.0;
 const LOADING_TABLE = `<tr class="skeleton-row">
                                     <td>
                                         <div class="skeleton-line" style="width: 60%;"></div>
@@ -111,16 +112,24 @@ const LOADING_TABLE = `<tr class="skeleton-row">
 ///////////////////////////////////////////////////////////////////////////////////////
 async function getTreeView(path) {
     const token = getCookie("_xsrf");
+    cur_body = $("#files-table-body").html();
     $("#files-table-body").html(LOADING_TABLE);
     let res = await fetch(`/api/v2/servers/${serverId}/files`, {
         method: "POST",
         headers: {
             "X-XSRFToken": token,
         },
-        body: JSON.stringify({ page: "files", path: path }),
+        body: JSON.stringify({ page: "files", path: path, modified_epoch: modified_time }),
     });
+    if (res.status === 304) {
+        console.log("Already up to date!")
+        $("#files-table-body").html(cur_body);
+        return;
+    }
     let responseData = await res.json();
     if (responseData.status === "ok") {
+        modified_time = responseData.data.root_path.modified;
+        console.log(modified_time)
         process_tree_response(responseData);
     } else {
         bootbox.alert({

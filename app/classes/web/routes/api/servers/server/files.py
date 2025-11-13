@@ -30,6 +30,11 @@ files_get_schema = {
             "error": "typeString",
             "fill": True,
         },
+        "modified_epoch": {
+            "type": "number",
+            "error": "typeEpoch",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,
@@ -221,6 +226,11 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                     "error_data": str(e),
                 },
             )
+        parent_modified = Path(data["path"]).stat().st_mtime
+        if data.get("modified_epoch", 0.0) == parent_modified:
+            # If the requested directory has not changed we'll just return a http 304
+            self.set_status(304)
+            return self.finish()
         if os.path.isdir(data["path"]):
             # TODO: limit some columns for specific permissions?
             folder = data["path"]
@@ -230,6 +240,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                     "path": folder,
                     "top": data["path"]
                     == self.controller.servers.get_server_data_by_id(server_id)["path"],
+                    "modified": parent_modified,
                 }
             }
 
