@@ -303,7 +303,12 @@ class ApiFilesUploadHandler(BaseApiHandler):
                     WebSocketManager().broadcast_user(
                         auth_data[4]["user_id"],
                         "upload_process",
-                        {"cur_file": i, "total_files": total_chunks, "type": u_type},
+                        {
+                            "cur_file": i,
+                            "total_files": total_chunks,
+                            "type": u_type,
+                            "file_id": self.file_id,
+                        },
                     )
                     chunk_file = os.path.join(self.temp_dir, f"{self.filename}.part{i}")
                     async with await anyio.open_file(chunk_file, "rb") as infile:

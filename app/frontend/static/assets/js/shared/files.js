@@ -543,14 +543,14 @@ async function handleUpload(files, path) {
 
     let nFiles = files.length;
     const uploadPromises = [];
-
     for (let i = 0; i < nFiles; i++) {
+        let file_id = uuidv4();
         const file = files[i];
         const progressHtml = `
-      <div style="width: 100%; min-width: 100%;" id="upload-progress-bar-${i + 1}-container">
+      <div style="width: 100%; min-width: 100%;" id="upload-progress-bar-${file_id}-container">
           <small>${file.name}:</small>
           <br><div
-              id="upload-progress-bar-${i + 1}"
+              id="upload-progress-bar-${file_id}"
               class="progress-bar progress-bar-striped progress-bar-animated"
               role="progressbar"
               style="width: 100%; height: 10px;"
@@ -568,6 +568,7 @@ async function handleUpload(files, path) {
             file,
             path,
             i,
+            file_id,
             (progress) => {
                 $(`#upload-progress-bar-${i + 1}`).attr(
                     "aria-valuenow",

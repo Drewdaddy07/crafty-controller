@@ -33,11 +33,11 @@ async function uploadChunk(file, url, chunk, start, end, chunk_hash, totalChunks
             }
             // Update progress bar
             const progress = (i + 1) / totalChunks * 100;
-            updateProgressBar(Math.round(progress), type, file_num);
+            updateProgressBar(Math.round(progress), type, file_num, fileId);
         });
 }
 
-async function uploadFile(type, file = null, path = null, file_num = 0, _onProgress = null) {
+async function uploadFile(type, file = null, path = null, file_num = 0, fileId, _onProgress = null) {
     if (file == null) {
         try {
             file = $("#file")[0].files[0];
@@ -46,8 +46,9 @@ async function uploadFile(type, file = null, path = null, file_num = 0, _onProgr
             return;
         }
     }
-
-    const fileId = uuidv4();
+    if (!fileId) {
+        fileId = uuidv4();
+    }
     const token = getCookie("_xsrf");
     if (type !== "server_upload") {
         document.getElementById("upload_input").innerHTML = '<div class="progress" style="width: 100%;"><div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">&nbsp;<i class="fa-solid fa-spinner"></i></div></div>';
@@ -146,10 +147,10 @@ async function uploadFile(type, file = null, path = null, file_num = 0, _onProgr
         }
     } else {
 
-        $(`#upload-progress-bar-${file_num + 1}`).removeClass("progress-bar-striped");
-        $(`#upload-progress-bar-${file_num + 1}`).addClass("bg-success");
-        $(`#upload-progress-bar-${file_num + 1}`).html('<i style="color: black;" class="fas fa-box-check"></i>');
-        $(`#upload-progress-bar-${file_num + 1}-container`).remove();
+        $(`#upload-progress-bar-${fileId}`).removeClass("progress-bar-striped");
+        $(`#upload-progress-bar-${fileId}`).addClass("bg-success");
+        $(`#upload-progress-bar-${fileId}`).html('<i style="color: black;" class="fas fa-box-check"></i>');
+        $(`#upload-progress-bar-${fileId}-container`).remove();
 
         getTreeView(path);
     }
@@ -164,7 +165,7 @@ async function calculateFileHash(file) {
     return hashHex;
 }
 
-function updateProgressBar(progress, type, i) {
+function updateProgressBar(progress, type, i, file_id) {
     if (type !== "server_upload") {
         if (progress === 100) {
             $(`#upload-progress-bar`).removeClass("progress-bar-striped")
@@ -175,12 +176,12 @@ function updateProgressBar(progress, type, i) {
         $(`#upload-progress-bar`).html(progress + '%');
     } else {
         if (progress === 100) {
-            $(`#upload-progress-bar-${i + 1}`).removeClass("progress-bar-striped")
+            $(`#upload-progress-bar-${file_id}`).removeClass("progress-bar-striped")
 
-            $(`#upload-progress-bar-${i + 1}`).removeClass("progress-bar-animated")
+            $(`#upload-progress-bar-${file_id}`).removeClass("progress-bar-animated")
         }
-        $(`#upload-progress-bar-${i + 1}`).css('width', progress + '%');
-        $(`#upload-progress-bar-${i + 1}`).html(progress + '%');
+        $(`#upload-progress-bar-${file_id}`).css('width', progress + '%');
+        $(`#upload-progress-bar-${file_id}`).html(progress + '%');
     }
 }
 
@@ -196,10 +197,10 @@ function uuidv4() {
 if (webSocket) {
     webSocket.on('upload_process', function (data) {
         if (data.total_files === data.cur_file) {
-            updateProgressBar(100, data.type, data.cur_file)
+            updateProgressBar(100, data.type, data.cur_file, data.file_id)
         } else {
             let progress = Math.round((data.cur_file / data.total_files) * 100, 1);
-            updateProgressBar(progress, data.type, data.cur_file)
+            updateProgressBar(progress, data.type, data.cur_file, data.file_id)
         }
     });
 }
