@@ -4,7 +4,7 @@ let move = false;
 let copy = false;
 let move_copy_source = "";
 let move_copy_target = "";
-let modified_time = 0.0;
+let modified_time = 1.5;
 const LOADING_TABLE = `<tr class="skeleton-row">
                                     <td>
                                         <div class="skeleton-line" style="width: 60%;"></div>
@@ -112,7 +112,7 @@ const LOADING_TABLE = `<tr class="skeleton-row">
 ///////////////////////////////////////////////////////////////////////////////////////
 async function getTreeView(path) {
     const token = getCookie("_xsrf");
-    cur_body = $("#files-table-body").html();
+    const cur_body = $("#files-table-body").html();
     $("#files-table-body").html(LOADING_TABLE);
     let res = await fetch(`/api/v2/servers/${serverId}/files`, {
         method: "POST",
@@ -489,7 +489,6 @@ function add_download_listener() {
 function add_unzip_listener() {
     $("#unzip").on("click", async function () {
         const path = $(selected_row).attr("data-path");
-        const cur_dir = $("#table-nav").attr("data-cur-path");
         const unzip_id = uuidv4()
         const name = $(selected_row).children(".column-1").attr("data-name");
         const unzip_progress = `      

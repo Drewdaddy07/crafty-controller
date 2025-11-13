@@ -38,7 +38,7 @@ async function uploadChunk(file, url, chunk, start, end, chunk_hash, totalChunks
         });
 }
 
-async function uploadFile(type, file = null, path = null, file_num = 0, fileId, _onProgress = null) {
+async function uploadFile(type, file = null, path = null, file_num = 0, fileId = null, _onProgress = null) {
     activeUploads++;
     if (file == null) {
         try {
