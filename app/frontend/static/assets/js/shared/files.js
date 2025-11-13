@@ -331,27 +331,66 @@ function add_rename_listener() {
 ///////////////////////////////////////////////////////////////////////////////////////
 //CREATE FILES/DIRECTORIES FUNCTIONS
 ///////////////////////////////////////////////////////////////////////////////////////
-$("#create-dir").on("click", function () {
-    bootbox.prompt(
-        "{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}",
-        function (result) {
-            if (!result) return;
-            const cur_dir = $("#table-nav").attr("data-cur-path");
-            create(cur_dir, result, true);
-        }
-    );
-})
+function setup_nav_listeners() {
+    $("#create-dir").on("click", function () {
+        bootbox.prompt(
+            "{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}",
+            function (result) {
+                if (!result) return;
+                const cur_dir = $("#table-nav").attr("data-cur-path");
+                create(cur_dir, result, true);
+            }
+        );
+    });
 
-$("#create-file").on("click", function () {
-    bootbox.prompt(
-        "{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}",
-        function (result) {
-            if (!result) return;
-            const cur_dir = $("#table-nav").attr("data-cur-path");
-            create(cur_dir, result, false);
-        }
-    );
-})
+    $("#create-file").on("click", function () {
+        bootbox.prompt(
+            "{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}",
+            function (result) {
+                if (!result) return;
+                const cur_dir = $("#table-nav").attr("data-cur-path");
+                create(cur_dir, result, false);
+            }
+        );
+    });
+
+    $("#upload-file").on("click", async function uploadFilesE(event) {
+        const path = $("#table-nav").attr("data-cur-path");
+        $(function () {
+            let uploadHtml =
+                "<div>" +
+                '<form id="upload-file-form"  enctype="multipart/form-data">' +
+                "<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
+                "<i class='fa fa-cloud-upload fa-3x'></i>" +
+                "<br />" +
+                "{{translate('serverFiles', 'clickUpload', data['lang'])}}" +
+                "<input style='margin-left: 21%;' id='files' name='files' type='file' multiple='true'>" +
+                "</label></form>" +
+                "<br />" +
+                "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
+                "</div><div class='clearfix'></div>";
+            bootbox.dialog({
+                message: uploadHtml,
+                title:
+                    "{{ translate('serverFiles', 'uploadTitle', data['lang'])}}" + path,
+                buttons: {
+                    success: {
+                        label: "{{ translate('serverFiles', 'upload', data['lang']) }}",
+                        className: "btn-default",
+                        callback: async function () {
+                            if ($("#files").get(0).files.length === 0) {
+                                return hideUploadBox();
+                            }
+
+                            let files = document.getElementById("files");
+                            handleUpload(files.files, path);
+                        },
+                    },
+                },
+            });
+        });
+    });
+}
 
 async function create(parent, name, dir = false) {
     const token = getCookie("_xsrf");
@@ -507,43 +546,6 @@ $(document).ready(function () {
     });
 });
 
-$("#upload-file").on("click", async function uploadFilesE(event) {
-    const path = $("#table-nav").attr("data-cur-path");
-    $(function () {
-        let uploadHtml =
-            "<div>" +
-            '<form id="upload-file-form"  enctype="multipart/form-data">' +
-            "<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
-            "<i class='fa fa-cloud-upload fa-3x'></i>" +
-            "<br />" +
-            "{{translate('serverFiles', 'clickUpload', data['lang'])}}" +
-            "<input style='margin-left: 21%;' id='files' name='files' type='file' multiple='true'>" +
-            "</label></form>" +
-            "<br />" +
-            "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
-            "</div><div class='clearfix'></div>";
-        bootbox.dialog({
-            message: uploadHtml,
-            title:
-                "{{ translate('serverFiles', 'uploadTitle', data['lang'])}}" + path,
-            buttons: {
-                success: {
-                    label: "{{ translate('serverFiles', 'upload', data['lang']) }}",
-                    className: "btn-default",
-                    callback: async function () {
-                        if ($("#files").get(0).files.length === 0) {
-                            return hideUploadBox();
-                        }
-
-                        let files = document.getElementById("files");
-                        handleUpload(files.files, path);
-                    },
-                },
-            },
-        });
-    });
-});
-
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0,
@@ -670,14 +672,15 @@ function close_copy_move() {
     const container = $("#table-nav-buttons");
     const createDir = $("<button>").attr("id", "create-dir").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-dir"));
     const createFile = $("<button>").attr("id", "create-file").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-file"));
-    const upload = $("<button>").attr("id", "create-dir").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-dir"));
+    const upload = $("<button>").attr("id", "upload-file").addClass("btn").addClass("btn-outline-info").text($("#table-nav-buttons").attr("data-upload"));
 
     container.html("")
     container.append(createDir);
-    container.append("&nbsp;");
+    container.append("&nbsp;&nbsp;");
     container.append(createFile)
-    container.append("&nbsp;");
+    container.append("&nbsp;&nbsp;");
     container.append(upload);
+    setup_nav_listeners();
 }
 
 function setup_move_listener() {
@@ -735,6 +738,7 @@ function setup_move_listener() {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 $(document).ready(function () {
+    setup_nav_listeners();
     $("#file-status").on("click", function () {
         $("#file-status-content").toggleClass("d-none");
         if ($("#file-status-content").hasClass("d-none")) {
