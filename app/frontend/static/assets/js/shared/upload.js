@@ -1,3 +1,4 @@
+let activeUploads = 0;
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -38,6 +39,7 @@ async function uploadChunk(file, url, chunk, start, end, chunk_hash, totalChunks
 }
 
 async function uploadFile(type, file = null, path = null, file_num = 0, fileId, _onProgress = null) {
+    activeUploads++;
     if (file == null) {
         try {
             file = $("#file")[0].files[0];
@@ -154,6 +156,7 @@ async function uploadFile(type, file = null, path = null, file_num = 0, fileId, 
 
         getTreeView(path);
     }
+    activeUploads--;
 }
 
 async function calculateFileHash(file) {
@@ -216,3 +219,10 @@ if (webSocket) {
         }
     });
 }
+globalThis.addEventListener('beforeunload', (e) => {
+    console.log(activeUploads)
+    if (activeUploads > 0) {
+        e.preventDefault();
+        globalThis.alert('Uploads active. Are you sure you want to leave?');
+    }
+});
