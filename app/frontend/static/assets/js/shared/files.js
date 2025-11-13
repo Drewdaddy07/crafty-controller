@@ -751,7 +751,7 @@ $(document).ready(function () {
         webSocket.on('zip_status', function (data) {
             if (data.complete) {
                 const cur_dir = $("#table-nav").attr("data-cur-path");
-                $(`#upload-progress-bar-${data.id}-container`).remove();
+                removeProgressItem(data.id);
                 getTreeView(cur_dir);
             } else {
                 updateProgressBar(data.percent, "server_upload", 1, data.id);

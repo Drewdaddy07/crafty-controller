@@ -150,7 +150,7 @@ async function uploadFile(type, file = null, path = null, file_num = 0, fileId, 
         $(`#upload-progress-bar-${fileId}`).removeClass("progress-bar-striped");
         $(`#upload-progress-bar-${fileId}`).addClass("bg-success");
         $(`#upload-progress-bar-${fileId}`).html('<i style="color: black;" class="fas fa-box-check"></i>');
-        $(`#upload-progress-bar-${fileId}-container`).remove();
+        removeProgressItem(fileId);
 
         getTreeView(path);
     }
@@ -182,6 +182,18 @@ function updateProgressBar(progress, type, _i, file_id) {
         }
         $(`#upload-progress-bar-${file_id}`).css('width', progress + '%');
         $(`#upload-progress-bar-${file_id}`).html(progress + '%');
+        $("#operation-total").html(`<span id="notif-count" class="badge bg-info">${$("#upload-progress-bar-parent").children().length}</span>`);
+    }
+}
+
+
+function removeProgressItem(item_id) {
+    $(`#upload-progress-bar-${item_id}-container`).remove();
+    const total_items = $("#upload-progress-bar-parent").children().length
+    if (total_items > 0) {
+        $("#operation-total").html(`<span id="notif-count" class="badge bg-info">${total_items}}</span>`);
+    } else {
+        $("#operation-total").html(``); //remove badge if no items
     }
 }
 
