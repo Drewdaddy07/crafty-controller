@@ -149,6 +149,8 @@ async function uploadFile(type, file = null, path = null, file_num = 0, _onProgr
         $(`#upload-progress-bar-${file_num + 1}`).removeClass("progress-bar-striped");
         $(`#upload-progress-bar-${file_num + 1}`).addClass("bg-success");
         $(`#upload-progress-bar-${file_num + 1}`).html('<i style="color: black;" class="fas fa-box-check"></i>');
+        $(`#upload-progress-bar-${file_num + 1}-container`).remove();
+
         getTreeView(path);
     }
 }

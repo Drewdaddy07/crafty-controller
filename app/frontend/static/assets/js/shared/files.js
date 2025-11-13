@@ -531,6 +531,13 @@ $("#upload-file").on("click", async function uploadFilesE(event) {
     });
 });
 
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0,
+            v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
 
 async function handleUpload(files, path) {
 
@@ -540,8 +547,8 @@ async function handleUpload(files, path) {
     for (let i = 0; i < nFiles; i++) {
         const file = files[i];
         const progressHtml = `
-      <div style="width: 100%; min-width: 100%;">
-          ${file.name}:
+      <div style="width: 100%; min-width: 100%;" id="upload-progress-bar-${i + 1}-container">
+          <small>${file.name}:</small>
           <br><div
               id="upload-progress-bar-${i + 1}"
               class="progress-bar progress-bar-striped progress-bar-animated"
@@ -551,7 +558,7 @@ async function handleUpload(files, path) {
               aria-valuemin="0"
               aria-valuemax="100"
           ></div>
-      </div><br>
+      </div>
       `;
 
         $("#upload-progress-bar-parent").append(progressHtml);
