@@ -455,6 +455,24 @@ class FileHelpers:
         with zipfile.ZipFile(archive_location, "r") as zip_ref:
             zip_ref.extractall(destination)
 
+    def cleanup_unzip(self, temp_dir: Path, server_update: bool, new_dir: Path):
+        ignored_names = [
+            "server.properties",
+            "permissions.json",
+            "allowlist.json",
+        ]
+        # we'll iterate through the top level directory moving everything
+        # out of the temp directory and into it's final home.
+        for item in os.listdir(temp_dir):
+            # if the file is one of our ignored names we'll skip it
+            if item in ignored_names and server_update:
+                continue
+            # we handle files and dirs differently or we'll crash out.
+            try:
+                self.move_item_file_or_dir(temp_dir, new_dir, item)
+            except shutil.Error as ex:
+                logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+
     def unzip_file(
         self, zip_path, server_id, server_update: bool = False, proc_id=None
     ) -> None:
@@ -471,11 +489,6 @@ class FileHelpers:
 
         """
         server_users = PermissionsServers.get_server_user_list(server_id)
-        ignored_names = [
-            "server.properties",
-            "permissions.json",
-            "allowlist.json",
-        ]
         # Get directory without zipfile name
         new_dir = pathlib.Path(zip_path).parents[0]
         # make sure we're able to access the zip file
@@ -497,17 +510,7 @@ class FileHelpers:
                                 "zip_status",
                                 {"id": proc_id, "percent": percent, "complete": False},
                             )
-                # we'll iterate through the top level directory moving everything
-                # out of the temp directory and into it's final home.
-                for item in os.listdir(temp_dir):
-                    # if the file is one of our ignored names we'll skip it
-                    if item in ignored_names and server_update:
-                        continue
-                    # we handle files and dirs differently or we'll crash out.
-                    try:
-                        self.move_item_file_or_dir(temp_dir, new_dir, item)
-                    except shutil.Error as ex:
-                        logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                self.cleanup_unzip(Path(temp_dir), server_update, new_dir)
                 for user in server_users:
                     WebSocketManager().broadcast_user(
                         user,
