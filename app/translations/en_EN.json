@@ -536,6 +536,7 @@
         "moving": "Moving",
         "noDelete": "No",
         "noscript": "The file manager does not work without JavaScript",
+        "operationStatus": "File Operation Status",
         "rename": "Rename",
         "renameItemQuestion": "What should the new name be?",
         "save": "Save",

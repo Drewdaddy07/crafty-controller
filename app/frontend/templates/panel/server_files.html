@@ -77,7 +77,8 @@ end %} {% block content %}
                             </table>
                         </div>
                         <div id="file-status">
-                            &nbsp;File Status<span id="status-caret"><i class="fa-solid fa-caret-up"></i></span>
+                            &nbsp;{{ translate('serverFiles', 'operationStatus', data['lang']) }}<span
+                                id="status-caret"><i class="fa-solid fa-caret-up"></i></span>
                             <div id="file-status-content" class="d-none">
                                 <br>
                                 <div id="upload-progress-bar-parent">
