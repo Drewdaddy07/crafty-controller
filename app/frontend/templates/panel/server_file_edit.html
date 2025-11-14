@@ -19,7 +19,7 @@ end %} {% block content %}
             <span id="uuid-container"><small>UUID: <span id="server_uuid"></span>
                 </small></span>
         </div>
-        <div id="file-info" class="info-flex">
+        <div id="file-info" class="info-flex d-sm-flex d-none">
             <small>{{translate("serverFiles", "size",
                 data["lang"])}}: <span id="file_size_sm"></span> </small>
             <small>{{translate("serverFiles", "type",
