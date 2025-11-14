@@ -154,9 +154,13 @@ async function get_file() {
     if (responseData.status === "ok") {
         console.log("Got File Contents From Server");
         $("#editorParent").toggle(true); // show
-        editor.session.setValue(responseData.data);
-        serverFileContent = responseData.data;
+        editor.session.setValue(responseData.data.content);
+        serverFileContent = responseData.data.content;
         setSaveStatus(true);
+        $("#file_size_sm").text(responseData.data.attributes.size);
+        $("#file_type_sm").text(responseData.data.attributes.mime);
+        $("#file_modified_sm").text(responseData.data.attributes.modified);
+
     } else {
         bootbox.alert({
             title: responseData.error,

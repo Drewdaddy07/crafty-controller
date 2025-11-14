@@ -334,8 +334,33 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
         else:
             try:
                 if Path(data["path"]).is_file():
+                    can_open, mime = self.file_helper.probably_can_open_file(
+                        data["path"]
+                    )
+                    modified_time = datetime.fromtimestamp(
+                        Path(data["path"]).stat().st_mtime
+                    )
+                    try:
+                        file_size = os.path.getsize(data["path"])
+                    except (OSError, IOError):
+                        file_size = 0
+                    attributes = {
+                        "mime": mime,
+                        "modified": modified_time.strftime("%Y/%m/%d %H:%M"),
+                        "size": Helpers.human_readable_file_size(file_size),
+                    }
                     with open(data["path"], encoding="utf-8") as file:
                         file_contents = file.read()
+                    self.finish_json(
+                        200,
+                        {
+                            "status": "ok",
+                            "data": {
+                                "content": file_contents,
+                                "attributes": attributes,
+                            },
+                        },
+                    )
                 else:
                     raise OSError("Item is not a valid File")
             except (UnicodeDecodeError, OSError) as ex:
@@ -343,7 +368,6 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                     400,
                     {"status": "error", "error": "DECODE_ERROR", "error_data": str(ex)},
                 )
-            self.finish_json(200, {"status": "ok", "data": file_contents})
 
     def delete(self, server_id: str, _backup_id=None):
         auth_data = self.authenticate_user()

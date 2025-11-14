@@ -6,23 +6,32 @@ end %} {% block content %}
 
 <div class="content-wrapper">
     <!-- Page Title Header Starts-->
-    <div class="row page-title-header">
-        <div class="col-12">
-            <div class="page-header">
-                <h4 class="page-title">
-                    <span class="badge-pill badge-outline-primary"><i class="fa-solid fa-server"></i>&nbsp;&nbsp;<span
-                            id="server-name-nav"></span></span><br>
-                    <small>UUID: <span id="server_uuid"></span> </small>
-                </h4>
-            </div>
+    <div class="row page-title-header centered">
+        <div id="server-name">
+            <span class="badge-pill badge-outline-primary"><i class="fa-solid fa-server"></i>&nbsp;&nbsp;<span
+                    id="server-name-nav"></span></span><br />
+            <span id="uuid-container"><small>UUID: <span id="server_uuid"></span>
+                </small></span>
         </div>
+        <blockquote class="blockquote align-items-center">
+            <span class="badge badge-outline-info"><i class="fa-solid fa-file-export"></i>&nbsp;&nbsp;<span
+                    id="editingFile"></span></span>&nbsp;
+            <ul class="list-group">
+                <li class="list-group-item"><small>{{translate("serverFiles", "size",
+                        data["lang"])}}: <span id="file_size_sm"></span> </small></li>
+                <li class="list-group-item"><small>{{translate("serverFiles", "type",
+                        data["lang"])}}: <span id="file_type_sm"></span> </small></li>
+                <li class="list-group-item"><small>{{translate("serverFiles",
+                        "modified",
+                        data["lang"])}}: <span id="file_modified_sm"></span> </small></li>
+            </ul>
+        </blockquote>
     </div>
     <!-- Page Title Header Ends-->
     <div id="editor_container" class="col-sm-12">
         <div class="editorManager">
-            <div id="editorParent"><span class="badge badge-outline-info"><i
-                        class="fa-solid fa-file-export"></i>&nbsp;&nbsp;<span id="editingFile"></span></span>&nbsp;<div
-                    class="gear-menu">
+            <div id="editorParent">
+                <div class="gear-menu">
                     <i class="fa-solid fa-gear context-icon"></i>
                 </div>
                 <div id="editor" onresize="editor.resize()" style="resize: both; width: 100%">
