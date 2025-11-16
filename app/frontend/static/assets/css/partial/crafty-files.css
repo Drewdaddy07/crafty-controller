@@ -213,6 +213,7 @@ body {
     border-top-right-radius: 10px;
     padding: 10px;
     outline: 1px solid var(--outline);
+    cursor: pointer;
 }
 
 #status-caret {
