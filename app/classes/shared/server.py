@@ -77,13 +77,20 @@ def callback(called_func):
                             webhook["webhook_type"]
                         )
 
+
+                        # Extract source context from kwargs if present
+                        source_type = kwargs.get("source_type", "unknown")
+                        source_id = kwargs.get("source_id", "")
+                        source_name = kwargs.get("source_name", "")
+
                         event_data = {
                             "server_name": args[0].name,
                             "server_id": args[0].server_id,
-                            "user": "",
-                            "user_id": "",
                             "command": command,
                             "event_type": event_type,
+                            "source_type": source_type,
+                            "source_id": source_id,
+                            "source_name": source_name,
                         }
 
                         # Add time variables to event_data
