@@ -77,14 +77,17 @@ class WebhookFactory:
             These variables are intended for use in the frontend to show whats
             available.
         """
+        # Common variables for all events
+        common_vars = [
+            "server_name", "server_id", "user", "user_id",
+            "time_iso", "time_unix", "time_day", "time_month", "time_year", "time_formatted"
+        ]
         return {
-            "start_server": {"variables": ["server_name", "user", "timestamp"]},
-            "stop_server": {"variables": ["server_name", "user", "timestamp"]},
-            "crash_detected": {"variables": ["server_name", "user", "timestamp"]},
-            "backup_server": {"variables": ["server_name", "user", "timestamp"]},
-            "jar_update": {"variables": ["server_name", "user", "timestamp"]},
-            "send_command": {
-                "variables": ["server_name", "user", "command", "timestamp"]
-            },
-            "kill": {"variables": ["server_name", "user", "timestamp"]},
+            "start_server": {"variables": common_vars},
+            "stop_server": {"variables": common_vars},
+            "crash_detected": {"variables": common_vars},
+            "backup_server": {"variables": common_vars + ["file_name", "download_link", "file_size"]},
+            "jar_update": {"variables": common_vars},
+            "send_command": {"variables": common_vars + ["command"]},
+            "kill": {"variables": common_vars + ["reason"]},
         }

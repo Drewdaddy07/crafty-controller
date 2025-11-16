@@ -83,9 +83,6 @@ def callback(called_func):
                             "user": "",
                             "user_id": "",
                             "command": command,
-                            "timestamp": datetime.datetime.utcnow().strftime(
-                                "%Y-%m-%d %H:%M:%S"
-                            ),
                         }
 
                         # Add time variables to event_data
