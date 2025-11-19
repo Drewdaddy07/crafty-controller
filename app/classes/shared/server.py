@@ -77,7 +77,6 @@ def callback(called_func):
                             webhook["webhook_type"]
                         )
 
-
                         # Extract source context from kwargs if present
                         source_type = kwargs.get("source_type", "unknown")
                         source_id = kwargs.get("source_id", "")

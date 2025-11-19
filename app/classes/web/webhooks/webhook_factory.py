@@ -79,15 +79,26 @@ class WebhookFactory:
         """
         # Common variables for all events
         common_vars = [
-            "server_name", "server_id", "event_type",
-            "source_type", "source_id", "source_name",
-            "time_iso", "time_unix", "time_day", "time_month", "time_year", "time_formatted"
+            "server_name",
+            "server_id",
+            "event_type",
+            "source_type",
+            "source_id",
+            "source_name",
+            "time_iso",
+            "time_unix",
+            "time_day",
+            "time_month",
+            "time_year",
+            "time_formatted",
         ]
         return {
             "start_server": {"variables": common_vars},
             "stop_server": {"variables": common_vars},
             "crash_detected": {"variables": common_vars},
-            "backup_server": {"variables": common_vars + ["file_name", "download_link", "file_size"]},
+            "backup_server": {
+                "variables": common_vars + ["file_name", "download_link", "file_size"]
+            },
             "jar_update": {"variables": common_vars},
             "send_command": {"variables": common_vars + ["command"]},
             "kill": {"variables": common_vars + ["reason"]},
