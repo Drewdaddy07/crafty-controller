@@ -97,7 +97,14 @@ class WebhookFactory:
             "stop_server": {"variables": common_vars},
             "crash_detected": {"variables": common_vars},
             "backup_server": {
-                "variables": common_vars + ["backup_name", "backup_link", "backup_size"]
+                "variables": common_vars
+                + [
+                    "backup_name",
+                    "backup_link",
+                    "backup_size",
+                    "backup_status",
+                    "backup_error",
+                ]
             },
             "jar_update": {"variables": common_vars},
             "send_command": {"variables": common_vars + ["command"]},
