@@ -112,7 +112,6 @@ const LOADING_TABLE = `<tr class="skeleton-row">
 ///////////////////////////////////////////////////////////////////////////////////////
 async function getTreeView(path) {
     const token = getCookie("_xsrf");
-    const cur_body = $("#files-table-body").html();
     $("#files-table-body").html(LOADING_TABLE);
     let res = await fetch(`/api/v2/servers/${serverId}/files`, {
         method: "POST",
@@ -131,6 +130,8 @@ async function getTreeView(path) {
         modified_time = responseData.data.root_path.modified;
         console.log(modified_time)
         process_tree_response(responseData);
+        location.hash = "";
+        location.hash = "context-container"
     } else {
         bootbox.alert({
             title: responseData.error,
@@ -410,6 +411,25 @@ function setup_nav_listeners() {
     });
 }
 
+function setup_select_nav() {
+    if ($('.row-select:checked').length > 0) {
+        move = false;
+        copy = false;
+        const container = $("#table-nav-buttons");
+        const delete_button = $("<button>").attr("id", "delete-files").addClass("btn").addClass("btn-danger").text($("#files_table").attr("data-delete"));
+
+        container.html("")
+        container.append("&nbsp;&nbsp;");
+        container.append(delete_button);
+
+        $("#delete-files").on("click", function () {
+            console.log("deleting files")
+        });
+    } else {
+        default_nav();
+    }
+}
+
 async function create(parent, name, dir = false) {
     const token = getCookie("_xsrf");
     let res = await fetch(`/api/v2/servers/${serverId}/files/create/`, {
@@ -565,6 +585,7 @@ $(document).ready(function () {
 
         handleUpload(files, $("#table-nav").attr("data-cur-path"));
     });
+
 });
 
 function uuidv4() {
@@ -691,7 +712,7 @@ function update_copy_move_nav() {
 }
 
 
-function close_copy_move() {
+function default_nav() {
     move = false;
     copy = false;
     const container = $("#table-nav-buttons");
@@ -710,7 +731,7 @@ function close_copy_move() {
 
 function setup_move_listener() {
     $("#copy-move-cancel").on("click", function () {
-        close_copy_move();
+        default_nav();
     });
     if (copy) {
         $("#copy-op").on("click", async function () {
@@ -725,7 +746,7 @@ function setup_move_listener() {
             let responseData = await res.json();
             if (responseData.status === "ok") {
                 getTreeView(cur_dir);
-                close_copy_move();
+                default_nav();
             } else {
                 bootbox.alert({
                     title: responseData.error,
@@ -746,7 +767,7 @@ function setup_move_listener() {
             let responseData = await res.json();
             if (responseData.status === "ok") {
                 getTreeView(cur_dir);
-                close_copy_move();
+                default_nav();
             } else {
                 bootbox.alert({
                     title: responseData.error,
@@ -787,8 +808,19 @@ $(document).ready(function () {
 
 function setup_row_select_listener() {
     console.log('listener setup')
-    $(".row-select").on("change", function (e) {
-        $(e.target).closest("tr").toggleClass("highlight-row");
-        console.log("changed")
-    })
+    $(".row-select").on("change", function () {
+        if ($(this).prop("checked")) {
+            $(this).closest("tr").addClass("highlight-row");
+        } else {
+            $(this).closest("tr").removeClass("highlight-row");
+        }
+        setup_select_nav();
+    });
+    $(".root-select").on("change", function () {
+        const checkboxes = document.querySelectorAll('.row-select');
+        const main_checked = $(this).prop("checked");
+        for (const row of checkboxes) {
+            $(row).prop("checked", main_checked).trigger("change");
+        }
+    });
 }
