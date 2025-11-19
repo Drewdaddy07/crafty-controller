@@ -63,7 +63,7 @@ class BackupManager:
                             self.file_helper.del_file(os.path.join(server_path, item))
                 self.file_helper.restore_archive(backup_location, server_path)
 
-    def backup_starter(self, backup_config, server):
+    def backup_starter(self, backup_config, server) -> tuple:
         """Notify users of backup starting, and start the backup.
 
         Args:
@@ -83,14 +83,35 @@ class BackupManager:
                 ).format(server.name),
             )
         time.sleep(3)
-
+        size = False
         # Start the backup
         if backup_config.get("backup_type", "zip_vault") == "zip_vault":
-            self.zip_vault(backup_config, server)
+            backup_file_name = self.zip_vault(backup_config, server)
+            if backup_file_name:
+                if Path(backup_file_name).suffix != ".zip":
+                    backup_file_name += ".zip"
+                size = (
+                    Path(
+                        backup_config["backup_location"],
+                        backup_config["backup_id"],
+                        backup_file_name,
+                    )
+                    .stat()
+                    .st_size
+                )
         else:
-            self.snapshot_backup(backup_config, server)
+            backup_file_name = self.snapshot_backup(backup_config, server)
+            if backup_file_name:
+                if Path(backup_file_name).suffix != ".manifest":
+                    backup_file_name += ".manifest"
+        if backup_file_name:
+            return (
+                backup_file_name,
+                size,
+            )
+        return (False, "error")
 
-    def zip_vault(self, backup_config, server):
+    def zip_vault(self, backup_config, server) -> str | bool:
 
         # Adjust the location to include the backup ID for destination.
         backup_location = os.path.join(
@@ -100,7 +121,7 @@ class BackupManager:
         # Check if the backup location even exists.
         if not backup_location:
             Console.critical("No backup path found. Canceling")
-            return None
+            return False
 
         self.helper.ensure_dir_exists(backup_location)
 
@@ -164,8 +185,10 @@ class BackupManager:
                 {"status": json.dumps({"status": "Standby", "message": ""})},
             )
             time.sleep(5)
+            return Path(backup_filename).name
         except Exception as e:
             self.fail_backup(e, backup_config, server)
+            return False
 
     @staticmethod
     def fail_backup(why: Exception, backup_config: dict, server) -> None:
@@ -266,7 +289,7 @@ class BackupManager:
             logger.info(f"Removing old backup '{oldfile['path']}'")
             os.remove(Helpers.get_os_understandable_path(oldfile_path))
 
-    def snapshot_backup(self, backup_config, server) -> None:
+    def snapshot_backup(self, backup_config, server) -> str | bool:
         """
         Creates snapshot style backup of server. No file will be saved more than once
         over all backups. Designed to enable encryption of files and s3 compatability in
@@ -308,7 +331,7 @@ class BackupManager:
             manifest_file: io.TextIOWrapper = backup_manifest_path.open("w+")
         except OSError as why:
             self.fail_backup(why, backup_config, server)
-            return
+            return False
 
         # Write manifest file version.
         manifest_file.write("00\n")
@@ -328,7 +351,7 @@ class BackupManager:
                 manifest_file.close()
                 backup_manifest_path.unlink(missing_ok=True)
                 self.fail_backup(why, backup_config, server)
-                return
+                return False
 
             # Write saved file into manifest.
             manifest_file.write(
@@ -341,6 +364,13 @@ class BackupManager:
         self.file_helper.clean_old_backups(
             backup_config["max_backups"], backup_repository_path
         )
+
+        HelpersManagement.update_backup_config(
+            backup_config["backup_id"],
+            {"status": json.dumps({"status": "Standby", "message": ""})},
+        )
+
+        return Path(backup_manifest_path).name
 
     def snapshot_restore(
         self, backup_config: {str}, backup_manifest_filename: str, server
