@@ -5,6 +5,8 @@ let copy = false;
 let move_copy_source = "";
 let move_copy_target = "";
 let modified_time = 1.5;
+let recent_response = {}
+let start_index = 0;
 const LOADING_TABLE = `<tr class="skeleton-row">
                                     <td>
                                         <div class="skeleton-line" style="width: 60%;"></div>
@@ -112,7 +114,6 @@ const LOADING_TABLE = `<tr class="skeleton-row">
 ///////////////////////////////////////////////////////////////////////////////////////
 async function getTreeView(path) {
     const token = getCookie("_xsrf");
-    const cur_body = $("#files-table-body").html();
     if (!move && !copy) {
         default_nav();
     }
@@ -131,15 +132,14 @@ async function getTreeView(path) {
     });
     if (res.status === 304) {
         console.log("Already up to date!")
-        $("#files-table-body").html(cur_body);
+        process_tree_response(recent_response);
         return;
     }
     let responseData = await res.json();
+    recent_response = responseData;
     if (responseData.status === "ok") {
         modified_time = responseData.data.root_path.modified;
         process_tree_response(responseData);
-        location.hash = "";
-        location.hash = "context-container"
     } else {
         bootbox.alert({
             title: responseData.error,
@@ -247,12 +247,7 @@ function setup_table_body(response) {
     };
 }
 
-function process_tree_response(response) {
-    setup_table_nav(response);
-    update_copy_move_nav();
-    $("#files-table-body").html("");
-    setup_table_body(response);
-
+function setup_table_listeners() {
     $(".directory").click(function (e) {
         // Prevent the click from firing if it’s on the context menu button
         if ($(e.target).closest(".context-button").length) return;
@@ -274,6 +269,16 @@ function process_tree_response(response) {
         getTreeView($(this).attr("data-path"))
     });
     setup_row_select_listener();
+}
+
+function process_tree_response(response) {
+    setup_table_nav(response);
+    update_copy_move_nav();
+    $("#files-table-body").html("");
+    setup_table_body(response);
+    setup_table_listeners();
+    location.hash = "";
+    location.hash = "context-container"
 }
 
 function loadMenuContent(tr) {
