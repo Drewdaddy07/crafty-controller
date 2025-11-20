@@ -153,7 +153,7 @@ class ApiFilesUploadHandler(BaseApiHandler):
                 "path"
             ]
             self.upload_dir = self.file_helper.get_absolute_path(
-                server_path, server_id, self.upload_dir
+                server_path, self.upload_dir
             )
             full_path = os.path.join(self.upload_dir, self.filename)
             # Check to make sure the requested path is inside the server's directory

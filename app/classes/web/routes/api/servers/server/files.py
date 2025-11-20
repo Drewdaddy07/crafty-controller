@@ -233,9 +233,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
         # Check for absolute or relative path. Absolute paths should be deprecated
         request_path = data["path"]
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        data["path"] = self.file_helper.get_absolute_path(
-            server_path, server_id, data["path"]
-        )
+        data["path"] = self.file_helper.get_absolute_path(server_path, data["path"])
         if not Helpers.validate_traversal(
             server_path,
             data["path"],
@@ -395,9 +393,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
         for item in data["file_system_objects"]:
-            filename = self.file_helper.get_absolute_path(
-                server_path, server_id, item["filename"]
-            )
+            filename = self.file_helper.get_absolute_path(server_path, item["filename"])
             if (
                 not Helpers.validate_traversal(
                     self.controller.servers.get_server_data_by_id(server_id)["path"],
@@ -559,9 +555,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             )
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        data["path"] = self.file_helper.get_absolute_path(
-            server_path, server_id, data["path"]
-        )
+        data["path"] = self.file_helper.get_absolute_path(server_path, data["path"])
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
             data["path"],
@@ -644,9 +638,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             )
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        data["parent"] = self.file_helper.get_absolute_path(
-            server_path, server_id, data["parent"]
-        )
+        data["parent"] = self.file_helper.get_absolute_path(server_path, data["parent"])
         path = os.path.join(data["parent"], data["name"])
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
@@ -742,7 +734,7 @@ class ApiServersServerFilesCreateHandler(BaseApiHandler):
             )
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        path = self.file_helper.get_absolute_path(server_path, server_id, data["path"])
+        path = self.file_helper.get_absolute_path(server_path, data["path"])
         new_item_name = data["new_name"]
         new_item_path = os.path.join(os.path.split(path)[0], new_item_name)
         if not Helpers.validate_traversal(
@@ -840,9 +832,7 @@ class ApiServersServerFilesCreateHandler(BaseApiHandler):
             )
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        file_path = self.file_helper.get_absolute_path(
-            server_path, server_id, data["parent"]
-        )
+        file_path = self.file_helper.get_absolute_path(server_path, data["parent"])
         path = os.path.join(file_path, data["name"])
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
@@ -939,9 +929,7 @@ class ApiServersServerFilesZipHandler(BaseApiHandler):
 
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        target_file = self.file_helper.get_absolute_path(
-            server_path, server_id, data["folder"]
-        )
+        target_file = self.file_helper.get_absolute_path(server_path, data["folder"])
         user_id = auth_data[4]["user_id"]
         if not Helpers.validate_traversal(
             self.controller.servers.get_server_data_by_id(server_id)["path"],
@@ -1008,9 +996,7 @@ class ApiServersServerFileDownload(BaseApiHandler):
         filepath = html.unescape(encoded_file_path)
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
-        file_path = Path(
-            self.file_helper.get_absolute_path(server_path, server_id, filepath)
-        )
+        file_path = Path(self.file_helper.get_absolute_path(server_path, filepath))
 
         if server_id not in [str(x["server_id"]) for x in auth_data[0]]:
             # if the user doesn't have access to the server, return an error
@@ -1199,26 +1185,25 @@ class ApiServersServerFilesOperationHandler(BaseApiHandler):
         # Check for absolute or relative path. Absolute paths should be deprecated
         server_path = self.controller.servers.get_server_data_by_id(server_id)["path"]
         for item in data["file_system_objects"]:
+            source_path = Path(
+                self.file_helper.get_absolute_path(server_path, item["source_path"])
+            )
             target_path = Path(
                 self.file_helper.get_absolute_path(
-                    server_path, server_id, item["target_path"]
+                    server_path,
+                    Path(item["target_path"], Path(source_path).name),
                 )
             )
-            source_path = Path(
-                self.file_helper.get_absolute_path(
-                    server_path, server_id, item["source_path"]
+            try:
+                self.do_operation(operation, source_path, target_path)
+            except shutilError as why:
+                return self.finish_json(
+                    500, {"status": "error", "error": "OSERROR", "error_data": str(why)}
                 )
+            self.controller.management.add_to_audit_log(
+                auth_data[4]["user_id"],
+                f"{operation} item from {source_path} to {target_path}.",
+                server_id,
+                self.request.remote_ip,
             )
-        try:
-            self.do_operation(operation, source_path, target_path)
-        except shutilError as why:
-            return self.finish_json(
-                500, {"status": "error", "error": "OSERROR", "error_data": str(why)}
-            )
-        self.controller.management.add_to_audit_log(
-            auth_data[4]["user_id"],
-            f"{operation} item from {source_path} to {target_path}.",
-            server_id,
-            self.request.remote_ip,
-        )
         return self.finish_json(200, {"status": "ok"})

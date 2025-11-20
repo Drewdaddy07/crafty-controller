@@ -164,12 +164,12 @@ function setup_table_nav(response) {
 
     const span = document.createElement("span");
     span.className = "tree-nav";
-    let local_path = serverId
+    let local_path = ""
     span.dataset.path = local_path; // or set the actual path if needed
-    span.innerHTML = `<i class="fa-solid fa-server"></i>${path_list[0] === serverId ? '&nbsp; <i class="fa-solid fa-rotate-right"></i>' : ""}`; //Set root text as server icon
+    span.innerHTML = `<i class="fa-solid fa-server"></i>${path_list[0] === "" ? '&nbsp; <i class="fa-solid fa-rotate-right"></i>' : ""}`; //Set root text as server icon
     container.appendChild(span);
     for (let [index, part] of path_list.entries()) {
-        if (!(part === serverId && index === 0)) {
+        if (!(part === "" && index === 0)) {
             container.appendChild(document.createTextNode(" > "));
             // Create the span
             const span = document.createElement("span");
@@ -433,10 +433,16 @@ function setup_select_nav() {
         copy = false;
         const container = $("#table-nav-buttons");
         const delete_button = $("<button>").attr("id", "delete-files").addClass("btn").addClass("btn-danger").text($("#files_table").attr("data-delete"));
+        const move_button = $("<button>").attr("id", "move-files").addClass("btn").addClass("btn-info").text($("#files_table").attr("data-move"));
+        const copy_button = $("<button>").attr("id", "copy-files").addClass("btn").addClass("btn-info").text($("#files_table").attr("data-copy"));
         const nbsp = "&nbsp;&nbsp;"
         container.html("")
         container.append(nbsp);
         container.append(delete_button);
+        container.append(nbsp);
+        container.append(move_button);
+        container.append(nbsp);
+        container.append(copy_button);
         $("#delete-files").on("click", function () {
             let selected_rows = $(".row-select:checked");
             bootbox.confirm({
@@ -468,6 +474,36 @@ function setup_select_nav() {
                     default_nav();
                 },
             });
+        });
+        $("#move-files").on("click", function () {
+            $(".row-select").prop("disabled", true);
+            $(".root-select").prop("disabled", true);
+            move = true;
+            copy = false;
+            move_copy_source = []
+            let selected_rows = $(".row-select:checked");
+            move_copy_source = selected_rows.map(function () {
+                const path = $(this).closest("tr").data("path");
+                return path;
+            }).get();
+            console.log(move_copy_source);
+            setup_copy_move_table_nav();
+
+        });
+        $("#copy-files").on("click", function () {
+            $(".row-select").prop("disabled", true);
+            $(".root-select").prop("disabled", true);
+            move = false;
+            copy = true;
+            move_copy_source = []
+            let selected_rows = $(".row-select:checked");
+            move_copy_source = selected_rows.map(function () {
+                const path = $(this).closest("tr").data("path");
+                return path;
+            }).get();
+            console.log(move_copy_source);
+            setup_copy_move_table_nav();
+
         });
     } else {
         default_nav();
@@ -738,7 +774,7 @@ function setup_copy_move_table_nav() {
     }
     let move_source = $("<span>").attr("id", "copy-move-source").html(`${move_copy_source.length} <i class="fa-solid fa-file"></i>`);
     if (move_copy_source.length <= 1) {
-        move_source = $("<span>").attr("id", "copy-move-source").text(move_copy_source[0].replace(serverId, "/"));
+        move_source = $("<span>").attr("id", "copy-move-source").text(move_copy_source[0].replace(serverId, ""));
     }
     const move_target = $("<span>").attr("id", "copy-move-target");
     const move_arrow = $("<span>").attr("id", "copy-move-arrow").html(`<i class="fa-solid fa-arrow-right"></i>`);
@@ -784,10 +820,19 @@ function default_nav() {
 
 function setup_move_listener() {
     $("#copy-move-cancel").on("click", function () {
+        $(".row-select").prop("disabled", false).prop("checked", false);
+        $(".root-select").prop("disabled", false).prop("checked", false);
+        const checkboxes = document.querySelectorAll('.row-select');
+        const main_checked = $(this).prop("checked");
+        for (const row of checkboxes) {
+            $(row).prop("checked", main_checked).trigger("change");
+        }
         default_nav();
     });
     if (copy) {
         $("#copy-op").on("click", async function () {
+            $(".row-select").prop("disabled", false).prop("checked", false);
+            $(".root-select").prop("disabled", false).prop("checked", false);
             const cur_dir = $("#table-nav").attr("data-cur-path");
             let send_items = []
             for (let item of move_copy_source) {
@@ -813,11 +858,14 @@ function setup_move_listener() {
         });
     } else {
         $("#move-op").on("click", async function () {
+            $(".row-select").prop("disabled", false).prop("checked", false);
+            $(".root-select").prop("disabled", false).prop("checked", false);
             const cur_dir = $("#table-nav").attr("data-cur-path");
             let send_items = []
             for (let item of move_copy_source) {
                 send_items.push({ "source_path": item, "target_path": move_copy_target })
             }
+            console.log(send_items)
             let res = await fetch(`/api/v2/servers/${serverId}/files/move/`, {
                 method: "POST",
                 headers: {
