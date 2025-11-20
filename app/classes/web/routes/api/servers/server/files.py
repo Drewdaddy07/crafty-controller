@@ -1125,15 +1125,9 @@ class ApiServersServerFilesOperationHandler(BaseApiHandler):
     def do_operation(self, operation: str, source_path: Path, target_file: Path):
         if operation == "move":
             if Path(source_path).is_dir():
-                try:
-                    FileHelpers.move_dir(source_path, target_file)
-                except shutilError as why:
-                    raise shutilError from why
+                FileHelpers.move_dir(source_path, target_file)
             else:
-                try:
-                    FileHelpers.move_file(source_path, target_file)
-                except shutilError as why:
-                    raise shutilError from why
+                FileHelpers.move_file(source_path, target_file)
         elif operation == "copy":
             if Path(source_path).is_dir():
                 FileHelpers.copy_dir(source_path, target_file)
@@ -1218,7 +1212,9 @@ class ApiServersServerFilesOperationHandler(BaseApiHandler):
         try:
             self.do_operation(operation, source_path, target_path)
         except shutilError as why:
-            return self.finish_json(500, {"status": "error", "error_data": why})
+            return self.finish_json(
+                500, {"status": "error", "error": "OSERROR", "error_data": str(why)}
+            )
         self.controller.management.add_to_audit_log(
             auth_data[4]["user_id"],
             f"{operation} item from {source_path} to {target_path}.",
