@@ -399,7 +399,7 @@ function setup_nav_listeners() {
                 "<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
                 "<i class='fa fa-cloud-upload fa-3x'></i>" +
                 "<br />" +
-                "{{translate('serverFiles', 'clickUpload', data['lang'])}}" +
+                $("#table-nav-container").attr("data-clickUpload") +
                 "<input style='margin-left: 21%;' id='files' name='files' type='file' multiple='true'>" +
                 "</label></form>" +
                 "<br />" +
@@ -407,11 +407,10 @@ function setup_nav_listeners() {
                 "</div><div class='clearfix'></div>";
             bootbox.dialog({
                 message: uploadHtml,
-                title:
-                    "{{ translate('serverFiles', 'uploadTitle', data['lang'])}}" + path,
+                title: `${$("#table-nav-container").attr("data-uploadTitle")} ${path}`,
                 buttons: {
                     success: {
-                        label: "{{ translate('serverFiles', 'upload', data['lang']) }}",
+                        label: $("#table-nav-container").attr("data-upload"),
                         className: "btn-default",
                         callback: async function () {
                             if ($("#files").get(0).files.length === 0) {
