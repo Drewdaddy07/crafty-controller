@@ -234,3 +234,20 @@ body {
 .highlight-row {
     background-color: var(--deep-bg) !important;
 }
+
+#file-status-content {
+    position: absolute;
+    bottom: 100%;
+    padding: 10px;
+    margin-bottom: -6px;
+    left: 0;
+    width: 100%;
+    max-height: 50vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: var(--deep-bg);
+    border: 1px solid var(--outline);
+    border-radius: 10px 10px 0 0;
+    z-index: 101;
+    display: block;
+}
