@@ -723,6 +723,7 @@ function add_copy_listener() {
     $("#copy").on("click", function () {
         move = false;
         copy = true;
+        move_copy_source = []
         move_copy_source.push($(selected_row).attr("data-path"));
         setup_copy_move_table_nav();
     });
