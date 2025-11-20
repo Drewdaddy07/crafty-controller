@@ -825,6 +825,8 @@ function setup_move_listener() {
             }
         });
     }
+    location.hash = "";
+    location.hash = "context-container"
 }
 
 
