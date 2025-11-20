@@ -782,7 +782,7 @@ function setup_move_listener() {
                 headers: {
                     "X-XSRFToken": token,
                 },
-                body: JSON.stringify({ source_path: move_copy_source, target_path: move_copy_target }),
+                body: JSON.stringify({ "file_system_objects": [{ "source_path": move_copy_source, "target_path": move_copy_target }] }),
             });
             let responseData = await res.json();
             if (responseData.status === "ok") {

@@ -79,25 +79,31 @@ files_unzip_schema = {
 }
 
 files_operation_schema = {
-    "type": "array",
-    "file_system_objects": {
-        "type": "object",
-        "properties": {
-            "source_path": {
-                "type": "string",
-                "error": "typeString",
-                "fill": True,
+    "type": "object",
+    "properties": {
+        "file_system_objects": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "source_path": {
+                        "type": "string",
+                        "error": "typeString",
+                        "fill": True,
+                    },
+                    "target_path": {
+                        "type": "string",
+                        "error": "typeString",
+                        "fill": True,
+                    },
+                },
+                "required": ["source_path", "target_path"],
+                "additionalProperties": False,
             },
-            "target_path": {
-                "type": "string",
-                "error": "typeString",
-                "fill": True,
-            },
-        },
-        "required": ["source_path", "target_path"],  # ensure both are present
-        "additionalProperties": False,
+        }
     },
-    "minItems": 1,  # at least one file in the list
+    "required": ["file_system_objects"],
+    "additionalProperties": False,
 }
 
 files_create_schema = {
