@@ -340,8 +340,7 @@ function add_rename_listener() {
     $("#rename").on("click", function () {
         const name = $(selected_row).children(".column-1").attr("data-name");
         bootbox.prompt({
-            title:
-                "{% raw translate('serverFiles', 'renameItemQuestion', data['lang']) %}",
+            title: $("#table-nav-container").attr("data-renameItemQuestion"),
             value: name,
             callback: async function (result) {
                 if (!result) return;
@@ -371,7 +370,7 @@ function add_rename_listener() {
 function setup_nav_listeners() {
     $("#create-dir").on("click", function () {
         bootbox.prompt(
-            "{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}",
+            $("#table-nav-container").attr("data-createDirQuestion"),
             function (result) {
                 if (!result) return;
                 const cur_dir = $("#table-nav").attr("data-cur-path");
@@ -382,7 +381,7 @@ function setup_nav_listeners() {
 
     $("#create-file").on("click", function () {
         bootbox.prompt(
-            "{% raw translate('serverFiles', 'createDirQuestion', data['lang']) %}",
+            $("#table-nav-container").attr("data-createFileQuestion"),
             function (result) {
                 if (!result) return;
                 const cur_dir = $("#table-nav").attr("data-cur-path");
@@ -443,18 +442,16 @@ function setup_select_nav() {
             let selected_rows = $(".row-select:checked");
             bootbox.confirm({
                 size: "",
-                title:
-                    "{% raw translate('serverFiles', 'deleteItemQuestion', data['lang']) %}",
+                title: `${$("#table-nav-container").attr("data-deleteItemQuestion")} ${selected_rows.length} 📁!`,
                 closeButton: false,
-                message:
-                    "{% raw translate('serverFiles', 'deleteItemQuestionMessage', data['lang']) %}",
+                message: $("#table-nav-container").attr("data-deleteItemQuestionMessage"),
                 buttons: {
                     confirm: {
-                        label: "{{ translate('serverFiles', 'yesDelete', data['lang']) }}",
+                        label: $("#table-nav-container").attr(""),
                         className: "btn-danger",
                     },
                     cancel: {
-                        label: "{{ translate('serverFiles', 'noDelete', data['lang']) }}",
+                        label: $("#table-nav-container").attr(""),
                         className: "btn-link",
                     },
                 },
@@ -506,18 +503,16 @@ function add_delete_listener() {
         const path = $(selected_row).attr("data-path");
         bootbox.confirm({
             size: "",
-            title:
-                "{% raw translate('serverFiles', 'deleteItemQuestion', data['lang']) %}",
+            title: `${$("#table-nav-container").attr("data-deleteItemQuestion")} ${path}!`,
             closeButton: false,
-            message:
-                "{% raw translate('serverFiles', 'deleteItemQuestionMessage', data['lang']) %}",
+            message: $("#table-nav-container").attr("data-deleteItemQuestionMessage"),
             buttons: {
                 confirm: {
-                    label: "{{ translate('serverFiles', 'yesDelete', data['lang']) }}",
+                    label: $("#table-nav-container").attr(""),
                     className: "btn-danger",
                 },
                 cancel: {
-                    label: "{{ translate('serverFiles', 'noDelete', data['lang']) }}",
+                    label: $("#table-nav-container").attr(""),
                     className: "btn-link",
                 },
             },

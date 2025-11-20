@@ -37,7 +37,14 @@ end %} {% block content %}
                             <div id="drop-zone-overlay">
                                 <i class="fa-solid fa-cloud-arrow-up fa-10x" id="drop-zone-img"></i>
                             </div>
-                            <div class="table-nav-container">
+                            <div class="table-nav-container" id="table-nav-container"
+                                data-renameItemQuestion="{{translate('serverFiles', 'renameItemQuestion', data['lang'])}}"
+                                data-createDirQuestion="{{ translate('serverFiles', 'createDirQuestion', data['lang']) }}"
+                                data-createFileQuestion="{{translate('serverFiles', 'createFileQuestion', data['lang'])}}"
+                                data-deleteItemQuestion="{{translate('serverFiles', 'deleteItemQuestion', data['lang'])}}"
+                                data-deleteItemQuestionMessage="{{translate('serverFiles', 'deleteItemQuestionMessage', data['lang'])}}"
+                                data-yesDelete="{{translate('serverFiles', 'yesDelete', data['lang'])}}"
+                                data-noDelete="{{translate('serverFiles', 'noDelete', data['lang'])}}">
                                 <div id="table-nav" class="table-nav">
                                 </div>
                                 <br />
