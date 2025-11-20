@@ -435,11 +435,10 @@ function setup_select_nav() {
         copy = false;
         const container = $("#table-nav-buttons");
         const delete_button = $("<button>").attr("id", "delete-files").addClass("btn").addClass("btn-danger").text($("#files_table").attr("data-delete"));
-
+        const nbsp = "&nbsp;&nbsp;"
         container.html("")
-        container.append("&nbsp;&nbsp;");
+        container.append(nbsp);
         container.append(delete_button);
-
         $("#delete-files").on("click", function () {
             let selected_rows = $(".row-select:checked");
             bootbox.confirm({
@@ -817,7 +816,7 @@ function setup_move_listener() {
                 headers: {
                     "X-XSRFToken": token,
                 },
-                body: JSON.stringify({ source_path: move_copy_source, target_path: move_copy_target }),
+                body: JSON.stringify({ "file_system_objects": [{ "source_path": move_copy_source, "target_path": move_copy_target }] }),
             });
             let responseData = await res.json();
             if (responseData.status === "ok") {
