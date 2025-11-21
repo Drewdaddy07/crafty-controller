@@ -368,7 +368,7 @@ function add_rename_listener() {
 //CREATE FILES/DIRECTORIES FUNCTIONS
 ///////////////////////////////////////////////////////////////////////////////////////
 function setup_nav_listeners() {
-    $("#create-dir").on("click", function () {
+    $("#create-dir").unbind("click").on("click", function () {
         bootbox.prompt(
             $("#table-nav-container").attr("data-createDirQuestion"),
             function (result) {
@@ -379,7 +379,7 @@ function setup_nav_listeners() {
         );
     });
 
-    $("#create-file").on("click", function () {
+    $("#create-file").unbind("click").on("click", function () {
         bootbox.prompt(
             $("#table-nav-container").attr("data-createFileQuestion"),
             function (result) {
@@ -390,39 +390,38 @@ function setup_nav_listeners() {
         );
     });
 
-    $("#upload-file").on("click", async function uploadFilesE(event) {
+    $("#upload-file").unbind("click").on("click", async function uploadFilesE(event) {
+        console.log(event)
         const path = $("#table-nav").attr("data-cur-path");
-        $(function () {
-            let uploadHtml =
-                "<div>" +
-                '<form id="upload-file-form"  enctype="multipart/form-data">' +
-                "<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
-                "<i class='fa fa-cloud-upload fa-3x'></i>" +
-                "<br />" +
-                $("#table-nav-container").attr("data-clickUpload") +
-                "<input style='margin-left: 21%;' id='files' name='files' type='file' multiple='true'>" +
-                "</label></form>" +
-                "<br />" +
-                "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
-                "</div><div class='clearfix'></div>";
-            bootbox.dialog({
-                message: uploadHtml,
-                title: `${$("#table-nav-container").attr("data-uploadTitle")} ${path}`,
-                buttons: {
-                    success: {
-                        label: $("#table-nav-container").attr("data-upload"),
-                        className: "btn-default",
-                        callback: async function () {
-                            if ($("#files").get(0).files.length === 0) {
-                                return hideUploadBox();
-                            }
+        let uploadHtml =
+            "<div>" +
+            '<form id="upload-file-form"  enctype="multipart/form-data">' +
+            "<label class='upload-area' style='width:100%;text-align:center;' for='files'>" +
+            "<i class='fa fa-cloud-upload fa-3x'></i>" +
+            "<br />" +
+            $("#table-nav-container").attr("data-clickUpload") +
+            "<input style='margin-left: 21%;' id='files' name='files' type='file' multiple='true'>" +
+            "</label></form>" +
+            "<br />" +
+            "<ul style='margin-left:5px !important;' id='fileList'></ul>" +
+            "</div><div class='clearfix'></div>";
+        bootbox.dialog({
+            message: uploadHtml,
+            title: `${$("#table-nav-container").attr("data-uploadTitle")} ${path}`,
+            buttons: {
+                success: {
+                    label: $("#table-nav-container").attr("data-upload"),
+                    className: "btn-default",
+                    callback: async function () {
+                        if ($("#files").get(0).files.length === 0) {
+                            return hideUploadBox();
+                        }
 
-                            let files = document.getElementById("files");
-                            handleUpload(files.files, path);
-                        },
+                        let files = document.getElementById("files");
+                        handleUpload(files.files, path);
                     },
                 },
-            });
+            },
         });
     });
 }
@@ -566,6 +565,7 @@ async function deleteItem(items) {
     for (let item of items) {
         items_to_delete.push({ "filename": String(item["path"]) })
     }
+    console.log(items_to_delete)
     let res = await fetch(`/api/v2/servers/${serverId}/files`, {
         method: "DELETE",
         headers: {
