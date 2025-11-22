@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import logging
-import requests
 import datetime
 import time
+import requests
 from jinja2 import Environment, BaseLoader
 
 from app.classes.helpers.helpers import Helpers
