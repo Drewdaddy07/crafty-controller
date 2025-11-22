@@ -7,7 +7,7 @@ import time
 import datetime
 import base64
 import threading
-import logging.config
+import logging
 import subprocess
 import html
 import glob
@@ -59,7 +59,6 @@ def callback(called_func):
             event_type = called_func.__name__
 
             # For send_command, Retrieve command from args or kwargs
-            # TODO Test Properly
             command = args[1] if len(args) > 1 else kwargs.get("command", "")
 
             if event_type in WebhookFactory.get_monitored_events():
