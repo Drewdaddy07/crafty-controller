@@ -790,7 +790,7 @@
         "bot_name": "Bot Name",
         "color": "Select Color Accent",
         "crash_detected": "Server Crashed",
-        "documentation": "Please utilize this documentation to take advantage of dynamic variables.",
+        "documentation": "Please reference this documentation for information regarding dynamic variables.",
         "edit": "Edit",
         "enabled": "Enabled",
         "jar_update": "Server Executable Updated",
