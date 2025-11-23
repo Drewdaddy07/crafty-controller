@@ -1,5 +1,5 @@
 # Changelog
-## --- [4.6.1] - 2025/TBD
+## --- [4.6.1] - 2025/11/23
 ### New features
 - Jinja2 Dynamic Variables for Webhook Notifications ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/757))
 ### Bug fixes
@@ -14,8 +14,6 @@
 - Fix download button showing for snapshot backups ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/913))
 ### Tweaks
 - Provide better feedback on restore failures ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/914))
-### Lang
-TBD
 <br><br>
 
 ## --- [4.5.5] - 2025/10/14
