@@ -1,7 +1,7 @@
 # Changelog
-## --- [4.5.6] - 2025/TBD
+## --- [4.6.1] - 2025/TBD
 ### New features
-TBD
+- Jinja2 Dynamic Variables for Webhook Notifications ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/757))
 ### Bug fixes
 - Change hour and minute intervals in APScheudler to fix incorrect triggers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/910))
 - Use asyncio locks to limit upload handler race condition ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/907))
@@ -9,7 +9,7 @@ TBD
 - Fix import directory cleanup was not pointing to the proper directory ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/918))
 - Fix survey not appearing on first login ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/917))
 - Fix failue deleting server's DB files on server delete ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/916))
-- Fix server.properties overwritten in bedrock update ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/915))
+- Fix server.properties overwritten in bedrock update ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/915) | [Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/919))
 - Fix zip backup download button always downloading the most recent, not the selected backup ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/913))
 - Fix download button showing for snapshot backups ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/913))
 ### Tweaks
