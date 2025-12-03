@@ -55,7 +55,18 @@ files_patch_schema = {
             "error": "typeString",
             "fill": True,
         },
+        "modified_epoch": {
+            "type": "number",
+            "error": "typeEpoch",
+            "fill": True,
+        },
+        "overwrite": {
+            "type": "boolean",
+            "error": "typeBoolean",
+            "fill": True,
+        },
     },
+    "required": ["path", "contents"],
     "additionalProperties": False,
     "minProperties": 1,
 }
@@ -357,9 +368,8 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                     can_open, mime = self.file_helper.probably_can_open_file(
                         data["path"]
                     )
-                    modified_time = datetime.fromtimestamp(
-                        Path(data["path"]).stat().st_mtime
-                    )
+                    modified_epoch = Path(data["path"]).stat().st_mtime
+                    modified_time = datetime.fromtimestamp(modified_epoch)
                     try:
                         file_size = os.path.getsize(data["path"])
                     except (OSError, IOError):
@@ -368,6 +378,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                         "mime": mime,
                         "modified": modified_time.strftime(HUMAN_TIME_FORMAT),
                         "size": Helpers.human_readable_file_size(file_size),
+                        "modified_epoch": modified_epoch,
                     }
                     with open(data["path"], encoding="utf-8") as file:
                         file_contents = file.read()
@@ -571,10 +582,31 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             )
         file_path = Helpers.get_os_understandable_path(data["path"])
         file_contents = data["contents"]
+        if Path(data["path"]).stat().st_mtime > data.get(
+            "modified_epoch", 1.5
+        ) and not data.get("overwrite"):
+            self.set_status(409)
+            return self.finish()
         # Open the file in write mode and store the content in file_object
         with open(file_path, "w", encoding="utf-8") as file_object:
             file_object.write(file_contents)
-        return self.finish_json(200, {"status": "ok"})
+
+        # Update file details
+        modified_epoch = Path(data["path"]).stat().st_mtime
+        modified_time = datetime.fromtimestamp(modified_epoch)
+        try:
+            file_size = os.path.getsize(data["path"])
+        except (OSError, IOError):
+            file_size = 0
+        attributes = {
+            "mime": self.file_helper.check_mime_types(data["path"]),
+            "modified": modified_time.strftime(HUMAN_TIME_FORMAT),
+            "size": Helpers.human_readable_file_size(file_size),
+            "modified_epoch": modified_epoch,
+        }
+        return self.finish_json(
+            200, {"status": "ok", "data": {"attributes": attributes}}
+        )
 
     def put(self, server_id: str, _backup_id):
         auth_data = self.authenticate_user()

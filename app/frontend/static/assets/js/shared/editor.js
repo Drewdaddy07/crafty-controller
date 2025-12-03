@@ -1,6 +1,7 @@
 const urlParams = new URLSearchParams(globalThis.location.search);
 const serverId = urlParams.get("server_id");
 const path = decodeURIComponent(urlParams.get("file"))
+let modified_epoch = 1.5;
 let serverFileContent = "";
 let themes = { "dark": "ace/theme/monokai", "light": "ace/theme/chrome", "default": "ace/theme/dracula" }
 let theme = themes["default"];
@@ -160,6 +161,7 @@ async function get_file() {
         $("#editorParent").toggle(true); // show
         editor.session.setValue(responseData.data.content);
         serverFileContent = responseData.data.content;
+        modified_epoch = responseData.data.attributes.modified_epoch;
         setSaveStatus(true);
         $("#file_size_sm").text(responseData.data.attributes.size);
         $("#file_type_sm").text(responseData.data.attributes.mime);
@@ -247,7 +249,7 @@ for (let ev of event_types) {
     )
 }
 
-async function save() {
+async function save(overwrite = false) {
     let text = editor.session.getValue();
 
     const token = getCookie("_xsrf");
@@ -256,12 +258,41 @@ async function save() {
         headers: {
             "X-XSRFToken": token,
         },
-        body: JSON.stringify({ path: path, contents: text }),
+        body: JSON.stringify({ path: path, contents: text, modified_epoch: modified_epoch, overwrite: overwrite }),
     });
+    if (res.status === 409) {
+        bootbox.prompt({
+            title: `${$("#editor-wrapper").attr("data-changeConflict")}`,
+            message: `${$("#editor-wrapper").attr("data-serverModified")}`,
+            inputType: 'select',
+            inputOptions: [{
+                text: `${$("#editor-wrapper").attr("data-overwrite")}`,
+                value: 'overwrite'
+            },
+            {
+                text: `${$("#editor-wrapper").attr("data-repull")}`,
+                value: 'repull'
+            },],
+            callback: function (result) {
+                if (result === "overwrite") {
+                    save(true);
+                } else if (result === "repull") {
+                    get_file();
+                } else {
+                    return;
+                }
+            }
+        });
+    }
     let responseData = await res.json();
     if (responseData.status === "ok") {
         serverFileContent = text;
+        modified_epoch = responseData.data.attributes.modified_epoch;
         setSaveStatus(true);
+        $("#file_size_sm").text(responseData.data.attributes.size);
+        $("#file_type_sm").text(responseData.data.attributes.mime);
+        $("#file_modified_sm").text(responseData.data.attributes.modified);
+
     } else {
         bootbox.alert({
             title: responseData.error,

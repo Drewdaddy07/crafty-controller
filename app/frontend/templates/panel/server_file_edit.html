@@ -4,7 +4,12 @@ end %} {% block content %}
 
 <link href="/static/assets/css/partial/crafty-editor.css" rel="stylesheet">
 
-<div class="content-wrapper">
+<div class="content-wrapper" id="editor-wrapper"
+    data-changeConflict='{{translate("serverFiles", "changeConflict", data["lang"])}}'
+    data-serverModified='{{translate("serverFiles", "serverModified", data["lang"])}}'
+    data-cancel='{{translate("serverFiles", "cancel", data["lang"])}}'
+    data-overwrite='{{translate("serverFiles", "overwrite", data["lang"])}}'
+    data-repull='{{translate("serverFiles", "repull", data["lang"])}}'>
     <!-- Page Title Header Starts-->
     <div class="row page-title-header centered">
         <div id="server-name" class="info-flex">
