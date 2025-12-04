@@ -23,6 +23,8 @@ from app.classes.shared.websocket_manager import WebSocketManager
 
 logger = logging.getLogger(__name__)
 
+SERVER_DETAIL = "/panel/server_detail"
+
 
 class FileHelpers:
     allowed_quotes = ['"', "'", "`"]
@@ -107,6 +109,11 @@ class FileHelpers:
                                 progress = (downloaded / total_size) * 100
                                 logger.info(
                                     f"SSL File Get - Download progress: {progress:.2f}%"
+                                )
+                                WebSocketManager().broadcast_page(
+                                    SERVER_DETAIL,
+                                    "download_progress",
+                                    round(progress, 1),
                                 )
                     return True
             except (urllib.error.URLError, ssl.SSLError) as e:
@@ -273,7 +280,7 @@ class FileHelpers:
             "total_files": self.helper.human_readable_file_size(dir_bytes),
         }
         WebSocketManager().broadcast_page_params(
-            "/panel/server_detail",
+            SERVER_DETAIL,
             {"id": str(server_id)},
             "backup_status",
             results,
@@ -344,7 +351,7 @@ class FileHelpers:
                     }
                     # send status results to page.
                     WebSocketManager().broadcast_page_params(
-                        "/panel/server_detail",
+                        SERVER_DETAIL,
                         {"id": str(server_id)},
                         "backup_status",
                         results,

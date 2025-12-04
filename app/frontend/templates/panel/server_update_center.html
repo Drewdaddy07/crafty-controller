@@ -130,20 +130,19 @@
                                             <br>
                                             <br>
                                         </p>
-                                        {% if data['server_stats']['updating'] %}
-                                        <i id="update-spinner" class="fa fa-spinner fa-spin"></i>&nbsp;<button
-                                            onclick="send_command(serverId, 'update_executable');"
-                                            id="update_executable" class="btn btn-outline-warning">{{
-                                            translate('serverConfig',
-                                            'update', data['lang']) }}</button>
-                                        {% else %}
-                                        <i style="visibility: hidden;" id="update-spinner"
-                                            class="fa fa-spinner fa-spin"></i>&nbsp;<button
-                                            onclick="send_command(serverId, 'update_executable');"
-                                            id="update_executable" class="btn btn-outline-warning">{{
-                                            translate('serverConfig',
-                                            'update', data['lang']) }}</button>
-                                        {% end %}
+                                        <div>
+                                            <button onclick="send_command(serverId, 'update_executable');"
+                                                id="update_executable" class="btn btn-outline-warning">{{
+                                                translate('serverConfig',
+                                                'update', data['lang']) }}</button>
+                                        </div>
+                                        <br>
+                                        <div class="download-progress progress d-none" role="progressbar"
+                                            id="download-progress">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                id="download-progress-bar" style="width:0%;" aria-valuenow="0"
+                                                aria-valuemin="0" aria-valuemax="100">0%</div>
+                                        </div>
                                     </blockquote>
                                 </div>
                             </div>
@@ -174,6 +173,7 @@
         async function send_command(serverId, command) {
             //<!--  this getCookie function is in base.html-->
             const token = getCookie("_xsrf");
+            $("#download-progress").removeClass("d-none");
 
             let res = await fetch(`/api/v2/servers/${serverId}/action/${command}`, {
                 method: 'POST',

@@ -9,3 +9,12 @@
 .full {
     width: 100%;
 }
+
+.download-progress {
+    width: 100%;
+    outline: 1px solid var(--outline)
+}
+
+#update_executable {
+    justify-content: center;
+}
