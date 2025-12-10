@@ -236,6 +236,17 @@
     transform: translateY(0);
 }
 
+#table-nav-buttons .btn-danger {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+#table-nav-buttons .btn-danger:hover {
+    background: var(--danger);
+    color: white;
+    box-shadow: 0 2px 6px rgba(255, 98, 88, 0.3);
+}
+
 .tree-nav {
     cursor: pointer;
 }
