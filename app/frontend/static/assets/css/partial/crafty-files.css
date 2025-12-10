@@ -9,6 +9,46 @@
     cursor: pointer;
 }
 
+.row-select, .root-select {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--outline);
+    border-radius: 6px;
+    background: var(--deep-bg);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.row-select:hover, .root-select:hover {
+    border-color: var(--info);
+    background: var(--card-banner-bg);
+}
+
+.row-select:checked, .root-select:checked {
+    background: var(--info);
+    border-color: var(--info);
+}
+
+.row-select:checked::after, .root-select:checked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    width: 4px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.row-select:focus, .root-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(136, 98, 224, 0.2);
+}
+
 .animated-table tbody tr {
     background: var(--ram-bg);
     border-radius: 10px;
