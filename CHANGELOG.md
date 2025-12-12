@@ -6,6 +6,7 @@ TBD
 TBD
 ### Tweaks
 - Update documentation reference url in API index ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/921))
+- Bump Orjson to 3.11.4 to resolve support for Python 3.14 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/922))
 ### Lang
 TBD
 <br><br>
