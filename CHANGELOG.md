@@ -1,9 +1,7 @@
 # Changelog
-## --- [4.6.2] - 2025/TBD
+## --- [4.6.2] - 2025/12/15
 ## NOTE From this version onwards, Python 3.9 will no longer work with Crafty
 
-### New features
-TBD
 ### Bug fixes
 - Refactor translation parsing on creation pages ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/925))
 - [`CVE-2025-14700`] Security: Prevent users being able to access unsafe builtin attributes w/ jinja expressions ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/927))
@@ -12,8 +10,6 @@ TBD
 ### Tweaks
 - Update documentation reference url in API index ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/921))
 - Bump Orjson to 3.11.4 to resolve support for Python 3.14 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/922))
-### Lang
-TBD
 <br><br>
 
 ## --- [4.6.1] - 2025/11/23
