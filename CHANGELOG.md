@@ -1,4 +1,17 @@
 # Changelog
+## --- [4.6.2] - 2025/12/15
+## NOTE From this version onwards, Python 3.9 will no longer work with Crafty
+
+### Bug fixes
+- Refactor translation parsing on creation pages ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/925))
+- [`CVE-2025-14700`] Security: Prevent users being able to access unsafe builtin attributes w/ jinja expressions ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/927))
+- [`CVE-2025-14701`] Security: Prevent MOTDs from being able to inject HTML ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/928))
+- Fix functionality of the webhook test button ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/930))
+### Tweaks
+- Update documentation reference url in API index ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/921))
+- Bump Orjson to 3.11.4 to resolve support for Python 3.14 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/922))
+<br><br>
+
 ## --- [4.6.1] - 2025/11/23
 ### New features
 - Jinja2 Dynamic Variables for Webhook Notifications ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/757))
@@ -14,6 +27,10 @@
 - Fix download button showing for snapshot backups ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/913))
 ### Tweaks
 - Provide better feedback on restore failures ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/914))
+<br><br>
+
+## --- [4.6.0] - 2025/11/23
+### Skipped in error
 <br><br>
 
 ## --- [4.5.5] - 2025/10/14
