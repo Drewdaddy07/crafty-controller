@@ -2,6 +2,7 @@ import os
 import logging
 import json
 import html
+from pathlib import PurePath, Path
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
@@ -40,6 +41,11 @@ files_get_schema = {
 
 class ApiImportFilesIndexHandler(BaseApiHandler):
     def post(self):
+        root_path = False
+        # Disable pylint. This is a constant variable
+        IMPORT_PATH = Path(  # pylint: disable=invalid-name
+            self.controller.project_root, "import", "upload"
+        )
         auth_data = self.authenticate_user()
         if not auth_data:
             return
@@ -89,7 +95,19 @@ class ApiImportFilesIndexHandler(BaseApiHandler):
         # TODO: limit some columns for specific permissions?
         folder = data["folder"]
         user_id = auth_data[4]["user_id"]
-        root_path = False
+        folder = self.file_helper.get_absolute_path(IMPORT_PATH, folder)
+        if not Helpers.validate_traversal(
+            IMPORT_PATH,
+            Path(folder).resolve(),
+        ):
+            return self.finish_json(
+                400,
+                {
+                    "status": "error",
+                    "error": "TRAVERSAL DETECTED",
+                    "error_data": str(e),
+                },
+            )
         if data["unzip"]:
             # This is awful. Once uploads go to return
             # JSON we need to remove this and just send
@@ -99,7 +117,12 @@ class ApiImportFilesIndexHandler(BaseApiHandler):
                     self.controller.project_root, "import", "upload", folder
                 )
             if Helpers.check_file_exists(folder):
-                folder = self.file_helper.unzip_server(folder, user_id)
+                folder = self.file_helper.unzip_server(
+                    Path(folder),
+                    Path(IMPORT_PATH, self.helper.create_uuid(), "unpacked"),
+                    user_id,
+                )
+                self.helper.ensure_dir_exists(folder)
                 root_path = True
             else:
                 if user_id:
@@ -127,7 +150,9 @@ class ApiImportFilesIndexHandler(BaseApiHandler):
                 )
         return_json = {
             "root_path": {
-                "path": folder,
+                "path": str(
+                    PurePath.relative_to(PurePath(folder), PurePath(IMPORT_PATH))
+                ),
                 "top": root_path,
             }
         }
@@ -150,12 +175,16 @@ class ApiImportFilesIndexHandler(BaseApiHandler):
             dpath = self.helper.wtol_path(dpath)
             if os.path.isdir(rel):
                 return_json[filename] = {
-                    "path": dpath,
+                    "path": str(
+                        PurePath.relative_to(PurePath(dpath), PurePath(IMPORT_PATH))
+                    ),
                     "dir": True,
                 }
             else:
                 return_json[filename] = {
-                    "path": dpath,
+                    "path": str(
+                        PurePath.relative_to(PurePath(dpath), PurePath(IMPORT_PATH))
+                    ),
                     "dir": False,
                 }
         self.finish_json(200, {"status": "ok", "data": return_json})
