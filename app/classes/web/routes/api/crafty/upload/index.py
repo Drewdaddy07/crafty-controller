@@ -3,6 +3,7 @@ import logging
 import shutil
 import asyncio
 import anyio
+from pathlib import Path
 from PIL import Image
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.helpers.helpers import Helpers
@@ -116,9 +117,7 @@ class ApiFilesUploadHandler(BaseApiHandler):
                     },
                 )
             # Set directory to upload import dir
-            self.upload_dir = os.path.join(
-                self.controller.project_root, "import", "upload"
-            )
+            self.upload_dir = Path(self.controller.project_root, "import", "upload")
             u_type = "server_import"
             accepted_types = ARCHIVE_MIME_TYPES
         else:
