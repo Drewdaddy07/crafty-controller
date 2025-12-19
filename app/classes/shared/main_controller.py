@@ -572,6 +572,10 @@ class Controller:
             new_server_id,
             backup_path,
         )
+        # Disable pylint. This is a constant variable
+        IMPORT_PATH = Path(  # pylint: disable=invalid-name
+            self.project_root, "import", "upload"
+        )
         if data["create_type"] == "minecraft_java":
             if root_create_data["create_type"] == "download_jar":
                 # modded update urls from server jars will only update the installer
@@ -592,9 +596,16 @@ class Controller:
                     new_server_id,
                 )
             elif root_create_data["create_type"] == "import_server":
+                server_path = self.file_helper.get_absolute_path(
+                    IMPORT_PATH, create_data["existing_server_path"]
+                )
+                if not self.helper.validate_traversal(
+                    IMPORT_PATH, Path(server_path).resolve()
+                ):
+                    logger.error("Failed to import server due to traversal")
                 ServersController.set_import(new_server_id)
                 self.import_helper.import_jar_server(
-                    Path(self.project_root, "import", "upload", create_data["uuid"]),
+                    server_path,
                     new_server_path,
                     monitoring_port,
                     new_server_id,
@@ -609,8 +620,15 @@ class Controller:
             elif root_create_data["create_type"] == "import_server":
                 ServersController.set_import(new_server_id)
                 full_exe_path = os.path.join(new_server_path, create_data["executable"])
+                server_path = self.file_helper.get_absolute_path(
+                    IMPORT_PATH, create_data["existing_server_path"]
+                )
+                if not self.helper.validate_traversal(
+                    IMPORT_PATH, Path(server_path).resolve()
+                ):
+                    logger.error("Failed to import server due to traversal")
                 self.import_helper.import_bedrock_server(
-                    Path(self.project_root, "import", "upload", create_data["uuid"]),
+                    server_path,
                     new_server_path,
                     monitoring_port,
                     full_exe_path,
