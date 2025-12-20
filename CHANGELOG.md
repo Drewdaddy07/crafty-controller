@@ -1,11 +1,11 @@
 # Changelog
 ## --- [4.7.0] - 2025/TBD
-### New features
-TBD
+### Refactor
+- Overhaul/Replace `Server Files` panel to be more feature complete and user friendly ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/909))
 ### Bug fixes
 TBD
 ### Tweaks
-TBD
+- Bump tornado for CVE-2025-67725 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/934))
 ### Lang
 TBD
 <br><br>
