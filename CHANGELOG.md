@@ -1,13 +1,67 @@
 # Changelog
-## --- [4.5.4] - 2025/TBD
-### New features
-TBD
-### Bug fixes
-TBD
+## --- [4.7.0] - 2025/12/25
+### Refactor
+- Overhaul/Replace `Server Files` panel to be more feature complete and user friendly ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/909))
 ### Tweaks
-TBD
+- Bump tornado for CVE-2025-67725 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/934))
+<br><br>
+
+## --- [4.6.2] - 2025/12/15
+## NOTE From this version onwards, Python 3.9 will no longer work with Crafty
+
+### Bug fixes
+- Refactor translation parsing on creation pages ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/925))
+- [`CVE-2025-14700`] Security: Prevent users being able to access unsafe builtin attributes w/ jinja expressions ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/927))
+- [`CVE-2025-14701`] Security: Prevent MOTDs from being able to inject HTML ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/928))
+- Fix functionality of the webhook test button ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/930))
+### Tweaks
+- Update documentation reference url in API index ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/921))
+- Bump Orjson to 3.11.4 to resolve support for Python 3.14 ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/922))
+<br><br>
+
+## --- [4.6.1] - 2025/11/23
+### New features
+- Jinja2 Dynamic Variables for Webhook Notifications ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/757))
+### Bug fixes
+- Change hour and minute intervals in APScheudler to fix incorrect triggers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/910))
+- Use asyncio locks to limit upload handler race condition ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/907))
+- Fix static fonts not working on some browsers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/906))
+- Fix import directory cleanup was not pointing to the proper directory ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/918))
+- Fix survey not appearing on first login ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/917))
+- Fix failue deleting server's DB files on server delete ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/916))
+- Fix server.properties overwritten in bedrock update ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/915) | [Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/919))
+- Fix zip backup download button always downloading the most recent, not the selected backup ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/913))
+- Fix download button showing for snapshot backups ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/913))
+### Tweaks
+- Provide better feedback on restore failures ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/914))
+<br><br>
+
+## --- [4.6.0] - 2025/11/23
+### Skipped in error
+<br><br>
+
+## --- [4.5.5] - 2025/10/14
+### Bug fixes
+- Fix MFA login failure when the totp `dict`'s attempted codes list changes size while being processed ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/899))
+- Resolve additional json being appended to downloaded files ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/902))
+- Fix certain users not showing up following a change made in `4.5.0` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Fix password dialogue closing with no indicator the password did not change when the passwords did not match ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Fix empty 'Reason' when banning user from crafty UI ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/904))
+### Tweaks
+- Remove triple option for validation and use sole robust error ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Allow numeric passwords ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Enable use of `<enter>` key for password form submission ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+- Add extended debug logging to help troubleshoot MFA issues ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/898))
+- Change upload progress bar to monitor chunk processing ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/896))
 ### Lang
-TBD
+- Consolidate "passLength" & "numbericPassword" to single "passProp" translation for validators ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/901))
+<br><br>
+
+## --- [4.5.4] - 2025/09/15
+### Bug fixes
+- Refactor upload chunk removal to ensure file operations are asynchronous ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/894))
+### Tweaks
+- Remove all 3rd party font requests ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/893))
 <br><br>
 
 ## --- [4.5.3] - 2025/09/03

@@ -472,7 +472,6 @@
         "renameItemQuestion": "Quale sarà il nuovo nome?",
         "save": "Salva",
         "size": "Modifica la dimensione dell'editor",
-        "stayHere": "NON ABBANDONARE QUESTA PAGINA!",
         "unsupportedLanguage": "Avviso: Questo non è un tipo di file supportato",
         "unzip": "Scompatta",
         "upload": "Carica",
@@ -692,7 +691,6 @@
         "totpHeader": "Autenticazione a più fattori"
     },
     "validators": {
-        "passLength": "La password è troppo corta. Lunghezza minima: 8",
         "enumErr": "Validazione fallita. Valori accettabili includono: ",
         "serverExeCommand": "Il comando di esecuzione del server dev’essere una stringa con lunghezza minima di 1.",
         "serverLogPath": "Il percorso del registro del server dev’essere una stringa con lunghezza minima di 1",

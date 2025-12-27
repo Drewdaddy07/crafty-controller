@@ -701,7 +701,9 @@ class PanelHandler(BaseHandler):
                         server_id, model=True
                     )
                 )
-                page_data["triggers"] = WebhookFactory.get_monitored_events()
+                page_data["triggers"] = list(
+                    WebhookFactory.get_monitored_events().keys()
+                )
 
             def get_banned_players_html():
                 banned_players = self.controller.servers.get_banned_players(server_id)
@@ -716,7 +718,7 @@ class PanelHandler(BaseHandler):
                     html += f"""
                     <li class="playerItem banned">
                         <h3>{player['name']}</h3>
-                        <span>Banned by {player['source']} for reason: {player['reason']}</span>
+                        <span>Banned by {player.get('source', '')} for reason: {player.get('reason', 'None')}</span>
                         <button onclick="send_command_to_server('pardon {player['name']}')" type="button" class="btn btn-danger">Unban</button>
                     </li>
                     """
@@ -991,7 +993,7 @@ class PanelHandler(BaseHandler):
             page_data["webhook"]["enabled"] = True
 
             page_data["providers"] = WebhookFactory.get_supported_providers()
-            page_data["triggers"] = WebhookFactory.get_monitored_events()
+            page_data["triggers"] = list(WebhookFactory.get_monitored_events().keys())
 
             if not EnumPermissionsServer.CONFIG in page_data["user_permissions"]:
                 if not superuser:
@@ -1042,7 +1044,7 @@ class PanelHandler(BaseHandler):
             ).split(",")
 
             page_data["providers"] = WebhookFactory.get_supported_providers()
-            page_data["triggers"] = WebhookFactory.get_monitored_events()
+            page_data["triggers"] = list(WebhookFactory.get_monitored_events().keys())
 
             if not EnumPermissionsServer.CONFIG in page_data["user_permissions"]:
                 if not superuser:
@@ -1628,6 +1630,8 @@ class PanelHandler(BaseHandler):
 
         elif page == "wiki":
             template = "panel/wiki.html"
+        elif page == "edit_file":
+            template = "panel/server_file_edit.html"
         if self.helper.crafty_starting:
             template = "panel/loading.html"
         self.render(

@@ -453,7 +453,6 @@
         "renameItemQuestion": "מה צריך להיות השם החדש?",
         "save": "שמור",
         "size": "החלף את גודל העורך",
-        "stayHere": "אל תצאומדף הזה!!",
         "unsupportedLanguage": "אזהרה: סוג קובץ נתמך",
         "unzip": "פתיחת קובץ מכווץ",
         "upload": "העלה",
@@ -663,9 +662,6 @@
         "userSettings": "הגדרות משתמש",
         "userTheme": "ערכת נושא UI",
         "uses": "מספר השימושים המותרים (-1==ללא הגבלה)"
-    },
-    "validators": {
-        "passLength": "סיסמא קצרה מדי. אורך מינימלי: 8"
     },
     "webhooks": {
         "areYouSureDel": "האם אתה בטוח שברצונך למחוק את ה-Webhook הזה?",
