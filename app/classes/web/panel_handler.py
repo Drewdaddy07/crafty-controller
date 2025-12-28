@@ -5,6 +5,7 @@ import os
 import typing as t
 import json
 import logging
+import mimetypes
 from pathlib import Path
 from zoneinfo import ZoneInfoNotFoundError
 import httpx
@@ -831,9 +832,13 @@ class PanelHandler(BaseHandler):
                 page_data["config-json"] = self.helper.get_categorized_settings(
                     self.helper.get_all_settings()
                 )
+
                 page_data["availables_languages"] = []
                 page_data["all_languages"] = []
                 page_data["all_partitions"] = self.helper.get_all_mounts()
+                page_data["all_mime_types"] = self.helper.get_setting(
+                    "crafty_accepted_mime_types"
+                )
 
                 for file in sorted(
                     os.listdir(
