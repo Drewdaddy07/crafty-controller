@@ -26,6 +26,8 @@ from app.classes.shared.websocket_manager import WebSocketManager
 
 logger = logging.getLogger(__name__)
 
+mimetypes.init(files=[])
+
 PLAIN_TEXT = "text/plain"
 
 
@@ -37,29 +39,18 @@ class FileHelpers:
 
     def __init__(self, helper):
         self.helper: Helpers = helper
-        self.mime_types = mimetypes.MimeTypes()
         self.add_mime_types()  # Add to account for yml, conf, properties, etc
-        self.text_mime_prefixes = [
-            "text/",
-            "application/json",
-            "application/xml",
-            "application/javascript",
-            "text/x-shellscript",
-            "application/x-shellscript",
-            "text/x-sh",
-            "application/x-sh",
-            "text/x-bat",
-            "application/x-bat",
-            "text/x-log",
-        ]
+        self.text_mime_prefixes = self.helper.get_setting("crafty_accepted_mime_types")
 
     def add_mime_types(self):
         # Extend the default list
-        file_types = self.helper.get_setting("additional_file_types")
-        if isinstance(file_types, dict):
-            for f_type, ext_list in file_types.items():
-                for extension in ext_list:
-                    mimetypes.add_type(str(f_type), str(extension))
+        file_types = self.helper.get_setting("custom_extension_map")
+        print(file_types)
+        if isinstance(file_types, list):
+            for f_type in file_types:
+                if len(f_type) > 1:
+                    print(f_type[0], f_type[1])
+                    mimetypes.add_type(str(f_type[0]), str(f_type[1]))
 
     def probably_can_open_file(self, path: str) -> tuple:
         mime = mimetypes.guess_type(path)
@@ -194,7 +185,7 @@ class FileHelpers:
             return clean
 
     def check_mime_types(self, file_path):
-        m_type, _value = self.mime_types.guess_type(file_path)
+        m_type, _value = mimetypes.guess_type(file_path)
         return m_type
 
     @staticmethod
