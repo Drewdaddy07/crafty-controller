@@ -70,6 +70,12 @@ MASTER_CONFIG = {
     "superMFA": False,
     "general_user_log_access": False,
     "base_url": "127.0.0.1:8443",
+    "additional_file_types": {
+        "text/yaml": [".yml", ".yaml"],
+        "text/toml": [".toml"],
+        "text/plain": [".ini", ".conf", ".properties", ".env"],
+        "application/x-bat": [".ps1", ".bat"],
+    },
 }
 
 CONFIG_CATEGORIES = {

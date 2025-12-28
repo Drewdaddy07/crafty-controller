@@ -55,15 +55,11 @@ class FileHelpers:
 
     def add_mime_types(self):
         # Extend the default list
-        mimetypes.add_type("text/yaml", ".yml")
-        mimetypes.add_type("text/yaml", ".yaml")
-        mimetypes.add_type("text/toml", ".toml")
-        mimetypes.add_type(PLAIN_TEXT, ".ini")
-        mimetypes.add_type(PLAIN_TEXT, ".conf")
-        mimetypes.add_type(PLAIN_TEXT, ".properties")
-        mimetypes.add_type(PLAIN_TEXT, ".env")
-        mimetypes.add_type("application/x-bat", ".ps1")
-        mimetypes.add_type("text/x-log", ".log")
+        file_types = self.helper.get_setting("additional_file_types")
+        if isinstance(file_types, dict):
+            for f_type, ext_list in file_types.items():
+                for extension in ext_list:
+                    mimetypes.add_type(str(f_type), str(extension))
 
     def probably_can_open_file(self, path: str) -> tuple:
         mime = mimetypes.guess_type(path)
