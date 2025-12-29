@@ -195,24 +195,6 @@
       return (isNaN(value) ? value : +value);
     }
   }
-  $("#last_input").on("keydown", function (e) {
-    if (e.keyCode == 13) {
-      e.preventDefault();
-      console.log("hi");
-      const container = $("<div>");
-      const input = $("#last_input").clone()
-      input.removeAttr("id")
-      const select = $("#last_select").clone(true, true)
-      select.removeAttr("id")
-      container.append(input);
-      container.append("<br>")
-      container.append(select);
-      select.val($("#last_select").val()).trigger("change");
-      $("#extension-mapping").append(container).append("<br>");
-      $("#last_input").val("");
-      $("#last_select").val("").trigger("change");
-    }
-  });
   $("#config-form").on("submit", async function (e) {
     e.preventDefault();
     $("#submit-status").html('<i class="fa fa-spinner fa-spin"></i>');
