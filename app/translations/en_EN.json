@@ -48,7 +48,6 @@
         "disabled_language_files": "Globally disabled language files",
         "enable_otp_skew": "Enable MFA skew (+-1)",
         "enable_user_self_delete": "Allow users to delete their own account",
-        "files": "Files",
         "general": "General",
         "history_max_age": "How long Crafty should hold onto your server statistics (days)",
         "https_port": "Crafty's port",
