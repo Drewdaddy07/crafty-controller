@@ -70,6 +70,16 @@ class FileHelpers:
     def can_unicode_decode(
         self, path: str, encoding: str = "utf-8", sample_size: int = 4096
     ) -> bool:
+        """Check to see if file can be unicode decoded. Check for binary files
+
+        Args:
+            path (str): path to file to check
+            encoding (str, optional): encoding profile. Defaults to "utf-8".
+            sample_size (int, optional): size of sample to take. Defaults to 4096.
+
+        Returns:
+            bool: Returns true if file can be opened, false if not
+        """
         try:
             with open(
                 path,
@@ -77,6 +87,10 @@ class FileHelpers:
             ) as sample:
                 chunk = sample.read(sample_size)
             chunk.decode(encoding)
+            if (
+                b"\x00" in chunk
+            ):  # check for empty bytes (binary files) this will also capture utf-16
+                return False
             return True
         except UnicodeDecodeError:
             return False
