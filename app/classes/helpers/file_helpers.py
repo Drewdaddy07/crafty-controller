@@ -40,25 +40,52 @@ class FileHelpers:
     def __init__(self, helper):
         self.helper: Helpers = helper
         self.add_mime_types()  # Add to account for yml, conf, properties, etc
-        self.text_mime_prefixes = self.helper.get_setting("crafty_accepted_mime_types")
+        self.text_mime_prefixes = [
+            "text/",
+            "application/json",
+            "application/xml",
+            "application/javascript",
+            "text/x-shellscript",
+            "application/x-shellscript",
+            "text/x-sh",
+            "application/x-sh",
+            "text/x-bat",
+            "application/x-bat",
+            "text/x-log",
+        ]
 
     def add_mime_types(self):
         # Extend the default list
-        file_types = self.helper.get_setting("custom_extension_map")
-        print(file_types)
-        if isinstance(file_types, list):
-            for f_type in file_types:
-                if len(f_type) > 1:
-                    print(f_type[0], f_type[1])
-                    mimetypes.add_type(str(f_type[0]), str(f_type[1]))
+        mimetypes.add_type("text/yaml", ".yml")
+        mimetypes.add_type("text/yaml", ".yaml")
+        mimetypes.add_type("text/toml", ".toml")
+        mimetypes.add_type(PLAIN_TEXT, ".ini")
+        mimetypes.add_type(PLAIN_TEXT, ".conf")
+        mimetypes.add_type(PLAIN_TEXT, ".properties")
+        mimetypes.add_type(PLAIN_TEXT, ".prop")
+        mimetypes.add_type(PLAIN_TEXT, ".env")
+        mimetypes.add_type("application/x-bat", ".ps1")
+        mimetypes.add_type("text/x-log", ".log")
+
+    def can_unicode_decode(
+        self, path: str, encoding: str = "utf-8", sample_size: int = 4096
+    ) -> bool:
+        try:
+            with open(
+                path,
+                "rb",
+            ) as sample:
+                chunk = sample.read(sample_size)
+            chunk.decode(encoding)
+            return True
+        except UnicodeDecodeError:
+            return False
 
     def probably_can_open_file(self, path: str) -> tuple:
+        if Path(path).is_dir():
+            return (False, None)
         mime = mimetypes.guess_type(path)
-        if str(mime[0]).startswith("text/"):
-            return (True, mime[0])
-        if mime[0] in self.text_mime_prefixes:
-            return (True, mime[0])
-        return (False, mime[0])
+        return (self.can_unicode_decode(path), mime[0])
 
     @staticmethod
     def ssl_get_file(  # pylint: disable=too-many-positional-arguments
