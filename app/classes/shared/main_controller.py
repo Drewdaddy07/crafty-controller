@@ -596,16 +596,16 @@ class Controller:
                     new_server_id,
                 )
             elif root_create_data["create_type"] == "import_server":
-                server_path = self.file_helper.get_absolute_path(
+                existing_server_path = self.file_helper.get_absolute_path(
                     IMPORT_PATH, create_data["existing_server_path"]
                 )
                 if not self.helper.validate_traversal(
-                    IMPORT_PATH, Path(server_path).resolve()
+                    IMPORT_PATH, Path(existing_server_path).resolve()
                 ):
                     logger.error("Failed to import server due to traversal")
                 ServersController.set_import(new_server_id)
                 self.import_helper.import_jar_server(
-                    server_path,
+                    existing_server_path,
                     new_server_path,
                     monitoring_port,
                     new_server_id,
@@ -620,15 +620,15 @@ class Controller:
             elif root_create_data["create_type"] == "import_server":
                 ServersController.set_import(new_server_id)
                 full_exe_path = os.path.join(new_server_path, create_data["executable"])
-                server_path = self.file_helper.get_absolute_path(
+                existing_server_path = self.file_helper.get_absolute_path(
                     IMPORT_PATH, create_data["existing_server_path"]
                 )
                 if not self.helper.validate_traversal(
-                    IMPORT_PATH, Path(server_path).resolve()
+                    IMPORT_PATH, Path(existing_server_path).resolve()
                 ):
                     logger.error("Failed to import server due to traversal")
                 self.import_helper.import_bedrock_server(
-                    server_path,
+                    existing_server_path,
                     new_server_path,
                     monitoring_port,
                     full_exe_path,
@@ -1080,7 +1080,7 @@ class Controller:
         if not self.helper.ensure_dir_exists(new_server_path):
             WebSocketManager().broadcast_user(
                 user_id,
-                "send_start_error",
+                "send_error",
                 {
                     "error": "Crafty failed to move server dir. "
                     "It seems Crafty lacks permission to write to "
