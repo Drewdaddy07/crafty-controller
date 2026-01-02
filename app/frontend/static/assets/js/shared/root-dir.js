@@ -6,16 +6,9 @@ function getDirView(event = false) {
     if (event) {
         try {
             let path = event.target.parentElement.getAttribute('data-path');
-            console.log("path")
-            if (event.target.parentElement.classList.contains('clicked')) {
-
-                if ($(`#${path}span`).hasClass('files-tree-title')) {
-                    $(`#${path}ul`).toggleClass("d-block");
-                    $(`#${path}span`).toggleClass("tree-caret-down");
-                }
-                return;
-            } else {
+            if (!event.target.parentElement.classList.contains('clicked')) {
                 getTreeView(path);
+                return;
             }
         } catch {
             console.log("Well that failed");
@@ -62,7 +55,7 @@ function process_tree_response(response) {
     document.getElementById('upload_submit').disabled = false;
 
     let path = response.data.request_path
-    let text = `<ul class="tree-nested d-block" id="${path}ul">`;
+    let text = `<ul class="tree-nested d-block" id="${path}-ul">`;
     Object.entries(response.data).forEach(([key, value]) => {
         if (key === "top" || key === "request_path") {
             //continue is not valid in for each. Return acts as a continue.
@@ -75,7 +68,7 @@ function process_tree_response(response) {
             text += `<li class="tree-item" id="${dpath}li"  data-path="${dpath}">
                     <div id="${dpath}" data-path="${dpath}" data-name="${filename}" class="tree-caret tree-ctx-item tree-folder">
                     <input type="radio" class="root-input" name="root_path" value="${dpath}">
-                    <span id="${dpath}span" class="files-tree-title" data-path="${dpath}" data-name="${filename}" onclick="getDirView(event)">
+                    <span id="${dpath}-span" class="files-tree-title" data-path="${dpath}" data-name="${filename}" onclick="getDirView(event)">
                       <i class="far fa-folder text-info"></i>
                       <i class="far fa-folder-open text-info"></i>
                       ${filename}
@@ -102,19 +95,19 @@ function process_tree_response(response) {
         }
     } else {
         try {
-            document.getElementById(path + "span").classList.add('tree-caret-down');
+            document.getElementById(path + "-span").classList.add('tree-caret-down');
             document.getElementById(path).innerHTML += text;
             document.getElementById(path).classList.add("clicked");
         } catch {
             console.log("Bad")
         }
 
-        let toggler = document.getElementById(path + "span");
+        let toggler = document.getElementById(`${path}-span`);
 
         if (toggler.classList.contains('files-tree-title')) {
-            document.getElementById(path + "span").addEventListener("click", function caretListener() {
-                document.getElementById(path + "ul").classList.toggle("d-block");
-                document.getElementById(path + "span").classList.toggle("tree-caret-down");
+            document.getElementById(path + "-span").addEventListener("click", function caretListener() {
+                document.getElementById(path + "-ul").classList.toggle("d-block");
+                document.getElementById(path + "-span").classList.toggle("tree-caret-down");
             });
         }
     }
@@ -123,6 +116,6 @@ function process_tree_response(response) {
 function getToggleMain(event) {
     const path = event.target.parentElement.getAttribute('data-path');
     document.getElementById("files-tree").classList.toggle("d-block");
-    document.getElementById(path + "span").classList.toggle("tree-caret-down");
-    document.getElementById(path + "span").classList.toggle("tree-caret");
+    document.getElementById(path + "-span").classList.toggle("tree-caret-down");
+    document.getElementById(path + "-span").classList.toggle("tree-caret");
 }
