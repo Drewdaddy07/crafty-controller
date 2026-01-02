@@ -319,26 +319,6 @@
 
 {% block js %}
 <script src="../../static/assets/js/shared/upload.js"></script>
-<script>
-  document.getElementById("root_upload_button").addEventListener("click", function (event) {
-    if (document.getElementById('root_upload_button').classList.contains('clicked')) {
-      show_file_tree();
-      return;
-    } else {
-      document.getElementById('root_upload_button').classList.add('clicked')
-    }
-    bootbox.dialog({
-      message: `<div class="progress" style="width: 100%;"><div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">&nbsp;<i class="fa-solid fa-spinner"></i></div></div>`,
-      closeButton: false
-    });
-    setTimeout(function () {
-      getDirView();
-    }, 2000);
-  });
-  var upload = false;
-  var file;
-
-</script>
 <script type="text/javascript" src="../../static/assets/js/shared/root-dir.js"></script>
 
 <script>
@@ -462,7 +442,8 @@
         "minecraft_java_create_data": {
           "create_type": "import_server",
           "import_server_create_data": {
-            "existing_server_path": zip_root_path,
+            "archive_name": $("#file-uploaded").val(),
+            "archive_internal_path": zip_root_path,
             "jarfile": formDataObject.server_jar,
             "mem_min": formDataObject.mem_min,
             "mem_max": formDataObject.mem_max,

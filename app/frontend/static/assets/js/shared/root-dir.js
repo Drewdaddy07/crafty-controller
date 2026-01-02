@@ -119,3 +119,20 @@ function getToggleMain(event) {
     document.getElementById(path + "-span").classList.toggle("tree-caret-down");
     document.getElementById(path + "-span").classList.toggle("tree-caret");
 }
+
+document.getElementById("root_upload_button").addEventListener("click", function (event) {
+    if (document.getElementById('root_upload_button').classList.contains('clicked')) {
+        show_file_tree();
+        return;
+    } else {
+        document.getElementById('root_upload_button').classList.add('clicked')
+    }
+    bootbox.dialog({
+        message: `<div class="progress" style="width: 100%;"><div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">&nbsp;<i class="fa-solid fa-spinner"></i></div></div>`,
+        closeButton: false
+    });
+    setTimeout(function () {
+        getDirView();
+    }, 2000);
+});
+var file;
