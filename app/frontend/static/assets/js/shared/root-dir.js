@@ -6,7 +6,7 @@ function getDirView(event = false) {
     if (event) {
         try {
             let path = event.target.parentElement.getAttribute('data-path');
-            if (!event.target.parentElement.classList.contains('clicked')) {
+            if (!$(event.target).closest(".tree-folder").hasClass('clicked')) {
                 getTreeView(path);
                 return;
             }
