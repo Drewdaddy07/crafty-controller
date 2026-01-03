@@ -1,15 +1,11 @@
-import os
 import logging
 import json
-import html
 import zipfile
-from pathlib import PurePath, Path
+from pathlib import Path
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
-from app.classes.helpers.helpers import Helpers
 from app.classes.web.base_api_handler import BaseApiHandler
-from app.classes.web.websocket_handler import WebSocketManager
 
 logger = logging.getLogger(__name__)
 files_get_schema = {
@@ -25,7 +21,6 @@ files_get_schema = {
 
 class ApiImportFilesIndexHandler(BaseApiHandler):
     def post(self):
-        root_path = False
         # Disable pylint. This is a constant variable
         IMPORT_PATH = Path(  # pylint: disable=invalid-name
             self.controller.project_root, "import", "upload"
@@ -85,16 +80,13 @@ class ApiImportFilesIndexHandler(BaseApiHandler):
         path = zipfile.Path(
             Path(IMPORT_PATH, data["file_name"]), at=str(data["local_path"])
         )
-        # TODO add traversal checking
-        """
         try:
-            self.helper.validate_traversal(IMPORT_PATH, path)
+            self.helper.validate_traversal(str(IMPORT_PATH), str(path))
         except ValueError:
             return self.finish_json(
                 403,
                 {"status": "error", "error": "TRAVERSAL_DETECTED", "error_data": ""},
             )
-            """
         for file in path.iterdir():
             if file.is_dir():
                 return_json[file.name] = {
