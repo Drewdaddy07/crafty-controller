@@ -474,7 +474,28 @@ class FileHelpers:
                     {"id": proc_id, "percent": percent, "complete": complete},
                 )
 
-    def should_extract(self, file, base_include_path, excluded_files, server_update):
+    def should_extract(
+        self, file, base_include_path, excluded_files, server_update
+    ) -> bool:
+        """Checks a number of inclusions or exclusions against a given file to see
+        if that file should be unpacked to the target directory.
+
+        ** Base include path and excluded files should not be used in conjunction with
+        eachother.
+
+        Args:
+            file (str): file name from Path zip object namelist
+            base_include_path (str): string from root dir select that shows base path
+            like 'server_files/myserver/' (should not be used with excluded_files)
+            excluded_files (list): list of file exclusions (should not be used with base
+            include path)
+            server_update (bool): whether or not the method was called as a result
+            of a server update process.
+
+        Returns:
+            bool: Whether or not the file from the list should be included in the
+            unzipped archive.
+        """
         if server_update and file in excluded_files:
             return False
 
@@ -488,6 +509,29 @@ class FileHelpers:
             return True
         except ValueError:
             return False
+
+    def get_archive_internal_name(
+        self, file, base_include_path
+    ) -> str | pathlib.PurePosixPath:
+        """If we have a base include path we will rewrite the internal zip object path
+        to remove the /path/to/file/in/archive so we don't have nested folders when we
+        unzip. This will return the relative path to the archive to avoid nesting.
+
+        Args:
+            file (str): file from namelist from zip object
+            base_include_path (str): string from root dir select that shows base path
+            like 'server_files/myserver/'
+
+        Returns:
+            str | PurePosixPath: returns the original file name or new file name
+        """
+        if base_include_path:  # Rewrite path of zip_ref_info if we have a base include
+            try:
+                rel = pathlib.PurePosixPath(file).relative_to(base_include_path)
+                return str(rel)
+            except ValueError:
+                logger.debug("%s is not relative to %s", file, base_include_path)
+        return file
 
     def unzip_file(
         self,
@@ -525,7 +569,6 @@ class FileHelpers:
             # make sure the directory we're unzipping this to exists
             Helpers.ensure_dir_exists(destination_path)
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                # we'll extract this to the temp dir using zipfile module
                 files_list = zip_ref.namelist()
                 for idx, file in enumerate(files_list):
                     info = zip_ref.getinfo(file)
@@ -533,16 +576,9 @@ class FileHelpers:
                     if self.should_extract(
                         file, base_include_path, ignored_names, server_update
                     ):
-                        if base_include_path:
-                            try:
-                                rel = pathlib.PurePosixPath(file).relative_to(
-                                    base_include_path
-                                )
-                                info.filename = str(rel)
-                            except ValueError:
-                                logger.debug(
-                                    "%s is not relative to %s", file, base_include_path
-                                )
+                        info.filename = self.get_archive_internal_name(
+                            file, base_include_path
+                        )
                         zip_ref.extract(file, destination_path)
                     percent = round((idx / len(files_list)) * 100)
                     self.send_percentage(server_users, percent, proc_id, False)
