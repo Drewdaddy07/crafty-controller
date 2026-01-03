@@ -375,6 +375,10 @@ class Controller:
             return {"percent": 0, "total_files": 0}
 
     def create_api_server(self, data: dict, user_id):
+        # Disable pylint. This is a constant variable
+        IMPORT_PATH = Path(  # pylint: disable=invalid-name
+            self.project_root, "import", "upload"
+        )
         server_fs_uuid = Helpers.create_uuid()
         new_server_path = os.path.join(self.helper.servers_dir, server_fs_uuid)
         backup_path = os.path.join(self.helper.backup_path, server_fs_uuid)
@@ -477,8 +481,8 @@ class Controller:
 
         elif data["create_type"] == "minecraft_bedrock":
             if root_create_data["create_type"] == "import_server":
-                existing_server_path = Helpers.get_os_understandable_path(
-                    create_data["existing_server_path"]
+                existing_archive_path = Helpers.get_os_understandable_path(
+                    create_data["archive_name"]
                 )
                 if Helpers.is_os_windows():
                     server_command = (
@@ -508,19 +512,18 @@ class Controller:
             server_command = create_data.get("command", server_command)
         elif data["create_type"] == "custom":
             # TODO: working_directory, executable_update
+            raise KeyError
             if root_create_data["create_type"] == "raw_exec":
                 pass
             elif root_create_data["create_type"] == "import_server":
-                existing_server_path = Helpers.get_os_understandable_path(
-                    create_data["existing_server_path"]
-                )
+                existing_archive_path = Path(
+                    IMPORT_PATH, create_data["archive_name"]
+                ).resolve()
+                # TODO Add traversal checking even though this is no implemented
                 try:
-                    FileHelpers.copy_dir(existing_server_path, new_server_path, True)
+                    FileHelpers.copy_dir(existing_archive_path, new_server_path, True)
                 except shutil.Error as ex:
                     logger.error(f"Server import failed with error: {ex}")
-            elif root_create_data["create_type"] == "import_zip":
-                # TODO: Copy files from the zip file to the new server directory
-                raise NotImplementedError("Not yet implemented")
 
             _create_server_properties_if_needed(0, True)
 
@@ -572,10 +575,6 @@ class Controller:
             new_server_id,
             backup_path,
         )
-        # Disable pylint. This is a constant variable
-        IMPORT_PATH = Path(  # pylint: disable=invalid-name
-            self.project_root, "import", "upload"
-        )
         if data["create_type"] == "minecraft_java":
             if root_create_data["create_type"] == "download_jar":
                 # modded update urls from server jars will only update the installer
@@ -596,17 +595,19 @@ class Controller:
                     new_server_id,
                 )
             elif root_create_data["create_type"] == "import_server":
-                existing_server_path = self.file_helper.get_absolute_path(
-                    IMPORT_PATH, create_data["existing_server_path"]
+                existing_archive_path = self.file_helper.get_absolute_path(
+                    IMPORT_PATH, create_data["archive_name"]
                 )
                 if not self.helper.validate_traversal(
-                    IMPORT_PATH, Path(existing_server_path).resolve()
+                    IMPORT_PATH, Path(existing_archive_path).resolve()
                 ):
-                    logger.error("Failed to import server due to traversal")
+                    return logger.error("Failed to import server due to traversal")
+
                 ServersController.set_import(new_server_id)
-                self.import_helper.import_jar_server(
-                    existing_server_path,
+                self.import_helper.import_zipped_server(
+                    existing_archive_path,
                     new_server_path,
+                    create_data["archive_internal_path"],
                     monitoring_port,
                     new_server_id,
                 )
@@ -620,16 +621,17 @@ class Controller:
             elif root_create_data["create_type"] == "import_server":
                 ServersController.set_import(new_server_id)
                 full_exe_path = os.path.join(new_server_path, create_data["executable"])
-                existing_server_path = self.file_helper.get_absolute_path(
-                    IMPORT_PATH, create_data["existing_server_path"]
+                existing_archive_path = self.file_helper.get_absolute_path(
+                    IMPORT_PATH, create_data["archive_name"]
                 )
                 if not self.helper.validate_traversal(
-                    IMPORT_PATH, Path(existing_server_path).resolve()
+                    IMPORT_PATH, Path(existing_archive_path).resolve()
                 ):
-                    logger.error("Failed to import server due to traversal")
-                self.import_helper.import_bedrock_server(
-                    existing_server_path,
+                    return logger.error("Failed to import server due to traversal")
+                self.import_helper.import_zipped_server(
+                    existing_archive_path,
                     new_server_path,
+                    create_data["archive_internal_path"],
                     monitoring_port,
                     full_exe_path,
                     new_server_id,

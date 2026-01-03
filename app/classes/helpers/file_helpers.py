@@ -474,6 +474,21 @@ class FileHelpers:
                     {"id": proc_id, "percent": percent, "complete": complete},
                 )
 
+    def should_extract(self, file, base_include_path, excluded_files, server_update):
+        if server_update and file in excluded_files:
+            return False
+
+        if not base_include_path:
+            return True
+
+        try:
+            pathlib.PurePosixPath(file).relative_to(
+                pathlib.PurePosixPath(base_include_path)
+            )
+            return True
+        except ValueError:
+            return False
+
     def unzip_file(
         self,
         zip_path,
@@ -482,6 +497,7 @@ class FileHelpers:
         server_update: bool = False,
         proc_id=None,
         user_id=None,
+        base_include_path=None,
     ) -> None:
         """
         Unzips zip file at zip_path to location generated at new_dir based on zip
@@ -508,20 +524,29 @@ class FileHelpers:
         if Helpers.check_file_perms(zip_path) and os.path.isfile(zip_path):
             # make sure the directory we're unzipping this to exists
             Helpers.ensure_dir_exists(destination_path)
-            try:
-                with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                    # we'll extract this to the temp dir using zipfile module
-                    files_list = zip_ref.namelist()
-                    for idx, file in enumerate(files_list):
-                        # if the file is one of our ignored names we'll skip it
-                        if Path(file).name in ignored_names and server_update:
-                            continue
-                        percent = round((idx / len(files_list)) * 100)
+            with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                # we'll extract this to the temp dir using zipfile module
+                files_list = zip_ref.namelist()
+                for idx, file in enumerate(files_list):
+                    info = zip_ref.getinfo(file)
+                    # if the file is one of our ignored names we'll skip it
+                    if self.should_extract(
+                        file, base_include_path, ignored_names, server_update
+                    ):
+                        if base_include_path:
+                            try:
+                                rel = pathlib.PurePosixPath(file).relative_to(
+                                    base_include_path
+                                )
+                                info.filename = str(rel)
+                            except ValueError:
+                                logger.debug(
+                                    "%s is not relative to %s", file, base_include_path
+                                )
                         zip_ref.extract(file, destination_path)
-                        self.send_percentage(server_users, percent, proc_id, False)
-                self.send_percentage(server_users, 100, proc_id, True)
-            except Exception as ex:
-                Console.error(ex)
+                    percent = round((idx / len(files_list)) * 100)
+                    self.send_percentage(server_users, percent, proc_id, False)
+            self.send_percentage(server_users, 100, proc_id, True)
 
     @staticmethod
     def get_absolute_path(server_path, path) -> str:

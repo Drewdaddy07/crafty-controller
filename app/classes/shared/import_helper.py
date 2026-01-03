@@ -21,30 +21,29 @@ class ImportHelpers:
         self.file_helper: FileHelpers = file_helper
         self.helper: Helpers = helper
 
-    def import_jar_server(self, server_path, new_server_dir, port, new_id):
+    def import_zipped_server(
+        self, archive_path, new_server_dir, base_include_path, port, new_id
+    ):
         import_thread = threading.Thread(
-            target=self.import_threaded_jar_server,
+            target=self.import_threaded_zipped_server,
             daemon=True,
-            args=(server_path, new_server_dir, port, new_id),
+            args=(archive_path, new_server_dir, base_include_path, port, new_id),
             name=f"{new_id}_import",
         )
         import_thread.start()
 
-    def import_threaded_jar_server(self, server_path, new_server_dir, port, new_id):
-        for item in os.listdir(server_path):
-            try:
-                if os.path.isdir(os.path.join(server_path, item)):
-                    FileHelpers.move_dir(
-                        os.path.join(server_path, item),
-                        os.path.join(new_server_dir, item),
-                    )
-                else:
-                    FileHelpers.move_file(
-                        os.path.join(server_path, item),
-                        os.path.join(new_server_dir, item),
-                    )
-            except shutil.Error as ex:
-                logger.error(f"Server import failed with error: {ex}")
+    def import_threaded_zipped_server(
+        self, archive_path, new_server_dir, base_include_path, port, new_id
+    ):
+        self.file_helper.unzip_file(
+            archive_path,
+            new_server_dir,
+            new_id,
+            False,
+            base_include_path=base_include_path,
+        )
+
+        self.file_helper.del_file(archive_path)
 
         has_properties = False
         for item in os.listdir(new_server_dir):
@@ -61,57 +60,6 @@ class ImportHelpers:
                 file.write(f"server-port={port}")
                 file.close()
         time.sleep(5)
-        ServersController.finish_import(new_id)
-        server_users = PermissionsServers.get_server_user_list(new_id)
-        for user in server_users:
-            WebSocketManager().broadcast_user(user, "send_start_reload", {})
-
-    def import_bedrock_server(
-        self, server_path, new_server_dir, port, full_jar_path, new_id
-    ):
-        import_thread = threading.Thread(
-            target=self.import_threaded_bedrock_server,
-            daemon=True,
-            args=(server_path, new_server_dir, port, full_jar_path, new_id),
-            name=f"{new_id}_bedrock_import",
-        )
-        import_thread.start()
-
-    def import_threaded_bedrock_server(
-        self, server_path, new_server_dir, port, full_jar_path, new_id
-    ):
-        for item in os.listdir(server_path):
-            try:
-                if os.path.isdir(os.path.join(server_path, item)):
-                    FileHelpers.move_dir(
-                        os.path.join(server_path, item),
-                        os.path.join(new_server_dir, item),
-                    )
-                else:
-                    FileHelpers.move_file(
-                        os.path.join(server_path, item),
-                        os.path.join(new_server_dir, item),
-                    )
-            except shutil.Error as ex:
-                logger.error(f"Server import failed with error: {ex}")
-
-        has_properties = False
-        for item in os.listdir(new_server_dir):
-            if str(item) == "server.properties":
-                has_properties = True
-        if not has_properties:
-            logger.info(
-                f"No server.properties found on zip file import. "
-                f"Creating one with port selection of {str(port)}"
-            )
-            with open(
-                os.path.join(new_server_dir, "server.properties"), "w", encoding="utf-8"
-            ) as file:
-                file.write(f"server-port={port}")
-                file.close()
-        if os.name != "nt":
-            if Helpers.check_file_exists(full_jar_path):
-                os.chmod(full_jar_path, 0o2760)
         ServersController.finish_import(new_id)
         server_users = PermissionsServers.get_server_user_list(new_id)
         for user in server_users:
