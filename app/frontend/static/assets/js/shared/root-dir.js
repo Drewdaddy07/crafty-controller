@@ -131,7 +131,7 @@ document.getElementById("root_upload_button").addEventListener("click", function
         document.getElementById('root_upload_button').classList.add('clicked')
     }
     bootbox.dialog({
-        message: `<div class="progress" style="width: 100%;"><div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">&nbsp;<i class="fa-solid fa-spinner"></i></div></div>`,
+        message: `<i class='fa fa-spin fa-cog'></i>&nbsp; ${$("#lower_half").attr("data-loading")}`,
         closeButton: false
     });
     setTimeout(function () {

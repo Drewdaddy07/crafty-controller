@@ -207,7 +207,8 @@
               </div>
             </div>
 
-            <div id="lower_half" class="d-none">
+            <div id="lower_half" class="d-none"
+              data-loading='{{translate("serverFiles", "loadingRecords", data["lang"])}}'>
               <div class="form-group">
                 <label for="server">{{ translate('serverWizard', 'selectRoot', data['lang']) }} <small>{{
                     translate('serverWizard', 'explainRoot', data['lang']) }}</small></label>
