@@ -77,6 +77,15 @@ class ApiImportFilesIndexHandler(BaseApiHandler):
         }
         if data["local_path"] != "":
             data["local_path"] += "/"
+        try:  # Check Traversal On Zipfile local path
+            self.helper.validate_traversal(
+                IMPORT_PATH, Path(data["local_path"]).resolve()
+            )
+        except ValueError:
+            return self.finish_json(
+                403,
+                {"status": "error", "error": "TRAVERSAL_DETECTED", "error_data": ""},
+            )
         try:
             path = zipfile.Path(
                 Path(IMPORT_PATH, data["file_name"]), at=str(data["local_path"])
