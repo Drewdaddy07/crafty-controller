@@ -510,9 +510,7 @@ class FileHelpers:
         except ValueError:
             return False
 
-    def get_archive_internal_name(
-        self, file, base_include_path
-    ) -> str | pathlib.PurePosixPath:
+    def get_archive_internal_name(self, file, base_include_path) -> str:
         """If we have a base include path we will rewrite the internal zip object path
         to remove the /path/to/file/in/archive so we don't have nested folders when we
         unzip. This will return the relative path to the archive to avoid nesting.
@@ -531,7 +529,7 @@ class FileHelpers:
                 return str(rel)
             except ValueError:
                 logger.debug("%s is not relative to %s", file, base_include_path)
-        return file
+        return str(file)
 
     def unzip_file(
         self,
