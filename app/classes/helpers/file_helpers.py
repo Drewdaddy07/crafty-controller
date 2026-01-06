@@ -602,24 +602,6 @@ class FileHelpers:
         return str(path)
 
     @staticmethod
-    def unzip_server(zip_path: Path, target_path: Path, user_id):
-        if Helpers.check_file_perms(zip_path):
-            with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                # we'll extract this to the temp dir using zipfile module
-                files_list = zip_ref.namelist()
-                for idx, file in enumerate(files_list):
-                    percent = round((idx / len(files_list)) * 100)
-                    zip_ref.extract(file, target_path)
-                    print(file)
-                    WebSocketManager().broadcast_user(
-                        user_id,
-                        "zip_status",
-                        {"id": None, "percent": percent, "complete": False},
-                    )
-            if user_id:
-                return target_path
-
-    @staticmethod
     def get_chunk_path_from_hash(chunk_hash: bytes, repository_location: Path) -> Path:
         """
         Given chunk hash and repository location, gets full path to chunk in repo.
