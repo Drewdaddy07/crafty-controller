@@ -75,21 +75,26 @@ class ApiImportFilesIndexHandler(BaseApiHandler):
             "top": data["local_path"] == "",
             "request_path": data["local_path"],
         }
+        zip_path = Path(IMPORT_PATH, data["file_name"]).resolve()
+
         if data["local_path"] != "":
             data["local_path"] += "/"
+
         try:  # Check Traversal On Zipfile local path
             self.helper.validate_traversal(
-                IMPORT_PATH, Path(data["local_path"]).resolve()
-            )
-        except ValueError:
+                IMPORT_PATH, zip_path
+            )  # check file name traversal
+        except ValueError as why:
             return self.finish_json(
                 403,
-                {"status": "error", "error": "TRAVERSAL_DETECTED", "error_data": ""},
+                {
+                    "status": "error",
+                    "error": "TRAVERSAL_DETECTED",
+                    "error_data": str(why),
+                },
             )
         try:
-            path = zipfile.Path(
-                Path(IMPORT_PATH, data["file_name"]), at=str(data["local_path"])
-            )
+            path = zipfile.Path(zip_path, at=str(data["local_path"]))
         except zipfile.BadZipFile:
             return self.finish_json(
                 500,
@@ -102,11 +107,17 @@ class ApiImportFilesIndexHandler(BaseApiHandler):
                 },
             )
         try:
-            self.helper.validate_traversal(str(IMPORT_PATH), str(path))
-        except ValueError:
+            self.helper.validate_traversal(
+                str(Path(IMPORT_PATH, data["file_name"])), str(path)
+            )
+        except ValueError as why:
             return self.finish_json(
                 403,
-                {"status": "error", "error": "TRAVERSAL_DETECTED", "error_data": ""},
+                {
+                    "status": "error",
+                    "error": "TRAVERSAL_DETECTED",
+                    "error_data": str(why),
+                },
             )
         for file in path.iterdir():
             if file.is_dir():
