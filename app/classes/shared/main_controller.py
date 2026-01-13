@@ -57,7 +57,6 @@ class Controller:
         self.passkey_helper: HelperPasskey = HelperPasskey(database)
         self.roles_helper: HelperRoles = HelperRoles(database)
         self.servers_helper: HelperServers = HelperServers(database)
-        self.totp_helper: HelperTOTP = HelperTOTP(database)
         self.management_helper: HelpersManagement = HelpersManagement(
             database, self.helper
         )
