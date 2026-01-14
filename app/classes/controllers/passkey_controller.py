@@ -33,14 +33,14 @@ class PasskeyController:
         self.helper = helper
 
     def get_rp_id(self):
-        base_url = self.helper.get_setting("base_url", "127.0.0.1:8443")
+        base_url = self.helper.get_setting("base_url", "localhost:8443")
         return base_url.split(":")[0]
 
     def get_rp_name(self):
         return self.helper.get_setting("passkey_rp_name", "Crafty Controller")
 
     def get_origin(self):
-        base_url = self.helper.get_setting("base_url", "127.0.0.1:8443")
+        base_url = self.helper.get_setting("base_url", "localhost:8443")
         return f"https://{base_url}"
 
     def is_enabled(self):

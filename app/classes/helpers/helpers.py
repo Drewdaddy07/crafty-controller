@@ -69,7 +69,7 @@ MASTER_CONFIG = {
     "max_login_attempts": 3,
     "superMFA": False,
     "general_user_log_access": False,
-    "base_url": "127.0.0.1:8443",
+    "base_url": "localhost:8443",
     "enable_passkey_auth": False,
     "passkey_rp_name": "Crafty Controller",
 }
