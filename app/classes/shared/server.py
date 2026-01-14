@@ -24,8 +24,8 @@ from apscheduler.jobstores.base import JobLookupError, ConflictingIdError
 # OpenMetrics/Prometheus Imports
 from prometheus_client import CollectorRegistry, Gauge, Info
 
-from app.classes.minecraft.stats import Stats
-from app.classes.minecraft.mc_ping import ping, ping_bedrock
+from app.classes.remote_stats.stats import Stats
+from app.classes.remote_stats.mc_ping import ping, ping_bedrock
 from app.classes.models.servers import HelperServers, Servers
 from app.classes.models.server_stats import HelperServerStats
 from app.classes.models.management import HelpersManagement, HelpersWebhooks

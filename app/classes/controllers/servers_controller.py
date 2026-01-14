@@ -15,7 +15,7 @@ from app.classes.shared.backup_mgr import BackupManager
 from app.classes.helpers.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
 
-from app.classes.minecraft.stats import Stats
+from app.classes.remote_stats.stats import Stats
 
 from app.classes.models.servers import HelperServers
 from app.classes.models.users import HelperUsers, ApiKeys
