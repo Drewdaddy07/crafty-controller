@@ -7,7 +7,7 @@ function base64URLToBuffer(base64url) {
     const binary = atob(base64Padded);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
+        bytes[i] = binary.codePointAt(i);
     }
     return bytes.buffer;
 }
@@ -16,7 +16,7 @@ function bufferToBase64URL(buffer) {
     const bytes = new Uint8Array(buffer);
     let binary = '';
     for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
+        binary += String.fromCodePoint(bytes[i]);
     }
     const base64 = btoa(binary);
     return base64.replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
