@@ -152,7 +152,7 @@ function process_tree_response(response) {
 function getDirView(event = false) {
     if (event) {
         try {
-            const path = event.target.parentElement.getAttribute('data-path');
+            const path = event.target.parentElement.dataset.path;
             if (!$(event.target).closest(".tree-folder").hasClass('clicked')) {
                 getTreeView(path);
                 return;
