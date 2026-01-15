@@ -7,7 +7,6 @@ import os
 import pathlib
 import shutil
 import ssl
-import tempfile
 import time
 import urllib.request
 import zipfile
@@ -21,7 +20,6 @@ import certifi
 from app.classes.models.server_permissions import PermissionsServers
 from app.classes.helpers.cryptography_helper import CryptoHelper
 from app.classes.helpers.helpers import Helpers
-from app.classes.shared.console import Console
 from app.classes.shared.websocket_manager import WebSocketManager
 
 logger = logging.getLogger(__name__)
