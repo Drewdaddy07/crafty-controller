@@ -35,7 +35,11 @@ IMAGE_MIME_TYPES = [
     "image/webp",
 ]
 
-ARCHIVE_MIME_TYPES = ["application/zip"]
+ARCHIVE_MIME_TYPES = [
+    "application/zip",
+    "application/x-zip-compressed",
+    "application/octet-stream",
+]
 
 
 class ApiFilesUploadHandler(BaseApiHandler):
