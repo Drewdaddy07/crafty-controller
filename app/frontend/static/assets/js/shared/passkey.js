@@ -1,7 +1,7 @@
 // Base64URL encoding/decoding utilities for WebAuthn
 
 function base64URLToBuffer(base64url) {
-    const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = base64url.replaceAll('-', '+').replaceAll('_', '/');
     const padding = '='.repeat((4 - base64.length % 4) % 4);
     const base64Padded = base64 + padding;
     const binary = atob(base64Padded);
@@ -19,5 +19,5 @@ function bufferToBase64URL(buffer) {
         binary += String.fromCharCode(bytes[i]);
     }
     const base64 = btoa(binary);
-    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    return base64.replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
 }
