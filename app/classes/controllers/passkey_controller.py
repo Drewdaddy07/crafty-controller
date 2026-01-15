@@ -1,7 +1,8 @@
 import base64
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
 
 from webauthn import (
     generate_registration_options,
@@ -25,6 +26,11 @@ from app.classes.models.passkey import HelperPasskey, PasskeyData
 logger = logging.getLogger(__name__)
 
 CHALLENGE_TIMEOUT_MINUTES = 5
+
+
+def _utc_now():
+    """Return current UTC time as a naive datetime (for database compatibility)."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class PasskeyController:
@@ -74,7 +80,7 @@ class PasskeyController:
         )
 
         challenge_id = Helpers.create_uuid()
-        expires_at = datetime.utcnow() + timedelta(minutes=CHALLENGE_TIMEOUT_MINUTES)
+        expires_at = _utc_now() + timedelta(minutes=CHALLENGE_TIMEOUT_MINUTES)
 
         user_obj = HelperUsers.get_by_id(user_id)
         self.passkey_helper.store_challenge(
@@ -107,7 +113,7 @@ class PasskeyController:
             logger.warning("Challenge user mismatch for %s", challenge_id)
             return False
 
-        if challenge_record.expires_at <= datetime.utcnow():
+        if challenge_record.expires_at <= _utc_now():
             logger.warning("Expired challenge: %s", challenge_id)
             self.passkey_helper.delete_challenge(challenge_id)
             return False
@@ -182,7 +188,7 @@ class PasskeyController:
         )
 
         challenge_id = Helpers.create_uuid()
-        expires_at = datetime.utcnow() + timedelta(minutes=CHALLENGE_TIMEOUT_MINUTES)
+        expires_at = _utc_now() + timedelta(minutes=CHALLENGE_TIMEOUT_MINUTES)
 
         self.passkey_helper.store_challenge(
             challenge_id=challenge_id,
@@ -210,7 +216,7 @@ class PasskeyController:
             self.passkey_helper.delete_challenge(challenge_id)
             return False
 
-        if challenge_record.expires_at <= datetime.utcnow():
+        if challenge_record.expires_at <= _utc_now():
             logger.warning("Expired challenge: %s", challenge_id)
             self.passkey_helper.delete_challenge(challenge_id)
             return False
