@@ -253,7 +253,7 @@
     // Passkey authentication - base64URLToBuffer and bufferToBase64URL loaded from passkey.js
 
     async function checkPasskeySupport() {
-      if (window.PublicKeyCredential &&
+      if (globalThis.PublicKeyCredential &&
           PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
         try {
           // Check if passkey is enabled on server
