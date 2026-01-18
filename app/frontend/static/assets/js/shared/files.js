@@ -279,7 +279,7 @@ function setup_table_listeners() {
         // Prevent the click from firing if it’s on the context menu button
         if ($(e.target).closest(".context-button").length) return;
         if ($(e.target).closest(".row-select").length) return;
-        if ($(this).children(" .column-1").hasClass("editing")) return;
+        if ($(this).children(".column-1").hasClass("editing")) return;
         if (e.ctrlKey) {
             window.open(`/panel/server_detail?id=${serverId}&dir=${encodeURIComponent($(this).attr("data-path"))}&subpage=files#context-container`, "_blank");
             return;
