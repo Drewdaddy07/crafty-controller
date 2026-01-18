@@ -444,7 +444,7 @@ class ServerInstance:
         if self.helper.dir_migration:
             WebSocketManager().broadcast_user(
                 user_id,
-                "send_start_error",
+                "send_error",
                 {
                     "error": self.helper.translation.translate(
                         "error",
@@ -459,7 +459,7 @@ class ServerInstance:
             if user_id:
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "not-downloaded", user_lang
@@ -538,7 +538,7 @@ class ServerInstance:
             if user_id:
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "not-downloaded", user_lang
@@ -574,7 +574,7 @@ class ServerInstance:
                 if user_id:
                     WebSocketManager().broadcast_user(
                         user_id,
-                        "send_start_error",
+                        "send_error",
                         {
                             "error": self.helper.translation.translate(
                                 "error", "start-error", user_lang
@@ -601,7 +601,7 @@ class ServerInstance:
                     if user_id:
                         WebSocketManager().broadcast_user(
                             user_id,
-                            "send_start_error",
+                            "send_error",
                             {
                                 "error": self.helper.translation.translate(
                                     "error", "noJava", user_lang
@@ -615,7 +615,7 @@ class ServerInstance:
                 if user_id:
                     WebSocketManager().broadcast_user(
                         user_id,
-                        "send_start_error",
+                        "send_error",
                         {
                             "error": self.helper.translation.translate(
                                 "error", "start-error", user_lang
@@ -662,7 +662,7 @@ class ServerInstance:
                 # Sends port reminder message.
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "portReminder", user_lang
@@ -710,7 +710,7 @@ class ServerInstance:
             if not Helpers.check_internet():
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "internet", user_lang
