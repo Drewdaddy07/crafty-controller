@@ -265,7 +265,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             data["path"],
         ):
             return self.finish_json(
-                400,
+                403,
                 {
                     "status": "error",
                     "error": "TRAVERSAL DETECTED",
@@ -437,7 +437,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                 or filename == server_path
             ):
                 return self.finish_json(
-                    400,
+                    403,
                     {
                         "status": "error",
                         "error": "TRAVERSAL DETECTED",
@@ -609,7 +609,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             data["path"],
         ):
             return self.finish_json(
-                400,
+                403,
                 {
                     "status": "error",
                     "error": "TRAVERSAL DETECTED",
@@ -733,7 +733,7 @@ class ApiServersServerFilesCreateHandler(BaseApiHandler):
             new_item_path,
         ):
             return self.finish_json(
-                400,
+                403,
                 {
                     "status": "error",
                     "error": "TRAVERSAL DETECTED",
@@ -838,7 +838,7 @@ class ApiServersServerFilesCreateHandler(BaseApiHandler):
             path,
         ):
             return self.finish_json(
-                400,
+                403,
                 {
                     "status": "error",
                     "error": "TRAVERSAL DETECTED",
@@ -950,7 +950,7 @@ class ApiServersServerFilesZipHandler(BaseApiHandler):
             target_file,
         ):
             return self.finish_json(
-                400,
+                403,
                 {
                     "status": "error",
                     "error": "TRAVERSAL DETECTED",
@@ -1057,7 +1057,7 @@ class ApiServersServerFileDownload(BaseApiHandler):
                 file_path,
             ):
                 return self.finish_json(
-                    400,
+                    403,
                     {
                         "status": "error",
                         "error": "TRAVERSAL DETECTED",
@@ -1066,7 +1066,7 @@ class ApiServersServerFileDownload(BaseApiHandler):
                 )
         except ValueError:
             return self.finish_json(
-                400,
+                403,
                 {
                     "status": "error",
                     "error": "TRAVERSAL DETECTED",
@@ -1216,6 +1216,21 @@ class ApiServersServerFilesOperationHandler(BaseApiHandler):
                     Path(item["target_path"], Path(source_path).name),
                 )
             )
+
+            # Check for any path traversals out of server_path
+            try:
+                Helpers.validate_traversal(server_path, source_path)
+                Helpers.validate_traversal(server_path, target_path)
+            except ValueError:
+                return self.finish_json(
+                    403,
+                    {
+                        "status": "error",
+                        "error": "TRAVERSAL DETECTED",
+                        "error_data": "TRAVERSAL DETECTED",
+                    },
+                )
+
             try:
                 self.do_operation(operation, source_path, target_path)
             except shutilError as why:
