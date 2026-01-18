@@ -36,7 +36,7 @@ class BigBucket:
 
         return cache
 
-    def get_bucket_data(self):
+    def get_bucket_data(self) -> dict | None:
         data = self._read_cache()
         return data.get("categories")
 
