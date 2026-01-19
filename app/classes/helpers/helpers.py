@@ -343,7 +343,7 @@ class Helpers:
             with open(path, "r", encoding="utf-8"):
                 logger.info(f"{path} is readable")
             return True
-        except PermissionError:
+        except (PermissionError, FileNotFoundError):
             return False
 
     @staticmethod
