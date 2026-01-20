@@ -203,7 +203,6 @@ class ImportHelpers:
             text=True,
         )
         url_line = ""
-        auth_code_line = ""
         while self.process.poll() is None:
             line = self.process.stdout.readline().strip()
             if not line:
@@ -237,8 +236,6 @@ class ImportHelpers:
                         {"link": line},
                     )
 
-            else:
-                auth_code_line = line
         # Unzip downloaded archive.
         self.file_helper.unzip_file(
             Path(server_path, HYTALE_0UTPUT_NAME),
