@@ -166,6 +166,7 @@ class ImportHelpers:
         download_thread.start()
 
     def download_install_hytale(self, server_path: str | Path, new_id: uuid.UUID):
+        time.sleep(5)  # let users catch up
         server_users = PermissionsServers.get_server_user_list(new_id)
 
         bb_cache = self.big_bucket.get_bucket_data(self.helper.big_bucket_hytale_cache)
@@ -222,9 +223,14 @@ class ImportHelpers:
                 line.startswith(hytale_json.parsing_lines.url_line_start)
                 and url_line == ""
             ):
-
+                url_line = line
+                with open(
+                    Path(server_path, "hytale_install_auth_url.txt"),
+                    "w",
+                    encoding="utf-8",
+                ) as auth_file:
+                    auth_file.write(url_line)
                 for user in server_users:
-                    time.sleep(10)  # let users load back to dashboard
                     WebSocketManager().broadcast_user(
                         user,
                         "hytale_auth",
@@ -271,18 +277,18 @@ class ImportHelpers:
         self.modify_permissions_json(server_path)
 
     def modify_permissions_json(self, server_path: str | Path):
-        with open(
-            Path(server_path, "permissions.json"), "r+", encoding="utf-8"
-        ) as perms_file:
-            decoded = json.loads(perms_file)
-            if not "groups" in decoded:
-                decoded["groups"] = {}
-            # Add permissions for Nitrado plugins to access server
-            perms_list = [
-                "nitrado.query.web.read.server",
-                "nitrado.query.web.read.universe",
-                "nitrado.query.web.read.players",
-            ]
-            decoded["groups"]["ANONYMOUS"] = perms_list
-            perms_file.seek(0)  # return to top of file
-            perms_file.write(json.dumps(decoded))
+        # Make sure we do not overwrite user data
+        if not Helpers.check_file_exists(str(Path(server_path, "permissions.json"))):
+            with open(
+                Path(server_path, "permissions.json"), "w", encoding="utf-8"
+            ) as perms_file:
+                decoded = {
+                    "groups": {
+                        "ANONYMOUS": [
+                            "nitrado.query.web.read.server",
+                            "nitrado.query.web.read.universe",
+                            "nitrado.query.web.read.players",
+                        ]
+                    }
+                }
+                perms_file.write(json.dumps(decoded, indent=4))
