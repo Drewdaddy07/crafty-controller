@@ -815,6 +815,7 @@ class Helpers:
             (r"(\[.+?/INFO\])", r'<span class="mc-log-info">\1</span>'),
             (r"(\[.+?/WARN\])", r'<span class="mc-log-warn">\1</span>'),
             (r"(\[.+?/ERROR\])", r'<span class="mc-log-error">\1</span>'),
+            (r"(\[.+?/SEVERE\])", r'<span class="mc-log-error">\1</span>'),
             (r"(\[.+?/FATAL\])", r'<span class="mc-log-fatal">\1</span>'),
             (
                 r"(\w+?\[/\d+?\.\d+?\.\d+?\.\d+?\:\d+?\])",
@@ -824,6 +825,7 @@ class Helpers:
             (r"(\[.+? INFO\])", r'<span class="mc-log-info">\1</span>'),
             (r"(\[.+? WARN\])", r'<span class="mc-log-warn">\1</span>'),
             (r"(\[.+? ERROR\])", r'<span class="mc-log-error">\1</span>'),
+            (r"(\[.+? SEVERE\])", r'<span class="mc-log-error">\1</span>'),
             (r"(\[.+? FATAL\])", r'<span class="mc-log-fatal">\1</span>'),
         ]
 
