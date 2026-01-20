@@ -194,7 +194,7 @@ class ImportHelpers:
             self.file_helper.ssl_get_file(
                 hytale_json.linux_installer_url, server_path, unix_exe
             )
-        self.process = subprocess.Popen(
+        process = subprocess.Popen(
             install_command,
             cwd=server_path,
             stdin=subprocess.PIPE,
@@ -203,8 +203,8 @@ class ImportHelpers:
             text=True,
         )
         url_line = ""
-        while self.process.poll() is None:
-            line = self.process.stdout.readline().strip()
+        while process.poll() is None:
+            line = process.stdout.readline().strip()
             if not line:
                 continue
 
