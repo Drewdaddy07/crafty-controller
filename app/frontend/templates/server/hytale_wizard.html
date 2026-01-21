@@ -365,7 +365,9 @@
       body: data,
     });
     let responseData = await res.json();
-    if (responseData.status != "ok") {
+    if (responseData.status === "ok" && data["hytale_create_data"]["create_type"] != "download_exe") {
+      globalThis.location.href = `/panel/server_detail?id=${responseData.data.new_server_id}&subpage=term`;
+    } else if (responseData.status === "error") {
       // Close the "be patient..." dialogue box
       $('.bootbox-close-button').click();
       // Alert the user that there was an issue.
