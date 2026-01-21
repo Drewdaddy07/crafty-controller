@@ -469,7 +469,6 @@
         "renameItemQuestion": "Jaka ma być nowa nazwa?",
         "save": "Zapisz",
         "size": "Włącz rozszerzanie i zmniejszanie edytora",
-        "stayHere": "NIE WYCHODŹ Z TEJ STRONY!",
         "unsupportedLanguage": "Uwaga: To nie jest wspierany typ pliku",
         "unzip": "Rozpakuj",
         "upload": "Wyślij plik",
@@ -683,9 +682,6 @@
         "hints": "Włącz porady?",
         "changePass": "Zmień hasło",
         "changeUser": "Zmień nazwę użytkownika"
-    },
-    "validators": {
-        "passLength": "Hasło jest zbyt krótkie. Hasło musi mieć minimum 8 znaków."
     },
     "webhooks": {
         "areYouSureDel": "Usunąć ten webhook?",

@@ -457,7 +457,6 @@
         "renameItemQuestion": "Kādam būtu jābūt jaunajam nosaukumam?",
         "save": "Saglabāt",
         "size": "Mainīt Redaktora Lielumu",
-        "stayHere": "NEATSTĀJIET ŠO LAPU!",
         "unsupportedLanguage": "Uzmanību: Šis nav atbalstīts faila veids",
         "unzip": "Izvilkt",
         "upload": "Augšupielādēt",
@@ -669,7 +668,6 @@
         "uses": "Dauzums, cik reizes lietot (-1==Bez Limita)"
     },
     "validators": {
-        "passLength": "Parole pārāk īsa. Minimālais Garums: 8",
         "backupName": "Dublējuma nosaukumam jābūt tekstam (string) ar minimālo garumu 3.",
         "enumErr": "pārbaude neizdevās. Pieņemamie dati ietver: ",
         "filesPageLen": "garumam jābūt lielākam par 1 priekš vienības",

@@ -62,14 +62,10 @@ class UsersController:
             "password": {
                 "type": "string",
                 "minLength": self.helper.minimum_password_length,
-                "pattern": "(?=.*[^0-9])",
+                "pattern": "^.{8,}$",
                 "examples": ["crafty"],
                 "title": "Password",
-                "error": {
-                    "minLength": "passLength",
-                    "type": "numbericPassword",
-                    "pattern": "numbericPassword",
-                },
+                "error": "passProp",
             },
             "email": {
                 "type": "string",
@@ -141,6 +137,13 @@ class UsersController:
             "server_order": {
                 "type": "string",
                 "error": "typeString",
+                "fill": True,
+            },
+            "disable_password_auth": {
+                "type": "boolean",
+                "examples": [False],
+                "title": "Disable Password Authentication",
+                "error": "typeBool",
                 "fill": True,
             },
         }

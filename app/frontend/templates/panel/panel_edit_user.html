@@ -54,9 +54,16 @@ data['lang']) }}{% end %}
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/panel/edit_user_otp?id={{ data['user']['user_id'] }}"
-                  role="tab" aria-selected="true">
+                  role="tab" aria-selected="false">
                   <i class="fa-solid fa-shield-halved"></i>{{ translate('userConfig', 'totpHeader', data['lang']) }}</a>
-          </li>
+            </li>
+            {% if data.get('passkey_enabled', False) %}
+            <li class="nav-item">
+              <a class="nav-link" href="/panel/edit_user_passkey?id={{ data['user']['user_id'] }}"
+                  role="tab" aria-selected="false">
+                  <i class="fa-solid fa-fingerprint"></i>{{ translate('userConfig', 'passkeyHeader', data['lang']) }}</a>
+            </li>
+            {% end %}
             {% end %}
           </ul>
 
@@ -410,10 +417,14 @@ data['lang']) }}{% end %}
     }
   }
   function replacer(key, value) {
-      if (typeof value == "boolean" || key === "email" || key === "permissions" || key === "roles" || key === "password") {
+      if (typeof value == "boolean" || key === "email" || key === "permissions" || key === "roles") {
         console.log(key)
         return value
-      } else {
+      } else if (key === "password"){
+        value = value.toString()
+        return value
+      }
+      else {
         console.log(key, value)
         return (isNaN(value) ? value : +value);
       }

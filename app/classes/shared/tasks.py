@@ -5,8 +5,10 @@ import threading
 import asyncio
 import datetime
 import json
+from pathlib import Path
 from zoneinfo import ZoneInfoNotFoundError
 from tzlocal import get_localzone
+from peewee import DoesNotExist
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -140,7 +142,12 @@ class TasksManager:
                         )
 
                 elif command == "backup_server":
-                    svr.server_backup_threader(cmd["action_id"])
+                    try:
+                        svr.server_backup_threader(cmd["action_id"])
+                    except (KeyError, DoesNotExist) as why:
+                        logger.error(
+                            "Failed to run server backup on schedule with error %s", why
+                        )
 
                 elif command == "update_executable":
                     svr.jar_update()
@@ -224,6 +231,13 @@ class TasksManager:
             id="mfa_purge",
             start_date=datetime.datetime.now(),
         )
+        self.scheduler.add_job(
+            self.controller.passkey.purge_expired_challenges,
+            "interval",
+            hours=1,
+            id="passkey_challenge_purge",
+            start_date=datetime.datetime.now(),
+        )
         # self.scheduler.add_job(
         #    self.scheduler.print_jobs, "interval", seconds=10, id="-1"
         # )
@@ -265,9 +279,8 @@ class TasksManager:
                     if schedule.interval_type == "hours":
                         new_job = self.scheduler.add_job(
                             self.controller.management.queue_command,
-                            "cron",
-                            minute=0,
-                            hour="*/" + str(schedule.interval),
+                            "interval",
+                            hours=int(schedule.interval),
                             id=str(schedule.schedule_id),
                             args=[
                                 {
@@ -283,8 +296,8 @@ class TasksManager:
                     elif schedule.interval_type == "minutes":
                         new_job = self.scheduler.add_job(
                             self.controller.management.queue_command,
-                            "cron",
-                            minute="*/" + str(schedule.interval),
+                            "interval",
+                            minutes=int(schedule.interval),
                             id=str(schedule.schedule_id),
                             args=[
                                 {
@@ -395,9 +408,8 @@ class TasksManager:
                 if job_data["interval_type"] == "hours":
                     new_job = self.scheduler.add_job(
                         self.controller.management.queue_command,
-                        "cron",
-                        minute=0,
-                        hour="*/" + str(job_data["interval"]),
+                        "interval",
+                        hours=int(job_data["interval"]),
                         id=str(sch_id),
                         args=[
                             {
@@ -413,8 +425,8 @@ class TasksManager:
                 elif job_data["interval_type"] == "minutes":
                     new_job = self.scheduler.add_job(
                         self.controller.management.queue_command,
-                        "cron",
-                        minute="*/" + str(job_data["interval"]),
+                        "interval",
+                        minutes=int(job_data["interval"]),
                         id=str(sch_id),
                         args=[
                             {
@@ -817,15 +829,19 @@ class TasksManager:
                     os.remove(os.path.join(file))
                 except FileNotFoundError:
                     logger.debug("Could not clear out file from temp directory")
-
-        for file in os.listdir(
-            os.path.join(self.controller.project_root, "import", "upload")
-        ):
-            if self.helper.is_file_older_than_x_days(
-                os.path.join(self.controller.project_root, "import", "upload", file)
-            ):
+        import_path = Path(self.controller.project_root, "import", "upload")
+        for file in os.listdir(import_path):
+            file_path = Path(import_path, file).resolve(strict=True)
+            if not self.helper.validate_traversal(import_path, file_path):
+                logger.error(
+                    "Traversal detected while deleting import file %s", file_path
+                )
+            if self.helper.is_file_older_than_x_days(file_path):
                 try:
-                    os.remove(os.path.join(file))
+                    if Path(file_path).is_dir():
+                        FileHelpers.del_dirs(file_path)
+                    else:
+                        FileHelpers.del_file(file_path)
                 except FileNotFoundError:
                     logger.debug("Could not clear out file from import directory")
 

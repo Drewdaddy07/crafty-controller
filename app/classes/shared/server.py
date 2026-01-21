@@ -7,11 +7,12 @@ import time
 import datetime
 import base64
 import threading
-import logging.config
+import logging
 import subprocess
 import html
 import glob
 import json
+from pathlib import Path
 
 from zoneinfo import ZoneInfo
 
@@ -54,31 +55,66 @@ def callback(called_func):
         res = None
         logger.debug("Checking for callbacks")
         try:
-            res = called_func(*args, **kwargs)
+            res = called_func(*args, **kwargs)  # Calls and runs the function
         finally:
-            events = WebhookFactory.get_monitored_events()
-            if called_func.__name__ in events:
+            event_type = called_func.__name__
+
+            # For send_command, Retrieve command from args or kwargs
+            command = args[1] if len(args) > 1 else kwargs.get("command", "")
+
+            if event_type in WebhookFactory.get_monitored_events():
                 server_webhooks = HelpersWebhooks.get_webhooks_by_server(
                     args[0].server_id, True
                 )
                 for swebhook in server_webhooks:
-                    if called_func.__name__ in str(swebhook.trigger).split(","):
+                    if event_type in str(swebhook.trigger).split(","):
                         logger.info(
-                            f"Found callback for event {called_func.__name__}"
+                            f"Found callback for event {event_type}"
                             f" for server {args[0].server_id}"
                         )
                         webhook = HelpersWebhooks.get_webhook_by_id(swebhook.id)
                         webhook_provider = WebhookFactory.create_provider(
                             webhook["webhook_type"]
                         )
+
+                        # Extract source context from kwargs if present
+                        backup_name = ""
+                        backup_size = ""
+                        backup_link = ""
+                        backup_status = ""
+                        backup_error = ""
+
+                        if isinstance(res, dict):
+                            backup_name = res.get("backup_name")
+                            backup_size = str(res.get("backup_size"))
+                            backup_link = res.get("backup_link")
+                            backup_status = res.get("backup_status")
+                            backup_error = res.get("backup_error")
+
+                        event_data = {
+                            "server_name": args[0].name,
+                            "server_id": args[0].server_id,
+                            "command": command,
+                            "event_type": event_type,
+                            "backup_name": backup_name,
+                            "backup_size": backup_size,
+                            "backup_link": backup_link,
+                            "backup_status": backup_status,
+                            "backup_error": backup_error,
+                        }
+
+                        # Add time variables to event_data
+                        event_data = webhook_provider.add_time_variables(event_data)
+
                         if res is not False and swebhook.enabled:
                             webhook_provider.send(
-                                bot_name=webhook["bot_name"],
                                 server_name=args[0].name,
                                 title=webhook["name"],
                                 url=webhook["url"],
-                                message=webhook["body"],
+                                message_template=webhook["body"],
+                                event_data=event_data,
                                 color=webhook["color"],
+                                bot_name=webhook["bot_name"],
                             )
         return res
 
@@ -353,8 +389,7 @@ class ServerInstance:
                 # Checks for Oracle Java. Only Oracle Java's helper will cause a re-exec
                 if "/Oracle/Java/" in str(self.helper.wtol_path(oracle_path)):
                     logger.info(
-                        "Oracle Java detected. Changing"
-                        " start command to avoid re-exec."
+                        "Oracle Java detected. Changing start command to avoid re-exec."
                     )
                     which_java_raw = self.helper.which_java()
                     try:
@@ -410,7 +445,7 @@ class ServerInstance:
         if self.helper.dir_migration:
             WebSocketManager().broadcast_user(
                 user_id,
-                "send_start_error",
+                "send_error",
                 {
                     "error": self.helper.translation.translate(
                         "error",
@@ -425,7 +460,7 @@ class ServerInstance:
             if user_id:
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "not-downloaded", user_lang
@@ -504,7 +539,7 @@ class ServerInstance:
             if user_id:
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "not-downloaded", user_lang
@@ -540,7 +575,7 @@ class ServerInstance:
                 if user_id:
                     WebSocketManager().broadcast_user(
                         user_id,
-                        "send_start_error",
+                        "send_error",
                         {
                             "error": self.helper.translation.translate(
                                 "error", "start-error", user_lang
@@ -567,7 +602,7 @@ class ServerInstance:
                     if user_id:
                         WebSocketManager().broadcast_user(
                             user_id,
-                            "send_start_error",
+                            "send_error",
                             {
                                 "error": self.helper.translation.translate(
                                     "error", "noJava", user_lang
@@ -581,7 +616,7 @@ class ServerInstance:
                 if user_id:
                     WebSocketManager().broadcast_user(
                         user_id,
-                        "send_start_error",
+                        "send_error",
                         {
                             "error": self.helper.translation.translate(
                                 "error", "start-error", user_lang
@@ -628,7 +663,7 @@ class ServerInstance:
                 # Sends port reminder message.
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "portReminder", user_lang
@@ -676,7 +711,7 @@ class ServerInstance:
             if not Helpers.check_internet():
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "internet", user_lang
@@ -1143,16 +1178,48 @@ class ServerInstance:
     def server_restore_threader(self, backup_id, backup_file, in_place=False):
         # import the server again based on zipfile
         backup_config = HelpersManagement.get_backup_config(backup_id)
-        backup_location = os.path.join(
-            backup_config["backup_location"],
-            backup_config["backup_id"],
-            backup_file,
-        )
+
+        # This path gets resolved and checked for traversal before restore_starter
+        # so that it remains async.
+        # At this point this path cannot be trusted.
+        backup_type = backup_config.get("backup_type", "zip_vault")
+        if backup_type == "zip_vault":
+            expected_backup_location = Path(
+                backup_config["backup_location"], backup_config["backup_id"]
+            )
+        else:
+            expected_backup_location = Path(
+                backup_config["backup_location"], "snapshot_backups", "manifests"
+            )
+
+        expected_backup_location = expected_backup_location.resolve()
+
+        try:
+            Helpers.validate_traversal(expected_backup_location, backup_file)
+        except ValueError as why:
+            # Crash out on possible traversal.
+            logger.error(
+                f"Possible backup traversal detected on restore request: {why}",
+            )
+
+            server_users = PermissionsServers.get_server_user_list(self.server_id)
+            for user in server_users:
+                WebSocketManager().broadcast_user(
+                    user,
+                    "send_error",
+                    self.helper.translation.translate(
+                        "notify", "restoreFailed", HelperUsers.get_user_lang_by_id(user)
+                    ),
+                )
+            return
+
+        backup_location = (expected_backup_location / backup_file).resolve()
+
         restore_thread = threading.Thread(
             target=self.backup_mgr.restore_starter,
             daemon=True,
             name=f"backup_{backup_config['backup_id']}",
-            args=[backup_config, backup_location, backup_file, self, in_place],
+            args=[backup_config, backup_location, self, in_place],
         )
 
         restore_thread.start()
@@ -1205,7 +1272,7 @@ class ServerInstance:
         logger.info(f"Backup Thread started for server {self.settings['server_name']}.")
 
     @callback
-    def backup_server(self, backup_id):
+    def backup_server(self, backup_id) -> dict | bool:
         logger.info(f"Starting server {self.name} (ID {self.server_id}) backup")
         server_users = PermissionsServers.get_server_user_list(self.server_id)
         # Alert the start of the backup to the authorized users.
@@ -1221,7 +1288,15 @@ class ServerInstance:
 
         # Get the backup config
         if not backup_id:
-            return logger.error("No backup ID provided. Exiting backup")
+            logger.error("No backup ID provided. Exiting backup")
+            last_failed = self.last_backup_status()
+            if last_failed:
+                last_backup_status = "❌"
+                reason = "No backup ID provided"
+                return {
+                    "backup_status": last_backup_status,
+                    "backup_error": reason,
+                }
         conf = HelpersManagement.get_backup_config(backup_id)
         # Adjust the location to include the backup ID for destination.
         backup_location = os.path.join(conf["backup_location"], conf["backup_id"])
@@ -1229,7 +1304,16 @@ class ServerInstance:
         # Check if the backup location even exists.
         if not backup_location:
             Console.critical("No backup path found. Canceling")
-            return None
+            backup_status = json.loads(
+                HelpersManagement.get_backup_config(backup_id)["status"]
+            )
+            if backup_status["status"] == "Failed":
+                last_backup_status = "❌"
+                reason = backup_status["message"]
+                return {
+                    "backup_status": last_backup_status,
+                    "backup_error": reason,
+                }
         if conf["before"]:
             logger.debug(
                 "Found running server and send command option. Sending command"
@@ -1237,7 +1321,7 @@ class ServerInstance:
             self.send_command(conf["before"])
             # Pause to let command run
             time.sleep(5)
-        self.backup_mgr.backup_starter(conf, self)
+        backup_name, backup_size = self.backup_mgr.backup_starter(conf, self)
         if conf["after"]:
             self.send_command(conf["after"])
         if conf["shutdown"] and self.was_running:
@@ -1246,6 +1330,46 @@ class ServerInstance:
             )
             self.run_threaded_server(HelperUsers.get_user_id_by_name("system"))
         self.set_backup_status()
+
+        # Return data for webhooks callback
+        base_url = f"{self.helper.get_setting('base_url')}"
+        size = backup_size
+        backup_status = json.loads(
+            HelpersManagement.get_backup_config(backup_id)["status"]
+        )
+        reason = backup_status["message"]
+        if not backup_name:
+            return {
+                "backup_status": "❌",
+                "backup_error": reason,
+            }
+        if backup_size:
+            size = self.helper.human_readable_file_size(backup_size)
+        url = (
+            f"https://{base_url}/api/v2/servers/{self.server_id}"
+            f"/backups/backup/{backup_id}/download/{html.escape(backup_name)}"
+        )
+        if conf["backup_type"] == "snapshot":
+            size = 0
+            url = (
+                f"https://{base_url}/panel/edit_backup?"
+                f"id={self.server_id}&backup_id={backup_id}"
+            )
+        backup_status = json.loads(
+            HelpersManagement.get_backup_config(backup_id)["status"]
+        )
+        last_backup_status = "✅"
+        reason = ""
+        if backup_status["status"] == "Failed":
+            last_backup_status = "❌"
+            reason = backup_status["message"]
+        return {
+            "backup_name": backup_name,
+            "backup_size": size,
+            "backup_link": url,
+            "backup_status": last_backup_status,
+            "backup_error": reason,
+        }
 
     def set_backup_status(self):
         backups = HelpersManagement.get_backups_by_server(self.server_id, True)
@@ -1386,7 +1510,6 @@ class ServerInstance:
 
         # lets download the files
         if HelperServers.get_server_type_by_id(self.server_id) != "minecraft-bedrock":
-
             jar_dir = os.path.dirname(current_executable)
             jar_file_name = os.path.basename(current_executable)
 
@@ -1401,7 +1524,7 @@ class ServerInstance:
                 if bedrock_url:
                     # Use the new method for secure download
                     self.import_helper.download_threaded_bedrock_server(
-                        self.settings["path"], self.server_id, bedrock_url
+                        self.settings["path"], self.server_id, bedrock_url, True
                     )
                     downloaded = True
             except Exception as e:

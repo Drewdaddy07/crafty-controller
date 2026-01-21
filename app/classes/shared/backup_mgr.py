@@ -23,10 +23,13 @@ from app.classes.shared.websocket_manager import WebSocketManager
 
 logger = logging.getLogger(__name__)
 
+backup_validation_exception = Exception("Unable to validate requested backup file.")
+
 
 class BackupManager:
-
     SNAPSHOT_BACKUP_DATE_FORMAT_STRING = "%Y-%m-%d-%H-%M-%S"
+    SNAPSHOT_SUFFIX = ".manifest"
+    ARCHIVE_SUFFIX = ".zip"
 
     def __init__(self, helper, file_helper, management_helper):
         self.helper = helper
@@ -41,35 +44,151 @@ class BackupManager:
             )
             self.tz = ZoneInfo("Europe/London")
 
-    def restore_starter(  # pylint: disable=too-many-positional-arguments
-        self, backup_config, backup_location, backup_file, svr_obj, in_place
-    ):
-        server_path = svr_obj.settings["path"]
-        if Helpers.validate_traversal(backup_location, backup_file):
-            if svr_obj.check_running():
-                svr_obj.stop_server()
-            if backup_config["backup_type"] != "zip_vault":
-                self.snapshot_restore(backup_config, backup_file, svr_obj)
-            else:
-                if not in_place:  # If user does not want to backup in place we will
-                    # clean the server dir
-                    for item in os.listdir(server_path):
-                        if (
-                            os.path.isdir(os.path.join(server_path, item))
-                            and item != "db_stats"
-                        ):
-                            self.file_helper.del_dirs(os.path.join(server_path, item))
-                        else:
-                            self.file_helper.del_file(os.path.join(server_path, item))
-                self.file_helper.restore_archive(backup_location, server_path)
+    def broadcast_rejected_restore(self, backup_config, server) -> None:
+        """
+        Sends rejection message if a backup restore has been rejected.
 
-    def backup_starter(self, backup_config, server):
+        Args:
+            backup_config: The backup configuration for the rejected restore
+            server: Server object.
+
+        Returns: None
+
+        """
+        logger.info(
+            f"Rejecting backup restore for server {server.name} (ID {server.server_id})"
+            f" Backup ID: {backup_config['backup_id']}"
+        )
+        server_users = PermissionsServers.get_server_user_list(server.server_id)
+        for user in server_users:
+            WebSocketManager().broadcast_user(
+                user,
+                "send_error",
+                self.helper.translation.translate(
+                    "notify", "restoreFailed", HelperUsers.get_user_lang_by_id(user)
+                ),
+            )
+
+    def restore_starter(  # pylint: disable=too-many-positional-arguments
+        self, backup_config, backup_location: Path, svr_obj, in_place
+    ):
+        """Validates that a restore is correct and without traversal.
+        Assumes backup_location has already been validated for traversal.
+
+        Args:
+            backup_config: The backup configuration for this backup.
+            backup_location: Full path to the backup file.
+            svr_obj: The server object.
+            in_place: Should the backup restore in place?
+        """
+        logger.debug("Starting backup restore validation")
+
+        # Backup file is only expected to be `datetime.zip` or `datetime.manifest`.
+        # We can do some intensive validation of this value by ensuring that the
+        # filename can actually resolve to a datetime. We will reject it if not.
+        backup_location = Path(backup_location)
+        backup_file = backup_location.name
+        backup_file_parts = backup_file.split(".")
+        if len(backup_file_parts) != 2:
+            logger.error(
+                "backup file given to restore is not of the correct format. Possible "
+                "suspicious activity."
+            )
+            logger.error(
+                f"The filename we were given to restore was called `{backup_file}`, "
+                f"rejected because the split length was incorrect"
+            )
+
+            self.broadcast_rejected_restore(backup_config, svr_obj)
+            return
+
+        allowed_extensions = ["zip", "manifest"]
+        if backup_file_parts[1] not in allowed_extensions:
+            logger.error(
+                f"Extension of given backup file to restore is not in allowed extension"
+                f" types. Possible suspicious activity. Got {backup_file}"
+            )
+
+            self.broadcast_rejected_restore(backup_config, svr_obj)
+            return
+
+        # We use a different timestamp format between snapshot backups and zip files.
+        # This is very funny
+        if backup_config["backup_type"] == "zip_vault":
+            timestamp_format = "%Y-%m-%d_%H-%M-%S"
+        else:
+            timestamp_format = "%Y-%m-%d-%H-%M-%S"
+
+        try:
+            _ = datetime.datetime.strptime(backup_file_parts[0], timestamp_format)
+        except ValueError as why:
+            # The given name of the backup file does not match what Crafty would write.
+            # This must be something we need to reject.
+            logger.error(f"Unable to parse a given backup filename with error {why}")
+
+            self.broadcast_rejected_restore(backup_config, svr_obj)
+            return
+
+        logger.info("Starting a restore after validation")
+        self.valid_restore_starter(
+            backup_config, backup_location, backup_file, svr_obj, in_place
+        )
+
+    def valid_restore_starter(  # pylint: disable=too-many-positional-arguments
+        self, backup_config, backup_location: Path, backup_file, svr_obj, in_place
+    ):
+        """Starts a restore after the restore attempt has been validated.
+        This function assumes that the inputs are trusted and validated for traversal.
+        Ensure that all inputs are correct.
+
+        Args:
+            backup_config: The backup configuration for this backup.
+            backup_location: Path to the backup_location.
+            backup_file: File to restore, zip or snapshot manifest.
+            svr_obj: The server object.
+            in_place: Should the backup restore in place?
+        """
+        server_path = svr_obj.settings["path"]
+        error = False
+        if svr_obj.check_running():
+            svr_obj.stop_server()
+
+        if backup_config["backup_type"] != "zip_vault":
+            logger.debug("Starting a snapshot backup restore")
+            self.snapshot_restore(backup_config, backup_file, svr_obj)
+        else:
+            error = self.zip_vault_restore(server_path, backup_location, in_place)
+        server_users = PermissionsServers.get_server_user_list(svr_obj.server_id)
+        time.sleep(3)
+        if error:
+            for user in server_users:
+                WebSocketManager().broadcast_user(
+                    user,
+                    "send_error",
+                    self.helper.translation.translate(
+                        "notify", "restoreFailed", HelperUsers.get_user_lang_by_id(user)
+                    ),
+                )
+        else:
+            for user in server_users:
+                WebSocketManager().broadcast_user(
+                    user,
+                    "notification",
+                    self.helper.translation.translate(
+                        "notify",
+                        "restoreSuccess",
+                        HelperUsers.get_user_lang_by_id(user),
+                    ),
+                )
+
+    def backup_starter(self, backup_config, server) -> tuple:
         """Notify users of backup starting, and start the backup.
 
         Args:
             backup_config (_type_): _description_
             server (_type_): Server object to backup
         """
+
         # Notify users of backup starting
         logger.info(f"Starting server {server.name} (ID {server.server_id}) backup")
         server_users = PermissionsServers.get_server_user_list(server.server_id)
@@ -83,15 +202,37 @@ class BackupManager:
                 ).format(server.name),
             )
         time.sleep(3)
-
+        size = False
         # Start the backup
         if backup_config.get("backup_type", "zip_vault") == "zip_vault":
-            self.zip_vault(backup_config, server)
+            backup_file_name = self.zip_vault(backup_config, server)
+            if (
+                backup_file_name
+                and Path(backup_file_name).suffix != self.ARCHIVE_SUFFIX
+            ):
+                backup_file_name += self.ARCHIVE_SUFFIX
+            if backup_file_name:
+                size = (
+                    Path(
+                        backup_config["backup_location"],
+                        backup_config["backup_id"],
+                        backup_file_name,
+                    )
+                    .stat()
+                    .st_size
+                )
         else:
-            self.snapshot_backup(backup_config, server)
+            backup_file_name = self.snapshot_backup(backup_config, server)
+            if (
+                backup_file_name
+                and Path(backup_file_name).suffix != self.SNAPSHOT_SUFFIX
+            ):
+                backup_file_name += self.SNAPSHOT_SUFFIX
+        if backup_file_name:
+            return (backup_file_name, size)
+        return (False, "error")
 
-    def zip_vault(self, backup_config, server):
-
+    def zip_vault(self, backup_config, server) -> str | bool:
         # Adjust the location to include the backup ID for destination.
         backup_location = os.path.join(
             backup_config["backup_location"], backup_config["backup_id"]
@@ -100,16 +241,18 @@ class BackupManager:
         # Check if the backup location even exists.
         if not backup_location:
             Console.critical("No backup path found. Canceling")
-            return None
+            return False
 
         self.helper.ensure_dir_exists(backup_location)
 
         try:
             backup_filename = (
                 f"{backup_location}/"
-                f"""{datetime.datetime.now()
-                   .astimezone(self.tz)
-                   .strftime('%Y-%m-%d_%H-%M-%S')}"""
+                f"""{
+                    datetime.datetime.now()
+                    .astimezone(self.tz)
+                    .strftime("%Y-%m-%d_%H-%M-%S")
+                }"""
             )
             logger.info(
                 f"Creating backup of server {server.name}"
@@ -164,8 +307,10 @@ class BackupManager:
                 {"status": json.dumps({"status": "Standby", "message": ""})},
             )
             time.sleep(5)
+            return Path(backup_filename).name
         except Exception as e:
             self.fail_backup(e, backup_config, server)
+            return False
 
     @staticmethod
     def fail_backup(why: Exception, backup_config: dict, server) -> None:
@@ -181,8 +326,7 @@ class BackupManager:
 
         """
         logger.exception(
-            "Failed to create backup of server"
-            f" {server.name} (ID {server.server_id})"
+            f"Failed to create backup of server {server.name} (ID {server.server_id})"
         )
         results: dict = {
             "percent": 100,
@@ -203,8 +347,7 @@ class BackupManager:
             {"status": json.dumps({"status": "Failed", "message": f"{why}"})},
         )
 
-    @staticmethod
-    def list_backups(backup_config: dict, server_id) -> list:
+    def list_backups(self, backup_config: dict, server_id) -> list:
         if not backup_config:
             logger.info(
                 f"Error putting backup file list for server with ID: {server_id}"
@@ -237,7 +380,7 @@ class BackupManager:
                     "size": "",
                 }
                 for f in files
-                if f["path"].endswith(".manifest")
+                if f["path"].endswith(self.SNAPSHOT_SUFFIX)
             ]
         return [
             {
@@ -248,7 +391,7 @@ class BackupManager:
                 "size": f["size"],
             }
             for f in files
-            if f["path"].endswith(".zip")
+            if f["path"].endswith(self.ARCHIVE_SUFFIX)
         ]
 
     def remove_old_backups(self, backup_config, server):
@@ -266,7 +409,7 @@ class BackupManager:
             logger.info(f"Removing old backup '{oldfile['path']}'")
             os.remove(Helpers.get_os_understandable_path(oldfile_path))
 
-    def snapshot_backup(self, backup_config, server) -> None:
+    def snapshot_backup(self, backup_config, server) -> str | bool:
         """
         Creates snapshot style backup of server. No file will be saved more than once
         over all backups. Designed to enable encryption of files and s3 compatability in
@@ -308,7 +451,7 @@ class BackupManager:
             manifest_file: io.TextIOWrapper = backup_manifest_path.open("w+")
         except OSError as why:
             self.fail_backup(why, backup_config, server)
-            return
+            return False
 
         # Write manifest file version.
         manifest_file.write("00\n")
@@ -328,7 +471,7 @@ class BackupManager:
                 manifest_file.close()
                 backup_manifest_path.unlink(missing_ok=True)
                 self.fail_backup(why, backup_config, server)
-                return
+                return False
 
             # Write saved file into manifest.
             manifest_file.write(
@@ -341,6 +484,55 @@ class BackupManager:
         self.file_helper.clean_old_backups(
             backup_config["max_backups"], backup_repository_path
         )
+
+        HelpersManagement.update_backup_config(
+            backup_config["backup_id"],
+            {"status": json.dumps({"status": "Standby", "message": ""})},
+        )
+
+        return Path(backup_manifest_path).name
+
+    def zip_vault_restore(self, server_path, backup_location, in_place) -> bool:
+        """Zip style restore function. Returns a boolean if an error was encountered or
+        not.
+
+        Args:
+              server_path: Target to restore server to
+              backup_location: Source zip file to restore
+              in_place: Boolean value if servers should be restored in place
+
+        Returning: Boolean false if no error was experienced, true if an error was
+        encountered.
+        """
+        error = False
+        if not in_place:  # If user does not want to back up in place we will
+            error = self.clean_server_for_zip_restore(server_path)
+
+        self.file_helper.restore_archive(backup_location, server_path)
+
+        return error
+
+    def clean_server_for_zip_restore(self, server_path) -> bool:
+        """Cleans the server directory in preparation for a zip restore.
+
+        Args:
+            server_path: Path to server directory
+
+        Returning: Boolean false if no error was encountered. True if an error was
+        encountered.
+        """
+        error = False
+        # clean the server dir
+        for item in os.listdir(server_path):
+            if os.path.isdir(os.path.join(server_path, item)) and item != "db_stats":
+                result = self.file_helper.del_dirs(os.path.join(server_path, item))
+                if not result:
+                    error = True
+            else:
+                result = self.file_helper.del_file(os.path.join(server_path, item))
+                if not result:
+                    error = True
+        return error
 
     def snapshot_restore(
         self, backup_config: {str}, backup_manifest_filename: str, server
@@ -392,8 +584,7 @@ class BackupManager:
         if backup_manifest_file.readline() != "00\n":
             backup_manifest_file.close()
             raise RuntimeError(
-                f"Backup manifest file {source_manifest_path} is of unreadable "
-                f"version."
+                f"Backup manifest file {source_manifest_path} is of unreadable version."
             )
 
         # Begin restoring files from manifest.
@@ -407,10 +598,13 @@ class BackupManager:
 
             # Recover file
             try:
+                # Check for traversal of maliciously created backup manifest file.
+                # Ensure that the file we are writing is in the recovery target path.
+                Helpers.validate_traversal(destination_path, recovered_file_path)
                 self.file_helper.read_file(
                     file_hash, recovered_file_path, backup_repository_path
                 )
-            except RuntimeError as why:
+            except (RuntimeError, ValueError) as why:
                 backup_manifest_file.close()
                 raise RuntimeError(f"Unable to recover file {file_hash}.") from why
 
