@@ -12,9 +12,10 @@
 - Catch backup dispatch errors crashing command_watcher ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/955))
 ### Tweaks
 - Change the way MFA warning is displayed on front end ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/953))
-- Remove local file imports ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/936))
 - Allow middle mouse new tab and `ctrl + click` new tab ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/945))
 - Add permission error to exceptions for can_open_files ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/957))
+### Regressions
+- Remove local file imports ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/936))
 <br><br>
 
 ## --- [4.7.0] - 2025/12/25
