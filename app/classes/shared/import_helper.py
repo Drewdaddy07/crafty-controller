@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 import time
+import stat
 import pathlib
 import logging
 import threading
@@ -193,6 +194,8 @@ class ImportHelpers:
             self.file_helper.ssl_get_file(
                 hytale_json.linux_installer_url, server_path, unix_exe
             )
+            st = os.stat(Path(server_path, unix_exe))
+            os.chmod(unix_exe, st.st_mode | stat.S_IEXEC)  # set executable permissions
         process = subprocess.Popen(
             install_command,
             cwd=server_path,
