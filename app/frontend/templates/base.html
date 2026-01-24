@@ -5,10 +5,11 @@
 <head>
   <!-- Required meta tags -->
   <meta charset="utf-8">
-  {% if not data.get("mfa", None) %}
+  {% if not data.get("mfa", None) and not data.get("password_auth_disabled", False) %}
   <meta name="mfa_warn" content="{{translate('base', 'getMFA', data['lang'])}}">
-  <meta name="mfa_link" content="{{translate('base', 'createMFA', data['lang'])}}">
   <meta name="userId" content="{{data['user_data']['user_id']}}">
+  <meta name="auth_translation" content="{{translate('serverWizard', 'authenticate', data['lang'])}}">
+  <meta name="auth_away_translation" content="{{translate('serverWizard', 'authenticateAway', data['lang'])}}">
   {% end %}
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   {% block meta %}{% end %}
@@ -135,10 +136,9 @@
 
   <script>
     const MFA_WARN = document.querySelector('meta[name="mfa_warn"]');
-    const MFA_LINK = document.querySelector('meta[name="mfa_link"]');
     const USER_ID = document.querySelector('meta[name="userId"]');
     if (MFA_WARN) {
-      warn(MFA_WARN.content, `/panel/edit_user_otp?id=${USER_ID.content}`, `${MFA_LINK.content}`, "clean-link", "#cf0000")
+      $(".mfa-warn").removeClass("d-none");
     }
     /**
       * Returns a random number between min (inclusive) and max (exclusive)
@@ -304,7 +304,7 @@
     });
 
     if (webSocket) {
-      webSocket.on('send_start_error', function (start_error) {
+      webSocket.on('send_error', function (start_error) {
         var x = document.querySelector('.bootbox');
         if (x) {
           x.remove()
@@ -320,6 +320,48 @@
           }
         })
       });
+      webSocket.on('hytale_auth', function (data) {
+        $('.bootbox-close-button').click();
+        const HYTALE_AUTH_MSG =
+          document.querySelector('meta[name="auth_translation"]')?.content || "";
+
+        const HYTALE_AUTH_AWAY =
+          document.querySelector('meta[name="auth_away_translation"]')?.content || "";
+
+        document.querySelector('.bootbox')?.remove();
+        document.querySelector('.modal-backdrop')?.remove();
+
+        const container = $("<div>");
+
+        const link = $("<a>")
+          .attr("href", data.link)
+          .attr("target", "_blank")
+          .attr("rel", "noopener noreferrer")
+          .text(HYTALE_AUTH_MSG)
+          .on("click", function (e) {
+            e.preventDefault();
+            window.open(data.link, "_blank", "noopener");
+          });
+
+        const warning = $("<span>").html(
+          `<i class="fa-solid fa-triangle-exclamation"></i>`
+        );
+
+        warning.append($("<p>").text(HYTALE_AUTH_AWAY));
+
+        container.append(link);
+        container.append("<br>")
+        container.append("<br>")
+        container.append(warning);
+
+        bootbox.alert({
+          message: container,
+          callback: function () {
+            globalThis.location.href = `/panel/server_detail?id=${data.server_id}&subpage=term`
+          }
+        });
+      });
+
       webSocket.on('support_status_update', function (logs) {
         if (logs.percent >= 100) {
           document.getElementById('logs_progress_bar').innerHTML = '100%';
@@ -533,6 +575,21 @@
           .then(function (registration) {
             console.log('Service Worker Registered');
           });
+      }
+      if (webSocket) {
+        webSocket.on('zip_status', function (data) {
+          if (data.complete) {
+            try {
+              const cur_dir = $("#table-nav").attr("data-cur-path");
+              removeProgressItem(data.id);
+              getTreeView(cur_dir);
+            } catch {
+              $('.bootbox-close-button').click();
+            }
+          } else {
+            updateProgressBar(data.percent, data.id ? "server_upload" : "", 1, data.id);
+          }
+        });
       }
     });
   </script>

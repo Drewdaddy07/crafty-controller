@@ -3,7 +3,6 @@ import logging
 import os
 import socket
 import time
-import typing
 
 from app.classes.shared.null_writer import NullWriter
 
@@ -57,9 +56,15 @@ class RaknetPing:
         self.guid_bytes = self.guid.to_bytes(8, RaknetPing.byte_order)
 
     @staticmethod
+<<<<<<<< HEAD:app/classes/remote_stats/raknet_ping.py
     def __byter(in_val: typing.Union[str, int, bool], to_type: str) -> bytes:
         f = RaknetPing.field_sizes[to_type]
         return in_val.to_bytes(f[0], RaknetPing.byte_order, signed=f[1])
+========
+    def __byter(in_val: str | int | bool, to_type: str) -> bytes:
+        f = BedrockPing.field_sizes[to_type]
+        return in_val.to_bytes(f[0], BedrockPing.byte_order, signed=f[1])
+>>>>>>>> dev:app/classes/remote_stats/bedrock_ping.py
 
     @staticmethod
     def __slice(in_bytes: bytes, pattern: list) -> list:

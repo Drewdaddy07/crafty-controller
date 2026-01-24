@@ -7,6 +7,16 @@ from app.classes.web.base_api_handler import BaseApiHandler
 
 logger = logging.getLogger(__name__)
 
+
+IMPORT_DESCRIPTION = "Zip file in import mount"
+IMPORT_TITLE = "Zip name"
+ZIP_NAME_EXAMPLE = "Server.zip"
+ARCHIVE_PATH_TITLE = "Internal zip path"
+ARCHIVE_PATH_DESCRIPTION = "Path to internal zip folder"
+ARCHIVE_PATH_EXAMPLE = "server_files/my_server/"
+MIN_MEM = "Minimum JVM memory (in GiBs)"
+MAX_MEM = "Maximum JVM memory (in GiBs)"
+
 new_server_schema = {
     "definitions": {},
     "$schema": "https://json-schema.org/draft-07/schema#",
@@ -79,7 +89,13 @@ new_server_schema = {
             "title": "Server monitoring type",
             "type": "string",
             "default": "minecraft_java",
-            "enum": ["minecraft_java", "minecraft_bedrock", "steam_cmd", "none"],
+            "enum": [
+                "minecraft_java",
+                "minecraft_bedrock",
+                "hytale",
+                "steam_cmd",
+                "none",
+            ],
             "error": "enumErr",
             "fill": True,
             # TODO: SteamCMD, RakNet, etc.
@@ -134,12 +150,43 @@ new_server_schema = {
                 },
             },
         },
+        "hytale_monitoring_data": {
+            "title": "Hytale monitoring data",
+            "type": "object",
+            "required": ["host", "port"],
+            "properties": {
+                "host": {
+                    "title": "Host",
+                    "type": "string",
+                    "default": "127.0.0.1",
+                    "examples": ["127.0.0.1"],
+                    "minLength": 1,
+                    "error": "typeString",
+                    "fill": True,
+                },
+                "port": {
+                    "title": "Port",
+                    "type": "integer",
+                    "examples": [5520],
+                    "default": 5520,
+                    "minimum": 0,
+                    "error": "typeIntMinVal0",
+                    "fill": True,
+                },
+            },
+        },
         "create_type": {
             # This is only used for creation, this is not saved in the db
             "title": "Server creation type",
             "type": "string",
             "default": "minecraft_java",
-            "enum": ["minecraft_java", "minecraft_bedrock", "steam_cmd", "custom"],
+            "enum": [
+                "minecraft_java",
+                "minecraft_bedrock",
+                "hytale",
+                "steam_cmd",
+                "custom",
+            ],
             "error": "enumErr",
             "fill": True,
         },
@@ -152,7 +199,7 @@ new_server_schema = {
                     "title": "Creation type",
                     "type": "string",
                     "default": "download_jar",
-                    "enum": ["download_jar", "import_server", "import_zip"],
+                    "enum": ["download_jar", "import_server"],
                     "error": "enumErr",
                     "fill": True,
                 },
@@ -194,7 +241,7 @@ new_server_schema = {
                             "fill": True,
                         },
                         "mem_min": {
-                            "title": "Minimum JVM memory (in GiBs)",
+                            "title": MIN_MEM,
                             "type": "number",
                             "examples": [1],
                             "default": 1,
@@ -203,7 +250,7 @@ new_server_schema = {
                             "fill": True,
                         },
                         "mem_max": {
-                            "title": "Maximum JVM memory (in GiBs)",
+                            "title": MAX_MEM,
                             "type": "number",
                             "examples": [2],
                             "default": 2,
@@ -235,19 +282,29 @@ new_server_schema = {
                     "error": "enumErr",
                     "fill": True,
                     "required": [
-                        "existing_server_path",
+                        "archive_name",
+                        "archive_internal_path",
                         "jarfile",
                         "mem_min",
                         "mem_max",
                         "server_properties_port",
                     ],
                     "properties": {
-                        "existing_server_path": {
-                            "title": "Server path",
-                            "description": "Absolute path to the old server",
+                        "archive_name": {
+                            "title": IMPORT_TITLE,
+                            "description": IMPORT_DESCRIPTION,
                             "type": "string",
-                            "examples": ["/var/opt/server"],
+                            "examples": [ZIP_NAME_EXAMPLE],
                             "minLength": 1,
+                            "error": "typeString",
+                            "fill": True,
+                        },
+                        "archive_internal_path": {
+                            "title": ARCHIVE_PATH_TITLE,
+                            "description": ARCHIVE_PATH_DESCRIPTION,
+                            "type": "string",
+                            "examples": ["", ARCHIVE_PATH_EXAMPLE],
+                            "minLength": 0,
                             "error": "typeString",
                             "fill": True,
                         },
@@ -261,7 +318,7 @@ new_server_schema = {
                             "fill": True,
                         },
                         "mem_min": {
-                            "title": "Minimum JVM memory (in GiBs)",
+                            "title": MIN_MEM,
                             "type": "number",
                             "examples": [1],
                             "default": 1,
@@ -270,84 +327,7 @@ new_server_schema = {
                             "fill": True,
                         },
                         "mem_max": {
-                            "title": "Maximum JVM memory (in GiBs)",
-                            "type": "number",
-                            "examples": [2],
-                            "default": 2,
-                            "exclusiveMinimum": 0,
-                            "error": "typeInteger",
-                            "fill": True,
-                        },
-                        "server_properties_port": {
-                            "title": "Port",
-                            "type": "integer",
-                            "examples": [25565],
-                            "default": 25565,
-                            "minimum": 0,
-                            "error": "typeInteger",
-                            "fill": True,
-                        },
-                        "agree_to_eula": {
-                            "title": "Agree to the EULA",
-                            "type": "boolean",
-                            "default": False,
-                            "error": "typeBool",
-                            "fill": True,
-                        },
-                    },
-                },
-                "import_zip_create_data": {
-                    "title": "Import ZIP server data",
-                    "type": "object",
-                    "error": "enumErr",
-                    "fill": True,
-                    "required": [
-                        "zip_path",
-                        "zip_root",
-                        "jarfile",
-                        "mem_min",
-                        "mem_max",
-                        "server_properties_port",
-                    ],
-                    "properties": {
-                        "zip_path": {
-                            "title": "ZIP path",
-                            "description": "Absolute path to the ZIP archive",
-                            "type": "string",
-                            "examples": ["/var/opt/server.zip"],
-                            "minLength": 1,
-                            "error": "typeString",
-                            "fill": True,
-                        },
-                        "zip_root": {
-                            "title": "Server root directory",
-                            "description": "The server root in the ZIP archive",
-                            "type": "string",
-                            "examples": ["/", "/paper-server/", "server-1"],
-                            "minLength": 1,
-                            "error": "typeString",
-                            "fill": True,
-                        },
-                        "jarfile": {
-                            "title": "JAR file",
-                            "description": "The JAR relative to the configured root",
-                            "type": "string",
-                            "examples": ["paper.jar", "jars/vanilla-1.12.jar"],
-                            "minLength": 1,
-                            "error": "typeString",
-                            "fill": True,
-                        },
-                        "mem_min": {
-                            "title": "Minimum JVM memory (in GiBs)",
-                            "type": "number",
-                            "examples": [1],
-                            "default": 1,
-                            "exclusiveMinimum": 0,
-                            "error": "typeInteger",
-                            "fill": True,
-                        },
-                        "mem_max": {
-                            "title": "Maximum JVM memory (in GiBs)",
+                            "title": MAX_MEM,
                             "type": "number",
                             "examples": [2],
                             "default": 2,
@@ -390,12 +370,6 @@ new_server_schema = {
                             },
                             "then": {"required": ["import_server_create_data"]},
                         },
-                        {
-                            "if": {
-                                "properties": {"create_type": {"const": "import_zip"}}
-                            },
-                            "then": {"required": ["import_zip_create_data"]},
-                        },
                     ],
                 },
                 {
@@ -403,7 +377,6 @@ new_server_schema = {
                     "oneOf": [
                         {"required": ["download_jar_create_data"]},
                         {"required": ["import_server_create_data"]},
-                        {"required": ["import_zip_create_data"]},
                     ],
                 },
             ],
@@ -417,7 +390,7 @@ new_server_schema = {
                     "title": "Creation type",
                     "type": "string",
                     "default": "import_server",
-                    "enum": ["download_exe", "import_server", "import_zip"],
+                    "enum": ["download_exe", "import_server"],
                     "error": "enumErr",
                     "fill": True,
                 },
@@ -440,14 +413,23 @@ new_server_schema = {
                     "type": "object",
                     "error": "enumErr",
                     "fill": True,
-                    "required": ["existing_server_path", "executable"],
+                    "required": ["archive_name", "archive_internal_path", "executable"],
                     "properties": {
-                        "existing_server_path": {
-                            "title": "Server path",
-                            "description": "Absolute path to the old server",
+                        "archive_name": {
+                            "title": IMPORT_TITLE,
+                            "description": IMPORT_DESCRIPTION,
                             "type": "string",
-                            "examples": ["/var/opt/server"],
+                            "examples": [ZIP_NAME_EXAMPLE],
                             "minLength": 1,
+                            "error": "typeString",
+                            "fill": True,
+                        },
+                        "archive_internal_path": {
+                            "title": ARCHIVE_PATH_TITLE,
+                            "description": ARCHIVE_PATH_DESCRIPTION,
+                            "type": "string",
+                            "examples": ["", ARCHIVE_PATH_EXAMPLE],
+                            "minLength": 0,
                             "error": "typeString",
                             "fill": True,
                         },
@@ -458,52 +440,6 @@ new_server_schema = {
                             "type": "string",
                             "examples": ["bedrock_server.exe"],
                             "minlength": 1,
-                            "error": "typeString",
-                            "fill": True,
-                        },
-                        "command": {
-                            "title": "Command",
-                            "type": "string",
-                            "default": "echo foo bar baz",
-                            "examples": ["LD_LIBRARY_PATH=. ./bedrock_server"],
-                            "minLength": 1,
-                            "error": "typeString",
-                            "fill": True,
-                        },
-                    },
-                },
-                "import_zip_create_data": {
-                    "title": "Import ZIP server data",
-                    "type": "object",
-                    "error": "enumErr",
-                    "fill": True,
-                    "required": ["zip_path", "zip_root", "command"],
-                    "properties": {
-                        "zip_path": {
-                            "title": "ZIP path",
-                            "description": "Absolute path to the ZIP archive",
-                            "type": "string",
-                            "examples": ["/var/opt/server.zip"],
-                            "minLength": 1,
-                            "error": "typeString",
-                            "fill": True,
-                        },
-                        "executable": {
-                            "title": "Executable File",
-                            "description": "File Crafty should execute"
-                            "on server launch",
-                            "type": "string",
-                            "examples": ["bedrock_server.exe"],
-                            "minlength": 1,
-                            "error": "typeString",
-                            "fill": True,
-                        },
-                        "zip_root": {
-                            "title": "Server root directory",
-                            "description": "The server root in the ZIP archive",
-                            "type": "string",
-                            "examples": ["/", "/paper-server/", "server-1"],
-                            "minLength": 1,
                             "error": "typeString",
                             "fill": True,
                         },
@@ -533,9 +469,152 @@ new_server_schema = {
                         },
                         {
                             "if": {
-                                "properties": {"create_type": {"const": "import_zip"}}
+                                "properties": {"create_type": {"const": "download_exe"}}
                             },
-                            "then": {"required": ["import_zip_create_data"]},
+                            "then": {
+                                "required": [
+                                    "download_exe_create_data",
+                                ]
+                            },
+                        },
+                    ],
+                },
+                {
+                    "title": "Only one creation data",
+                    "oneOf": [
+                        {"required": ["import_server_create_data"]},
+                        {"required": ["download_exe_create_data"]},
+                    ],
+                },
+            ],
+        },
+        "hytale_create_data": {
+            "title": "Hytale creation data",
+            "type": "object",
+            "required": ["create_type"],
+            "properties": {
+                "create_type": {
+                    "title": "Creation type",
+                    "type": "string",
+                    "default": "import_server",
+                    "enum": ["download_exe", "import_server"],
+                    "error": "enumErr",
+                    "fill": True,
+                },
+                "download_exe_create_data": {
+                    "title": "Import server data",
+                    "type": "object",
+                    "error": "enumErr",
+                    "fill": True,
+                    "required": ["mem_min", "mem_max"],
+                    "properties": {
+                        "agree_to_eula": {
+                            "title": "Agree to the EULA",
+                            "type": "boolean",
+                            "enum": [True],
+                        },
+                        "mem_min": {
+                            "title": MIN_MEM,
+                            "type": "number",
+                            "examples": [1],
+                            "default": 1,
+                            "exclusiveMinimum": 0,
+                            "error": "typeInteger",
+                            "fill": True,
+                        },
+                        "mem_max": {
+                            "title": MAX_MEM,
+                            "type": "number",
+                            "examples": [2],
+                            "default": 2,
+                            "exclusiveMinimum": 0,
+                            "error": "typeInteger",
+                            "fill": True,
+                        },
+                    },
+                },
+                "import_server_create_data": {
+                    "title": "Import server data",
+                    "type": "object",
+                    "error": "enumErr",
+                    "fill": True,
+                    "required": [
+                        "archive_name",
+                        "archive_internal_path",
+                        "executable",
+                        "mem_min",
+                        "mem_max",
+                    ],
+                    "properties": {
+                        "archive_name": {
+                            "title": IMPORT_TITLE,
+                            "description": IMPORT_DESCRIPTION,
+                            "type": "string",
+                            "examples": [ZIP_NAME_EXAMPLE],
+                            "minLength": 1,
+                            "error": "typeString",
+                            "fill": True,
+                        },
+                        "archive_internal_path": {
+                            "title": ARCHIVE_PATH_TITLE,
+                            "description": ARCHIVE_PATH_DESCRIPTION,
+                            "type": "string",
+                            "examples": ["", ARCHIVE_PATH_EXAMPLE],
+                            "minLength": 0,
+                            "error": "typeString",
+                            "fill": True,
+                        },
+                        "executable": {
+                            "title": "Executable File",
+                            "description": "File Crafty should execute"
+                            "on server launch",
+                            "type": "string",
+                            "examples": ["bedrock_server.exe"],
+                            "minlength": 1,
+                            "error": "typeString",
+                            "fill": True,
+                        },
+                        "command": {
+                            "title": "Command",
+                            "type": "string",
+                            "default": "echo foo bar baz",
+                            "examples": ["LD_LIBRARY_PATH=. ./bedrock_server"],
+                            "minLength": 1,
+                            "error": "typeString",
+                            "fill": True,
+                        },
+                        "mem_min": {
+                            "title": MIN_MEM,
+                            "type": "number",
+                            "examples": [1],
+                            "default": 1,
+                            "exclusiveMinimum": 0,
+                            "error": "typeInteger",
+                            "fill": True,
+                        },
+                        "mem_max": {
+                            "title": MAX_MEM,
+                            "type": "number",
+                            "examples": [2],
+                            "default": 2,
+                            "exclusiveMinimum": 0,
+                            "error": "typeInteger",
+                            "fill": True,
+                        },
+                    },
+                },
+            },
+            "allOf": [
+                {
+                    "$comment": "If..then section",
+                    "allOf": [
+                        {
+                            "if": {
+                                "properties": {
+                                    "create_type": {"const": "import_server"}
+                                }
+                            },
+                            "then": {"required": ["import_server_create_data"]},
                         },
                         {
                             "if": {
@@ -553,14 +632,13 @@ new_server_schema = {
                     "title": "Only one creation data",
                     "oneOf": [
                         {"required": ["import_server_create_data"]},
-                        {"required": ["import_zip_create_data"]},
                         {"required": ["download_exe_create_data"]},
                     ],
                 },
             ],
         },
         "steam_cmd_create_data": {
-            "title": "Minecraft Bedrock creation data",
+            "title": "SteamCMD creation data",
             "type": "object",
             "required": ["create_type"],
             "properties": {
@@ -667,7 +745,7 @@ new_server_schema = {
                     "title": "Creation type",
                     "type": "string",
                     "default": "raw_exec",
-                    "enum": ["raw_exec", "import_server", "import_zip"],
+                    "enum": ["raw_exec", "import_server"],
                     "error": "enumErr",
                     "fill": True,
                 },
@@ -692,50 +770,23 @@ new_server_schema = {
                     "type": "object",
                     "error": "enumErr",
                     "fill": True,
-                    "required": ["existing_server_path", "command"],
+                    "required": ["archive_name", "archive_internal_path", "command"],
                     "properties": {
-                        "existing_server_path": {
-                            "title": "Server path",
-                            "description": "Absolute path to the old server",
+                        "archive_name": {
+                            "title": IMPORT_TITLE,
+                            "description": IMPORT_DESCRIPTION,
                             "type": "string",
-                            "examples": ["/var/opt/server"],
+                            "examples": [ZIP_NAME_EXAMPLE],
                             "minLength": 1,
                             "error": "typeString",
                             "fill": True,
                         },
-                        "command": {
-                            "title": "Command",
+                        "archive_internal_path": {
+                            "title": ARCHIVE_PATH_TITLE,
+                            "description": ARCHIVE_PATH_DESCRIPTION,
                             "type": "string",
-                            "default": "echo foo bar baz",
-                            "examples": ["caddy start"],
-                            "minLength": 1,
-                            "error": "typeString",
-                            "fill": True,
-                        },
-                    },
-                },
-                "import_zip_create_data": {
-                    "title": "Import ZIP server data",
-                    "type": "object",
-                    "error": "enumErr",
-                    "fill": True,
-                    "required": ["zip_path", "zip_root", "command"],
-                    "properties": {
-                        "zip_path": {
-                            "title": "ZIP path",
-                            "description": "Absolute path to the ZIP archive",
-                            "type": "string",
-                            "examples": ["/var/opt/server.zip"],
-                            "minLength": 1,
-                            "error": "typeString",
-                            "fill": True,
-                        },
-                        "zip_root": {
-                            "title": "Server root directory",
-                            "description": "The server root in the ZIP archive",
-                            "type": "string",
-                            "examples": ["/", "/paper-server/", "server-1"],
-                            "minLength": 1,
+                            "examples": ["", ARCHIVE_PATH_EXAMPLE],
+                            "minLength": 0,
                             "error": "typeString",
                             "fill": True,
                         },
@@ -769,12 +820,6 @@ new_server_schema = {
                             },
                             "then": {"required": ["import_server_create_data"]},
                         },
-                        {
-                            "if": {
-                                "properties": {"create_type": {"const": "import_zip"}}
-                            },
-                            "then": {"required": ["import_zip_create_data"]},
-                        },
                     ],
                 },
                 {
@@ -782,7 +827,6 @@ new_server_schema = {
                     "oneOf": [
                         {"required": ["raw_exec_create_data"]},
                         {"required": ["import_server_create_data"]},
-                        {"required": ["import_zip_create_data"]},
                     ],
                 },
             ],
@@ -808,6 +852,10 @@ new_server_schema = {
                     "then": {"required": ["steam_cmd_create_data"]},
                 },
                 {
+                    "if": {"properties": {"create_type": {"const": "hytale"}}},
+                    "then": {"required": ["hytale_create_data"]},
+                },
+                {
                     "if": {"properties": {"create_type": {"const": "custom"}}},
                     "then": {"required": ["custom_create_data"]},
                 },
@@ -827,6 +875,10 @@ new_server_schema = {
                     },
                     "then": {"required": ["minecraft_bedrock_monitoring_data"]},
                 },
+                {
+                    "if": {"properties": {"monitoring_type": {"const": "hytale"}}},
+                    "then": {"required": ["hytale_monitoring_data"]},
+                },
                 # end require monitoring data
             ],
         },
@@ -836,6 +888,7 @@ new_server_schema = {
                 {"required": ["minecraft_java_create_data"]},
                 {"required": ["minecraft_bedrock_create_data"]},
                 {"required": ["steam_cmd_create_data"]},
+                {"required": ["hytale_create_data"]},
                 {"required": ["custom_create_data"]},
             ],
         },
@@ -845,6 +898,7 @@ new_server_schema = {
                 {"required": ["minecraft_java_monitoring_data"]},
                 {"required": ["minecraft_bedrock_monitoring_data"]},
                 {"required": ["steam_cmd_monitoring_data"]},
+                {"required": ["hytale_monitoring_data"]},
                 {"properties": {"monitoring_type": {"const": "none"}}},
             ],
         },

@@ -5,13 +5,13 @@ import re
 import shutil
 import time
 import datetime
-import base64
 import threading
 import logging
 import subprocess
 import html
 import glob
 import json
+from pathlib import Path
 
 from zoneinfo import ZoneInfo
 
@@ -24,8 +24,9 @@ from apscheduler.jobstores.base import JobLookupError, ConflictingIdError
 # OpenMetrics/Prometheus Imports
 from prometheus_client import CollectorRegistry, Gauge, Info
 
-from app.classes.minecraft.stats import Stats
-from app.classes.minecraft.ping import ping, ping_raknet
+from app.classes.remote_stats.stats import Stats
+from app.classes.remote_stats.nitrado_ping import NitradoPing
+from app.classes.remote_stats.mc_ping import ping, ping_raknet
 from app.classes.models.servers import HelperServers, Servers
 from app.classes.models.server_stats import HelperServerStats
 from app.classes.models.management import HelpersManagement, HelpersWebhooks
@@ -133,24 +134,19 @@ class ServerOutBuf:
         self.max_lines = self.helper.get_setting("virtual_terminal_lines")
         self.line_buffer = ""
         ServerOutBuf.lines[self.server_id] = []
-        self.lsi = 0
 
     def process_byte(self, char):
-        if char == os.linesep[self.lsi]:
-            self.lsi += 1
-        else:
-            self.lsi = 0
-            self.line_buffer += char
+        if char == "\n":
+            line = self.line_buffer.rstrip("\r")
+            ServerOutBuf.lines[self.server_id].append(line)
 
-        if self.lsi >= len(os.linesep):
-            self.lsi = 0
-            ServerOutBuf.lines[self.server_id].append(self.line_buffer)
-
-            self.new_line_handler(self.line_buffer)
+            self.new_line_handler(line)
             self.line_buffer = ""
             # Limit list length to self.max_lines:
             if len(ServerOutBuf.lines[self.server_id]) > self.max_lines:
                 ServerOutBuf.lines[self.server_id].pop(0)
+        else:
+            self.line_buffer += char
 
     def check(self):
         text_wrapper = io.TextIOWrapper(
@@ -390,8 +386,7 @@ class ServerInstance:
                 # Checks for Oracle Java. Only Oracle Java's helper will cause a re-exec
                 if "/Oracle/Java/" in str(self.helper.wtol_path(oracle_path)):
                     logger.info(
-                        "Oracle Java detected. Changing"
-                        " start command to avoid re-exec."
+                        "Oracle Java detected. Changing start command to avoid re-exec."
                     )
                     which_java_raw = self.helper.which_java()
                     try:
@@ -447,7 +442,7 @@ class ServerInstance:
         if self.helper.dir_migration:
             WebSocketManager().broadcast_user(
                 user_id,
-                "send_start_error",
+                "send_error",
                 {
                     "error": self.helper.translation.translate(
                         "error",
@@ -462,7 +457,7 @@ class ServerInstance:
             if user_id:
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "not-downloaded", user_lang
@@ -541,7 +536,7 @@ class ServerInstance:
             if user_id:
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "not-downloaded", user_lang
@@ -577,7 +572,7 @@ class ServerInstance:
                 if user_id:
                     WebSocketManager().broadcast_user(
                         user_id,
-                        "send_start_error",
+                        "send_error",
                         {
                             "error": self.helper.translation.translate(
                                 "error", "start-error", user_lang
@@ -677,7 +672,7 @@ class ServerInstance:
                     if user_id:
                         WebSocketManager().broadcast_user(
                             user_id,
-                            "send_start_error",
+                            "send_error",
                             {
                                 "error": self.helper.translation.translate(
                                     "error", "noJava", user_lang
@@ -691,7 +686,7 @@ class ServerInstance:
                 if user_id:
                     WebSocketManager().broadcast_user(
                         user_id,
-                        "send_start_error",
+                        "send_error",
                         {
                             "error": self.helper.translation.translate(
                                 "error", "start-error", user_lang
@@ -738,7 +733,7 @@ class ServerInstance:
                 # Sends port reminder message.
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "portReminder", user_lang
@@ -786,7 +781,7 @@ class ServerInstance:
             if not Helpers.check_internet():
                 WebSocketManager().broadcast_user(
                     user_id,
-                    "send_start_error",
+                    "send_error",
                     {
                         "error": self.helper.translation.translate(
                             "error", "internet", user_lang
@@ -1253,16 +1248,48 @@ class ServerInstance:
     def server_restore_threader(self, backup_id, backup_file, in_place=False):
         # import the server again based on zipfile
         backup_config = HelpersManagement.get_backup_config(backup_id)
-        backup_location = os.path.join(
-            backup_config["backup_location"],
-            backup_config["backup_id"],
-            backup_file,
-        )
+
+        # This path gets resolved and checked for traversal before restore_starter
+        # so that it remains async.
+        # At this point this path cannot be trusted.
+        backup_type = backup_config.get("backup_type", "zip_vault")
+        if backup_type == "zip_vault":
+            expected_backup_location = Path(
+                backup_config["backup_location"], backup_config["backup_id"]
+            )
+        else:
+            expected_backup_location = Path(
+                backup_config["backup_location"], "snapshot_backups", "manifests"
+            )
+
+        expected_backup_location = expected_backup_location.resolve()
+
+        try:
+            Helpers.validate_traversal(expected_backup_location, backup_file)
+        except ValueError as why:
+            # Crash out on possible traversal.
+            logger.error(
+                f"Possible backup traversal detected on restore request: {why}",
+            )
+
+            server_users = PermissionsServers.get_server_user_list(self.server_id)
+            for user in server_users:
+                WebSocketManager().broadcast_user(
+                    user,
+                    "send_error",
+                    self.helper.translation.translate(
+                        "notify", "restoreFailed", HelperUsers.get_user_lang_by_id(user)
+                    ),
+                )
+            return
+
+        backup_location = (expected_backup_location / backup_file).resolve()
+
         restore_thread = threading.Thread(
             target=self.backup_mgr.restore_starter,
             daemon=True,
             name=f"backup_{backup_config['backup_id']}",
-            args=[backup_config, backup_location, backup_file, self, in_place],
+            args=[backup_config, backup_location, self, in_place],
         )
 
         restore_thread.start()
@@ -1453,10 +1480,21 @@ class ServerInstance:
             f.write(json.dumps(write_json, indent=4))
             logger.info("Cache file refreshed")
 
+    def get_formatted_server_players(self) -> list:
+        server_players = self.get_server_players()
+        if len(server_players) == 0:
+            return []
+        if isinstance(server_players[0], dict):
+            sp = server_players.copy()
+            server_players = []
+            for player in sp:
+                server_players.append(player["Name"])
+        return server_players
+
     def cache_players(self):
         if not self.check_running():
             return
-        server_players = self.get_server_players()
+        server_players = self.get_formatted_server_players()
         for p in self.player_cache[:]:
             if p["status"] == "Online" and p["name"] not in server_players:
                 p["status"] = "Offline"
@@ -1556,39 +1594,20 @@ class ServerInstance:
                 )
             self.stats_helper.set_update(False)
             return
-
-        ################################
-        # Executable Download ##########
-        ################################
-
-        # Minecraft Java ###############
-        if HelperServers.get_server_type_by_id(self.server_id) == "minecraft-java":
+        server_type = HelperServers.get_server_type_by_id(self.server_id)
+        # lets download the files
+        if server_type == "minecraft-java":
             jar_dir = os.path.dirname(current_executable)
             jar_file_name = os.path.basename(current_executable)
 
             downloaded = FileHelpers.ssl_get_file(
                 self.settings["executable_update_url"], jar_dir, jar_file_name
             )
-
-        # Minecraft Bedrock ############
-        if HelperServers.get_server_type_by_id(self.server_id) == "raknet":
-            # downloads zip from remote url
-            downloaded = False
-            try:
-                bedrock_url = Helpers.get_latest_bedrock_url()
-                if bedrock_url:
-                    # Use the new method for secure download
-                    self.import_helper.download_threaded_bedrock_server(
-                        self.settings["path"], self.server_id, bedrock_url, True
-                    )
-                    downloaded = True
-            except Exception as e:
-                logger.critical(
-                    f"Failed to download bedrock executable for update \n{e}"
-                )
-
+        elif self.server_object.type == "hytale":
+            self.import_helper.download_install_hytale(self.server_path, self.server_id)
+            downloaded = True
         # SteamCMD #####################
-        if HelperServers.get_server_type_by_id(self.server_id) == "steam_cmd":
+        elif HelperServers.get_server_type_by_id(self.server_id) == "steam_cmd":
             try:
                 # Set our storage locations
                 steamcmd_path = os.path.join(self.settings["path"], "steamcmd_files")
@@ -1613,6 +1632,21 @@ class ServerInstance:
             except Exception as e:
                 logger.critical(f"Failed to update SteamCMD Server \n{e}")
                 downloaded = False
+        else:
+            # downloads zip from remote url
+            downloaded = False
+            try:
+                bedrock_url = Helpers.get_latest_bedrock_url()
+                if bedrock_url:
+                    # Use the new method for secure download
+                    self.import_helper.download_threaded_bedrock_server(
+                        self.settings["path"], self.server_id, bedrock_url, True
+                    )
+                    downloaded = True
+            except Exception as e:
+                logger.critical(
+                    f"Failed to download bedrock executable for update \n{e}"
+                )
 
         ################################
         # Start Upgraded Server ########
@@ -1782,6 +1816,7 @@ class ServerInstance:
         return False
 
     def get_servers_stats(self):
+        server_type = HelperServers.get_server_type_by_id(self.server_id)
         server_stats = {}
 
         server_id = self.server_id
@@ -1798,11 +1833,10 @@ class ServerInstance:
         server_name = server.get("server_name", f"ID#{server_id}")
 
         logger.debug(f"Pinging server '{server}' on {internal_ip}:{server_port}")
-        if (
-            HelperServers.get_server_type_by_id(server_id) == "minecraft-bedrock"
-            or HelperServers.get_server_type_by_id(server_id) == "raknet"
-        ):
+        if server_type in ("minecraft-bedrock", "raknet"):
             int_mc_ping = ping_raknet(internal_ip, int(server_port))
+        elif server_type == "hytale":
+            int_mc_ping = NitradoPing.ping(internal_ip, server_port)
         else:
             try:
                 int_mc_ping = ping(internal_ip, int(server_port))
@@ -1815,12 +1849,10 @@ class ServerInstance:
         # if we got a good ping return, let's parse it
         if int_mc_ping:
             int_data = True
-            if (
-                HelperServers.get_server_type_by_id(server["server_id"])
-                == "minecraft-bedrock"
-                or HelperServers.get_server_type_by_id(server["server_id"]) == "raknet"
-            ):
+            if server_type == "minecraft-bedrock":
                 ping_data = Stats.parse_server_raknet_ping(int_mc_ping)
+            elif server_type == "hytale":
+                ping_data = NitradoPing.parse_ping_response(int_mc_ping)
             else:
                 ping_data = Stats.parse_server_ping(int_mc_ping)
         # Makes sure we only show stats when a server is online
@@ -1868,14 +1900,14 @@ class ServerInstance:
 
     def get_server_players(self):
         server = HelperServers.get_server_data_by_id(self.server_id)
-
+        server_type = HelperServers.get_server_type_by_id(self.server_id)
         logger.debug(f"Getting players for server {server['server_name']}")
 
         internal_ip = server["server_ip"]
         server_port = server["server_port"]
 
         logger.debug(f"Pinging {internal_ip} on port {server_port}")
-        if HelperServers.get_server_type_by_id(self.server_id) != "minecraft-bedrock":
+        if server_type == "minecraft-java":
             int_mc_ping = ping(internal_ip, int(server_port))
 
             ping_data = {}
@@ -1884,9 +1916,18 @@ class ServerInstance:
             if int_mc_ping:
                 ping_data = Stats.parse_server_ping(int_mc_ping)
                 return ping_data["players"]
+        elif server_type == "hytale":
+            return NitradoPing.parse_ping_response(
+                NitradoPing.ping(internal_ip, server_port)
+            ).get("players", [])
+
         return []
 
     def get_raw_server_stats(self, server_id):
+        server_type = HelperServers.get_server_type_by_id(server_id)
+        int_data = False
+        ping_data = {}
+
         try:
             server = HelperServers.get_server_obj(server_id)
         except:
@@ -1929,93 +1970,45 @@ class ServerInstance:
         server_port = server_dt["server_port"]
 
         logger.debug(f"Pinging server '{self.name}' on {internal_ip}:{server_port}")
-        if (
-            HelperServers.get_server_type_by_id(server_id) == "minecraft-bedrock"
-            or HelperServers.get_server_type_by_id(server_id) == "raknet"
+        if HelperServers.get_server_type_by_id(server_id) in (
+            "minecraft-bedrock",
+            "raknet",
         ):
             int_mc_ping = ping_raknet(internal_ip, int(server_port))
+            if int_mc_ping:
+                ping_data = Stats.parse_server_raknet_ping(int_mc_ping)
+                int_data = True
+        elif server_type == "hytale":
+            int_mc_ping = NitradoPing.ping(internal_ip, server_port)
+            if int_mc_ping:
+                int_data = True
+            ping_data = NitradoPing.parse_ping_response(int_mc_ping)
         else:
             int_mc_ping = ping(internal_ip, int(server_port))
-        # TODO MAKE BETTER identify based on db server type
-        # dont hammer servers with unrelated requests to their type
-
-        int_data = False
-        ping_data = {}
+            if int_mc_ping:
+                ping_data = Stats.parse_server_ping(int_mc_ping)
+                int_data = True
         # Makes sure we only show stats when a server is online
         # otherwise people have gotten confused.
         if self.check_running():
-            # if we got a good ping return, let's parse it
-            if HelperServers.get_server_type_by_id(server_id) == "minecraft-java":
-                if int_mc_ping:
-                    int_data = True
-                    ping_data = Stats.parse_server_ping(int_mc_ping)
-
-                server_stats = {
-                    "id": server_id,
-                    "started": self.get_start_time(),
-                    "running": self.check_running(),
-                    "cpu": p_stats.get("cpu_usage", 0),
-                    "mem": p_stats.get("memory_usage", 0),
-                    "mem_percent": p_stats.get("mem_percentage", 0),
-                    "world_name": server_name,
-                    "world_size": self.server_size,
-                    "server_port": server_port,
-                    "int_ping_results": int_data,
-                    "online": ping_data.get("online", False),
-                    "max": ping_data.get("max", False),
-                    "players": ping_data.get("players", False),
-                    "desc": ping_data.get("server_description", False),
-                    "version": ping_data.get("server_version", False),
-                    "icon": ping_data.get("server_icon", False),
-                }
-
-            else:
-                if int_mc_ping:
-                    int_data = True
-                    ping_data = Stats.parse_server_raknet_ping(int_mc_ping)
-                    try:
-                        server_icon = base64.encodebytes(ping_data["icon"])
-                    except Exception as ex:
-                        server_icon = False
-                        logger.info(f"Unable to read the server icon : {ex}")
-
-                    server_stats = {
-                        "id": server_id,
-                        "started": self.get_start_time(),
-                        "running": self.check_running(),
-                        "cpu": p_stats.get("cpu_usage", 0),
-                        "mem": p_stats.get("memory_usage", 0),
-                        "mem_percent": p_stats.get("mem_percentage", 0),
-                        "world_name": server_name,
-                        "world_size": self.server_size,
-                        "server_port": server_port,
-                        "int_ping_results": int_data,
-                        "online": ping_data["online"],
-                        "max": ping_data["max"],
-                        "players": [],
-                        "desc": ping_data["server_description"],
-                        "version": ping_data["server_version"],
-                        "icon": server_icon,
-                    }
-                else:
-                    server_stats = {
-                        "id": server_id,
-                        "started": self.get_start_time(),
-                        "running": self.check_running(),
-                        "cpu": p_stats.get("cpu_usage", 0),
-                        "mem": p_stats.get("memory_usage", 0),
-                        "mem_percent": p_stats.get("mem_percentage", 0),
-                        "world_name": server_name,
-                        "world_size": self.server_size,
-                        "server_port": server_port,
-                        "int_ping_results": int_data,
-                        "online": False,
-                        "max": False,
-                        "players": False,
-                        "desc": False,
-                        "version": False,
-                        "icon": False,
-                    }
+            server_stats = {
+                "id": server_id,
+                "started": self.get_start_time(),
+                "running": self.check_running(),
+                "cpu": p_stats.get("cpu_usage", 0),
+                "mem": p_stats.get("memory_usage", 0),
+                "mem_percent": p_stats.get("mem_percentage", 0),
+                "world_name": server_name,
+                "world_size": self.server_size,
+                "server_port": server_port,
+                "int_ping_results": int_data,
+                "online": ping_data.get("online", False),
+                "max": ping_data.get("max", False),
+                "players": ping_data.get("players", False),
+                "desc": ping_data.get("server_description", False),
+                "version": ping_data.get("server_version", False),
+                "icon": ping_data.get("server_icon", False),
+            }
         else:
             server_stats = {
                 "id": server_id,

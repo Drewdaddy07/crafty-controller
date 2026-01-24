@@ -45,6 +45,10 @@ if os.name == "nt":
 
 logger = logging.getLogger(__name__)
 
+PLAIN_TEXT = "text/plain"
+BAT_TEXT = "application/x-bat"
+ERROR_LOG_HIGHLIGHT = r'<span class="mc-log-error">\1</span>'
+
 MASTER_CONFIG = {
     "https_port": 8443,
     "language": "en_EN",
@@ -69,7 +73,9 @@ MASTER_CONFIG = {
     "max_login_attempts": 3,
     "superMFA": False,
     "general_user_log_access": False,
-    "base_url": "127.0.0.1:8443",
+    "base_url": "localhost:8443",
+    "enable_passkey_auth": False,
+    "passkey_rp_name": "Crafty Controller",
 }
 
 CONFIG_CATEGORIES = {
@@ -90,6 +96,8 @@ CONFIG_CATEGORIES = {
         "enable_otp_skew",
         "superMFA",
         "max_login_attempts",
+        "enable_passkey_auth",
+        "passkey_rp_name",
     ],
     "logs": [
         "max_log_lines",
@@ -139,8 +147,14 @@ class Helpers:
         self.db_path = os.path.join(
             self.root_dir, "app", "config", "db", "crafty.sqlite"
         )
-        self.big_bucket_cache = os.path.join(self.config_dir, "bigbucket.json")
-        self.steamapps_cache = os.path.join(self.config_dir, "steamapps.json")
+
+        self.big_bucket_steamapps_cache = os.path.join(
+            self.config_dir, "steamapps.json"
+        )
+        self.big_bucket_minecraft_cache = os.path.join(
+            self.config_dir, "bigbucket.json"
+        )
+        self.big_bucket_hytale_cache = os.path.join(self.config_dir, "hytale.json")
         self.credits_cache = os.path.join(self.config_dir, "credits.json")
 
         self.passhasher = PasswordHasher()
@@ -339,7 +353,7 @@ class Helpers:
             with open(path, "r", encoding="utf-8"):
                 logger.info(f"{path} is readable")
             return True
-        except PermissionError:
+        except (PermissionError, FileNotFoundError):
             return False
 
     @staticmethod
@@ -810,7 +824,8 @@ class Helpers:
         replacements = [
             (r"(\[.+?/INFO\])", r'<span class="mc-log-info">\1</span>'),
             (r"(\[.+?/WARN\])", r'<span class="mc-log-warn">\1</span>'),
-            (r"(\[.+?/ERROR\])", r'<span class="mc-log-error">\1</span>'),
+            (r"(\[.+?/ERROR\])", ERROR_LOG_HIGHLIGHT),
+            (r"(\[.+?/SEVERE\])", ERROR_LOG_HIGHLIGHT),
             (r"(\[.+?/FATAL\])", r'<span class="mc-log-fatal">\1</span>'),
             (
                 r"(\w+?\[/\d+?\.\d+?\.\d+?\.\d+?\:\d+?\])",
@@ -819,7 +834,8 @@ class Helpers:
             (r"\[(\d\d:\d\d:\d\d)\]", r'<span class="mc-log-time">[\1]</span>'),
             (r"(\[.+? INFO\])", r'<span class="mc-log-info">\1</span>'),
             (r"(\[.+? WARN\])", r'<span class="mc-log-warn">\1</span>'),
-            (r"(\[.+? ERROR\])", r'<span class="mc-log-error">\1</span>'),
+            (r"(\[.+? ERROR\])", ERROR_LOG_HIGHLIGHT),
+            (r"(\[.+? SEVERE\])", ERROR_LOG_HIGHLIGHT),
             (r"(\[.+? FATAL\])", r'<span class="mc-log-fatal">\1</span>'),
         ]
 

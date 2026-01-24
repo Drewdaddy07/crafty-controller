@@ -10,6 +10,11 @@ from app.classes.web.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
 
+SERVER_CREATOR_ERROR = (
+    "/panel/error?error=Unauthorized access: "
+    "not a server creator or server limit reached"
+)
+
 
 class ServerHandler(BaseHandler):
     def get_user_roles(self):
@@ -148,10 +153,7 @@ class ServerHandler(BaseHandler):
             if not superuser and not self.controller.crafty_perms.can_create_server(
                 exec_user["user_id"]
             ):
-                self.redirect(
-                    "/panel/error?error=Unauthorized access: "
-                    "not a server creator or server limit reached"
-                )
+                self.redirect(SERVER_CREATOR_ERROR)
                 return
             page_data["server_api"] = False
             if page_data["online"]:
@@ -171,10 +173,7 @@ class ServerHandler(BaseHandler):
             if not superuser and not self.controller.crafty_perms.can_create_server(
                 exec_user["user_id"]
             ):
-                self.redirect(
-                    "/panel/error?error=Unauthorized access: "
-                    "not a server creator or server limit reached"
-                )
+                self.redirect(SERVER_CREATOR_ERROR)
                 return
             page_data["server_api"] = True
             template = "server/bedrock_wizard.html"
@@ -193,6 +192,15 @@ class ServerHandler(BaseHandler):
             if page_data["servers"] is None:
                 page_data["servers"] = []
             template = "server/steam_wizard.html"
+
+        if page == "hytale_step1":
+            if not superuser and not self.controller.crafty_perms.can_create_server(
+                exec_user["user_id"]
+            ):
+                self.redirect(SERVER_CREATOR_ERROR)
+                return
+            page_data["server_api"] = True
+            template = "server/hytale_wizard.html"
 
         self.render(
             template,
