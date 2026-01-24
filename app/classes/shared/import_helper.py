@@ -195,8 +195,9 @@ class ImportHelpers:
                 hytale_json.linux_installer_url, server_path, unix_exe
             )
             os.chmod(Path(server_path, unix_exe), 0o2760)  # set executable permissions
+            install_command = shlex.split(install_command)
         process = subprocess.Popen(
-            shlex.split(install_command),
+            install_command,
             cwd=server_path,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
