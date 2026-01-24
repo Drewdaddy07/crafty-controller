@@ -269,13 +269,15 @@ function setup_table_body(response) {
 
 function setup_table_listeners() {
     $(".directory").on("mousedown", function (e) {
-        if (e.button == 1) {
-            e.preventDefault();
-            window.open(`/panel/server_detail?id=${serverId}&dir=${encodeURIComponent($(this).attr("data-path"))}&subpage=files#context-container`, "_blank");
+        if (e.button == 2) {
+            return; //Dump out on right click. Let ctx pick it up
         }
-    });
-    $(".directory").on("click", function (e) {
         e.preventDefault();
+        if (e.button == 1) {
+            window.open(`/panel/server_detail?id=${serverId}&dir=${encodeURIComponent($(this).attr("data-path"))}&subpage=files#context-container`, "_blank");
+            return; // Middle click new tab
+        }
+
         // Prevent the click from firing if it’s on the context menu button
         if ($(e.target).closest(".context-button").length) return;
         if ($(e.target).closest(".row-select").length) return;
