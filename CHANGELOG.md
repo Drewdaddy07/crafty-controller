@@ -1,11 +1,12 @@
 # Changelog
 ## --- [4.9.0] - 2026/TBD
 ### New features
-TBD
+- Add Support For Hytale Servers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/954))
 ### Bug fixes
-TBD
+- Add error data to servers running global dir ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/961))
+- Fix bug where directories could not be selected ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/960))
 ### Tweaks
-TBD
+- Add Java 25 support to Docker image ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/948))
 ### Lang
 TBD
 <br><br>
