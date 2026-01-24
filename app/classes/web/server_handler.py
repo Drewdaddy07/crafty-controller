@@ -99,6 +99,7 @@ class ServerHandler(BaseHandler):
                 "mfa"
             ),  # set value if the token has MFA set to true or not
             # for warning banner
+            "experimental": self.helper.get_setting("experimental"),
             "update_available": self.helper.update_available,
             "steamCMD": True,
             "windows": self.helper.is_os_windows(),

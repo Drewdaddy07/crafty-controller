@@ -76,6 +76,7 @@ MASTER_CONFIG = {
     "base_url": "localhost:8443",
     "enable_passkey_auth": False,
     "passkey_rp_name": "Crafty Controller",
+    "experimental": False,
 }
 
 CONFIG_CATEGORIES = {
@@ -88,6 +89,7 @@ CONFIG_CATEGORIES = {
         "big_bucket_repo",
         "enable_user_self_delete",
         "base_url",
+        "experimental",
     ],
     "security": [
         "allow_nsfw_profile_pictures",
