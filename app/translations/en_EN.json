@@ -228,6 +228,7 @@
         "cronFormat": "Invalid Cron format detected",
         "duplicateId": "Request tokens must only specify session_id or token_id, not both.",
         "embarassing": "Oh my, well, this is embarrassing.",
+        "experimental": "You must enable experimental features to access this resource",
         "error": "Error!",
         "eulaAgree": "Do you agree?",
         "eulaMsg": "You must agree to the ",

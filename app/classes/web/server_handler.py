@@ -188,6 +188,11 @@ class ServerHandler(BaseHandler):
                     "not a server creator or server limit reached"
                 )
                 return
+            if not self.helper.get_setting("experimental"):
+                error_string = self.helper.translation.translate(
+                    "error", "experimental", exec_user["lang"]
+                )
+                return self.redirect(f"/panel/error?error={error_string}")
 
             page_data["servers"] = self.controller.steam_apps.fetch_cache()
             if page_data["servers"] is None:
