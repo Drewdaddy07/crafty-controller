@@ -84,7 +84,7 @@ class SteamApps:
                     "name": name of dedicated server(str)
                 }
         """
-        cache_path = self.helper.steamapps_cache
+        cache_path = self.helper.big_bucket_steamapps_cache
         cache = []
         try:
             with open(cache_path, "r", encoding="utf-8") as cache_file:
@@ -106,7 +106,7 @@ class SteamApps:
         Returns:
             refreshed? (bool): Wither or not the status file was refreshed
         """
-        cache_path = self.helper.steamapps_cache
+        cache_path = self.helper.big_bucket_steamapps_cache
         app_list = self._get_dedicated_server_list()
 
         # If SteamApps retrival fails, bail to preserve existing cache
