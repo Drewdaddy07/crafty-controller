@@ -1,4 +1,15 @@
 # Changelog
+## --- [4.9.0] - 2026/01/24
+### New features
+- Add Support For Hytale Servers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/954))
+### Bug fixes
+- Add error data to servers running global dir ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/961))
+- Fix bug where directories could not be selected ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/960))
+- Add try except to unzip extract to avoid failure over missing files ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/959))
+### Tweaks
+- Add Java 25 support to Docker image ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/948))
+<br><br>
+
 ## --- [4.8.0] - 2026/01/22
 ### New features
 - Passkey Authentication Support ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/952))
