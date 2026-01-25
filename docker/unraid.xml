@@ -56,6 +56,11 @@
         <ContainerPort>19132</ContainerPort>
         <Protocol>udp</Protocol>
       </Port>
+      <Port>
+        <HostPort>5520-5550</HostPort>
+        <ContainerPort>5520-5550</ContainerPort>
+        <Protocol>udp</Protocol>
+      </Port>
     </Publish>
   </Networking>
   <Data>
