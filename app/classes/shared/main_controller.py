@@ -15,6 +15,7 @@ from peewee import DoesNotExist
 from tzlocal import get_localzone
 from apscheduler.schedulers.background import BackgroundScheduler
 
+from app.classes.big_bucket.steamcmd import SteamCMD
 from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.models.users import HelperUsers
@@ -553,10 +554,24 @@ class Controller:
         elif data["create_type"] == "steam_cmd":
             server_file = "steamcmd.exe"
             full_jar_path = os.path.join(new_server_path, server_file)
+            try:
+                steamcmd = SteamCMD(
+                    self.big_bucket.get_bucket_data(
+                        self.helper.big_bucket_steamapps_cache
+                    )
+                )
+                steam_server = steamcmd.get_game_by_id(create_data["app_id"])
+            except KeyError:
+                return logger.error("Failed to get big bucket. Crashing out.")
+
             if Helpers.is_os_windows():
-                server_command = f'"{full_jar_path}"'
+                server_command = steam_server.windows_startup_command.replace(
+                    "SERVER_PORT", monitoring_port
+                )
             else:
-                server_command = f"./{server_file}"
+                server_command = steam_server.unix_startup_command.replace(
+                    "SERVER_PORT", monitoring_port
+                )
         elif data["create_type"] == "custom":
             # This is not implemented yet. Raise a key error
             raise KeyError
