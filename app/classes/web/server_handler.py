@@ -194,15 +194,16 @@ class ServerHandler(BaseHandler):
                     "error", "experimental", exec_user["lang"]
                 )
                 return self.redirect(f"/panel/error?error={error_string}")
-
-            steamcmd = SteamCMD(
-                self.controller.big_bucket.get_bucket_data(
-                    self.helper.big_bucket_steamapps_cache
+            try:
+                steamcmd = SteamCMD(
+                    self.controller.big_bucket.get_bucket_data(
+                        self.helper.big_bucket_steamapps_cache
+                    )
                 )
-            )
-            page_data["os"] = OS
-            page_data["servers"] = steamcmd.games
-            if page_data["servers"] is None:
+                page_data["os"] = OS
+                page_data["servers"] = steamcmd.games
+            except KeyError:
+                page_data["server_api"] = False
                 page_data["servers"] = []
             template = "server/steam_wizard.html"
 
