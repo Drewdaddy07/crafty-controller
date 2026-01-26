@@ -148,7 +148,6 @@ def tasks_starter():
     # refresh our cache and schedule for every 12 hoursour cache refresh
     # for bigbucket.com & SteamApps
     tasks_manager.big_bucket_cache_refresher()
-    tasks_manager.steamapps_cache_refresher()
 
 
 def signal_handler(signum, _frame):

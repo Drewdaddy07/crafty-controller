@@ -16,7 +16,6 @@ from app.classes.controllers.servers_controller import ServersController
 from app.classes.helpers.helpers import Helpers
 from app.classes.helpers.file_helpers import FileHelpers
 from app.classes.shared.websocket_manager import WebSocketManager
-from app.classes.steamcmd.serverapps import SteamApps
 from app.classes.steamcmd.steamcmd import SteamCMD
 
 
@@ -31,7 +30,6 @@ class ImportHelpers:
     def __init__(self, helper, file_helper):
         self.file_helper: FileHelpers = file_helper
         self.helper: Helpers = helper
-        self.steam_apps: SteamApps = SteamApps(helper)
         self.big_bucket = BigBucket(helper)
 
     def import_zipped_server(

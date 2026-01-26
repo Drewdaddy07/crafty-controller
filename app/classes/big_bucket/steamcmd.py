@@ -1,5 +1,6 @@
 import sys
 import logging
+from enum import Enum
 
 logger = logging.Logger(__name__)
 
@@ -38,9 +39,6 @@ class SteamCMD:
         return {g.name == g.id for g in self.games}
 
     def get_list_of_games_by_os(self, os: OS | None) -> list[SteamGame]:
-        """if you just want a list of game obejcts by given os"""
-        match os:
-            case None:
-                return self.games
-            case default:
-                return [g for g in self.games if g.os == os]
+        if os is None:
+            return self.games
+        return [g for g in self.games if os in g.os]

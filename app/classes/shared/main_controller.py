@@ -38,7 +38,6 @@ from app.classes.helpers.file_helpers import FileHelpers
 from app.classes.shared.import_helper import ImportHelpers
 from app.classes.big_bucket.bigbucket import BigBucket
 from app.classes.shared.websocket_manager import WebSocketManager
-from app.classes.steamcmd.serverapps import SteamApps
 
 
 logger = logging.getLogger(__name__)
@@ -55,7 +54,6 @@ class Controller:
         self.import_helper: ImportHelpers = import_helper
 
         self.big_bucket: BigBucket = BigBucket(helper)
-        self.steam_apps: SteamApps = SteamApps(helper)
 
         self.users_helper: HelperUsers = HelperUsers(database, self.helper)
         self.totp_helper: HelperTOTP = HelperTOTP(database)

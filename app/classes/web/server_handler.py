@@ -3,6 +3,7 @@ import logging
 import tornado.web
 import tornado.escape
 
+from app.classes.big_bucket.steamcmd import SteamCMD, OS
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.helpers.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
@@ -194,7 +195,13 @@ class ServerHandler(BaseHandler):
                 )
                 return self.redirect(f"/panel/error?error={error_string}")
 
-            page_data["servers"] = self.controller.steam_apps.fetch_cache()
+            steamcmd = SteamCMD(
+                self.controller.big_bucket.get_bucket_data(
+                    self.helper.big_bucket_steamapps_cache
+                )
+            )
+            page_data["os"] = OS
+            page_data["servers"] = steamcmd.games
             if page_data["servers"] is None:
                 page_data["servers"] = []
             template = "server/steam_wizard.html"
