@@ -302,12 +302,13 @@
         return;
       }
 
-      // Convert to ISO format for backend
-      const startISO = new Date(startTime).toISOString();
-      const endISO = new Date(endTime).toISOString();
+      // Treat input as UTC (server time), not browser local time
+      // datetime-local gives "YYYY-MM-DDTHH:MM", append seconds and Z for UTC
+      const startISO = startTime + ':00Z';
+      const endISO = endTime + ':00Z';
 
       // Validate that end is after start
-      if (new Date(endTime) <= new Date(startTime)) {
+      if (endTime <= startTime) {
         alert('End time must be after start time');
         return;
       }
