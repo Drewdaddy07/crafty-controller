@@ -323,7 +323,7 @@
     });
 
     // Custom range apply button handler (Absolute range)
-    $('#apply-custom-range').on("click", function () {
+    function applyCustomRange() {
       const startTime = $('#start-time').val();
       const endTime = $('#end-time').val();
 
@@ -355,6 +355,16 @@
         "&start=" + encodeURIComponent(startISO) +
         "&end=" + encodeURIComponent(endISO) +
         "&subpage=metrics";
+    }
+
+    $('#apply-custom-range').on("click", applyCustomRange);
+
+    // Allow Enter key to apply custom range
+    $('#start-time, #end-time').on("keypress", function (e) {
+      if (e.which === 13) {  // Enter key
+        e.preventDefault();
+        applyCustomRange();
+      }
     });
 
     $('body').click(function () {
