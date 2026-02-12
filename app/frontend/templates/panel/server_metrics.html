@@ -82,13 +82,11 @@
                   <div class="row">
                     <div class="col-md-5">
                       <label for="start-time" class="small">Start</label>
-                      <input type="datetime-local" class="form-control" id="start-time"
-                             value="{% if data.get('start_time') %}{{ data['start_time'][:16] }}{% end %}">
+                      <input type="datetime-local" class="form-control" id="start-time">
                     </div>
                     <div class="col-md-5">
                       <label for="end-time" class="small">End</label>
-                      <input type="datetime-local" class="form-control" id="end-time"
-                             value="{% if data.get('end_time') %}{{ data['end_time'][:16] }}{% end %}">
+                      <input type="datetime-local" class="form-control" id="end-time">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                       <button type="button" class="btn btn-primary btn-block" id="apply-custom-range">
@@ -146,8 +144,40 @@
   const serverId = new URLSearchParams(document.location.search).get('id');
   var zoomed = false;
 
+  // Server timezone offset in hours (e.g., -5 for EST, 0 for UTC)
+  const serverTimezoneOffset = {{ utc_offset }};
+
   // Detect if viewing custom date range (historical mode)
   const isCustomRange = {% if data.get('range_mode') == 'custom' %}true{% else %}false{% end %};
+
+  // Helper: Convert UTC ISO string to server local time for datetime-local input
+  function utcToServerLocal(utcString) {
+    if (!utcString) return '';
+    const utcDate = new Date(utcString);
+    // Convert UTC to server local time: server_local = UTC + server_offset
+    utcDate.setHours(utcDate.getHours() + serverTimezoneOffset);
+
+    // Format as "YYYY-MM-DDTHH:MM" for datetime-local
+    const year = utcDate.getUTCFullYear();
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(utcDate.getUTCDate()).padStart(2, '0');
+    const hours = String(utcDate.getUTCHours()).padStart(2, '0');
+    const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  // Populate custom range inputs if in custom mode
+  if (isCustomRange) {
+    const startTimeUTC = {% if data.get('start_time') %}"{{ data['start_time'] }}"{% else %}null{% end %};
+    const endTimeUTC = {% if data.get('end_time') %}"{{ data['end_time'] }}"{% else %}null{% end %};
+
+    if (startTimeUTC) {
+      document.getElementById('start-time').value = utcToServerLocal(startTimeUTC);
+    }
+    if (endTimeUTC) {
+      document.getElementById('end-time').value = utcToServerLocal(endTimeUTC);
+    }
+  }
 
   // Helper: Safe bytes to GB conversion
   function bytesToGB(bytes) {
@@ -302,16 +332,24 @@
         return;
       }
 
-      // Treat input as UTC (server time), not browser local time
-      // datetime-local gives "YYYY-MM-DDTHH:MM", append seconds and Z for UTC
-      const startISO = startTime + ':00Z';
-      const endISO = endTime + ':00Z';
-
       // Validate that end is after start
       if (endTime <= startTime) {
         alert('End time must be after start time');
         return;
       }
+
+      // Convert input (server local time) to UTC
+      // Input format: "YYYY-MM-DDTHH:MM" (meant as server local time)
+      // Parse as UTC first, then adjust for server timezone offset
+      const startDate = new Date(startTime + ':00Z');
+      const endDate = new Date(endTime + ':00Z');
+
+      // Adjust for server timezone: UTC = server_local - server_offset
+      startDate.setHours(startDate.getHours() - serverTimezoneOffset);
+      endDate.setHours(endDate.getHours() - serverTimezoneOffset);
+
+      const startISO = startDate.toISOString();
+      const endISO = endDate.toISOString();
 
       window.location.href = "/panel/server_detail?id=" + serverId +
         "&start=" + encodeURIComponent(startISO) +
