@@ -82,11 +82,13 @@
                   <div class="row">
                     <div class="col-md-5">
                       <label for="start-time" class="small">Start</label>
-                      <input type="datetime-local" class="form-control" id="start-time">
+                      <input type="datetime-local" class="form-control" id="start-time"
+                             value="{% if data.get('start_time') %}{{ data['start_time'][:16] }}{% end %}">
                     </div>
                     <div class="col-md-5">
                       <label for="end-time" class="small">End</label>
-                      <input type="datetime-local" class="form-control" id="end-time">
+                      <input type="datetime-local" class="form-control" id="end-time"
+                             value="{% if data.get('end_time') %}{{ data['end_time'][:16] }}{% end %}">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                       <button type="button" class="btn btn-primary btn-block" id="apply-custom-range">
@@ -146,32 +148,6 @@
 
   // Detect if viewing custom date range (historical mode)
   const isCustomRange = {% if data.get('range_mode') == 'custom' %}true{% else %}false{% end %};
-
-  // Helper: Convert UTC ISO string to local datetime-local format
-  function utcToLocalInput(utcString) {
-    if (!utcString) return '';
-    const date = new Date(utcString);
-    // Format: YYYY-MM-DDTHH:MM (local timezone)
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  }
-
-  // Populate custom range inputs if in custom mode
-  if (isCustomRange) {
-    const startTimeUTC = {% if data.get('start_time') %}"{{ data['start_time'] }}"{% else %}null{% end %};
-    const endTimeUTC = {% if data.get('end_time') %}"{{ data['end_time'] }}"{% else %}null{% end %};
-
-    if (startTimeUTC) {
-      document.getElementById('start-time').value = utcToLocalInput(startTimeUTC);
-    }
-    if (endTimeUTC) {
-      document.getElementById('end-time').value = utcToLocalInput(endTimeUTC);
-    }
-  }
 
   // Helper: Safe bytes to GB conversion
   function bytesToGB(bytes) {
