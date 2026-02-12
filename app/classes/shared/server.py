@@ -1667,6 +1667,7 @@ class ServerInstance:
                     "running": raw_ping_result.get("running"),
                     "cpu": raw_ping_result.get("cpu"),
                     "mem": raw_ping_result.get("mem"),
+                    "mem_raw": raw_ping_result.get("mem_raw"),
                     "mem_percent": raw_ping_result.get("mem_percent"),
                     "world_name": raw_ping_result.get("world_name"),
                     "world_size": raw_ping_result.get("world_size"),

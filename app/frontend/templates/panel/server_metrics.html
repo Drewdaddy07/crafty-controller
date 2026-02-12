@@ -169,7 +169,7 @@
         {
           label: "Players",
           data: players,
-          borderColor: 'rgba(136, 98, 224, .5)',
+          borderColor: 'rgba(136, 98, 224, .7)',
           borderWidth: 2,
           lineTension: 0,
           yAxisID: 'y-right',
@@ -177,7 +177,7 @@
         {
           label: "RAM %",
           data: ram_percent,
-          borderColor: 'rgba(33, 150, 243, .5)',
+          borderColor: 'rgba(33, 150, 243, .8)',
           borderWidth: 2,
           lineTension: 0,
           yAxisID: 'y-left',
@@ -185,7 +185,7 @@
         {
           label: "RAM GB",
           data: ram_gb,
-          borderColor: 'rgba(33, 150, 243, .9)',
+          borderColor: 'rgba(0, 188, 212, .9)',
           borderWidth: 2,
           lineTension: 0,
           yAxisID: 'y-right',
@@ -193,7 +193,7 @@
         {
           label: "CPU %",
           data: cpu,
-          borderColor: 'rgba(255, 175, 0, .5)',
+          borderColor: 'rgba(255, 175, 0, .7)',
           borderWidth: 2,
           lineTension: 0,
           yAxisID: 'y-left',
@@ -330,7 +330,7 @@
     webSocket.on('update_server_details', function (data) {
       // Validate required fields before updating
       if (!data || !data.created || data.cpu === undefined ||
-          data.mem === undefined || data.mem_percent === undefined) {
+          data.mem_raw === undefined || data.mem_percent === undefined) {
         console.warn('Incomplete server stats update received, skipping');
         return;
       }
@@ -343,7 +343,7 @@
       {% end %}
       cpu.push(data.cpu);
       ram_percent.push(data.mem_percent);
-      ram_gb.push(bytesToGB(data.mem));
+      ram_gb.push(bytesToGB(data.mem_raw));
 
       // Update chart data
       hist_chart.data.labels = dates;
