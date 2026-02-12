@@ -38,12 +38,14 @@
           <span class="d-block d-sm-none">
             {% include "parts/m_server_controls_list.html %}
           </span>
-          <div class="col-2">
+          <div class="col-3">
             <div class="form-group">
-              <label for="days">Metric Period</label>
-              <select required class="form-control form-control-lg select-css" id="days" name="days">
-                {% for value in data['options'] %}
-                <option value="{{value}}">{{value}} Day(s)</option>
+              <label for="hours">Time Period</label>
+              <select required class="form-control form-control-lg select-css" id="hours" name="hours">
+                {% for option in data['hour_options'] %}
+                <option value="{{option['value']}}" {% if option['value'] == data['selected_hours'] %}selected{% end %}>
+                  {{option['label']}}
+                </option>
                 {% end %}
               </select>
             </div>
@@ -72,53 +74,61 @@
   }
 </style>
 <script type="text/javascript">
-  const serverId = new URLSearchParams(document.location.search).get('id')
+  const serverId = new URLSearchParams(document.location.search).get('id');
   var zoomed = false;
-  //line
+
+  // Helper: Safe bytes to GB conversion
+  function bytesToGB(bytes) {
+    return bytes > 0 ? (bytes / (1024 * 1024 * 1024)).toFixed(2) : 0;
+  }
+
+  // Use pre-formatted chart data from backend
+  const chartData = {% raw json.dumps(data['chart_data']) %};
+  const players = chartData.players || [];
+  const dates = chartData.dates || [];
+  const ram_percent = chartData.ram_percent || [];
+  const ram_gb = chartData.ram_gb || [];
+  const cpu = chartData.cpu || [];
+
+  // Create chart with dual Y-axes
   var ctxL = document.getElementById("lineChart").getContext('2d');
-  const players = []
-  const dates = []
-  const ram = []
-  const cpu = []
-  {% for item in data['history_stats'] %}
-  {% if 'minecraft-java' in data['server_stats']['server_type'] %}
-  players.push("{{ item.get('online') }}");
-  {% end %}
-  dates.push("{{ item.get('created').strftime('%Y/%m/%d, %H:%M:%S') }}");
-  ram.push("{{ item.get('mem_percent') }}")
-  cpu.push("{{ item.get('cpu') }}")
-  {% end %}
   var hist_chart = new Chart(ctxL, {
     type: 'line',
     data: {
       labels: dates,
-      datasets: [{
-        label: "Players",
-        data: players,
-        borderColor: [
-          'rgba(136, 98, 224, .5)',
-        ],
-        borderWidth: 2,
-        lineTension: 0,
-      },
-      {
-        label: "MEM",
-        data: ram,
-        borderColor: [
-          'rgba(33, 150, 243, .5)',
-        ],
-        borderWidth: 2,
-        lineTension: 0,
-      },
-      {
-        label: "CPU",
-        data: cpu,
-        borderColor: [
-          'rgba(255, 175, 0, .5)',
-        ],
-        borderWidth: 2,
-        lineTension: 0,
-      },
+      datasets: [
+        {
+          label: "Players",
+          data: players,
+          borderColor: 'rgba(136, 98, 224, .5)',
+          borderWidth: 2,
+          lineTension: 0,
+          yAxisID: 'y-right',
+        },
+        {
+          label: "RAM %",
+          data: ram_percent,
+          borderColor: 'rgba(33, 150, 243, .5)',
+          borderWidth: 2,
+          lineTension: 0,
+          yAxisID: 'y-left',
+        },
+        {
+          label: "RAM GB",
+          data: ram_gb,
+          borderColor: 'rgba(33, 150, 243, .9)',
+          borderWidth: 2,
+          lineTension: 0,
+          yAxisID: 'y-right',
+        },
+        {
+          label: "CPU %",
+          data: cpu,
+          borderColor: 'rgba(255, 175, 0, .5)',
+          borderWidth: 2,
+          lineTension: 0,
+          yAxisID: 'y-left',
+        },
       ]
     },
     options: {
@@ -126,8 +136,7 @@
       plugins: {
         zoom: {
           zoom: {
-            onZoom({ hist_chart }) {
-              console.log("zooming");
+            onZoom() {
               document.getElementById("reset-button").classList.remove("d-none");
               document.getElementById("reset-button").classList.add("d-block");
               zoomed = true;
@@ -148,78 +157,121 @@
           pan: {
             enabled: true,
             mode: "x",
-            threshhold: 1,
+            threshold: 1,
           }
         },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              let label = context.dataset.label || '';
+              if (label) label += ': ';
+
+              // Format based on metric type
+              if (context.dataset.label === 'RAM GB') {
+                label += parseFloat(context.parsed.y).toFixed(2) + ' GB';
+              } else if (context.dataset.label === 'Players') {
+                label += Math.round(context.parsed.y);
+              } else {
+                label += context.parsed.y.toFixed(1) + '%';
+              }
+              return label;
+            }
+          }
+        }
       },
-      fill: false,
-      lineTension: 5,
       responsive: true,
       scales: {
-        y: {
+        'y-left': {
+          type: 'linear',
+          position: 'left',
           min: 0,
+          title: {
+            display: true,
+            text: 'Percentage (%)'
+          },
+          grid: {
+            display: true
+          }
+        },
+        'y-right': {
+          type: 'linear',
+          position: 'right',
+          min: 0,
+          title: {
+            display: true,
+            text: 'Count / GB'
+          },
+          grid: {
+            display: false
+          }
         },
         x: {
-          position: 'right',
-          min: dates.length - 200,
+          position: 'bottom',
+          // No hard-coded min - show all data
         }
       }
     }
   });
+
+  // Dropdown change handler
   $(window).ready(function () {
-    $('#days').on("change", function () {
-      let days = $('#days').find(":selected").val();
-      window.location.href = "/panel/server_detail?id=" + serverId + "&days=" + days + "&subpage=metrics"
+    $('#hours').on("change", function () {
+      let hours = $('#hours').find(":selected").val();
+      window.location.href = "/panel/server_detail?id=" + serverId + "&hours=" + hours + "&subpage=metrics";
     });
+
     $('body').click(function () {
       $('.hints').popover("hide");
     });
   });
+
+  // WebSocket updates and reset button
   $(document).ready(function () {
     if ($(window).width() > 1000) {
       $('[data-toggle="popover"]').popover();
       $('.hints').popover("show");
     }
+
     webSocket.on('update_server_details', function (data) {
+      // Validate required fields before updating
+      if (!data || !data.created || data.cpu === undefined ||
+          data.mem === undefined || data.mem_percent === undefined) {
+        console.warn('Incomplete server stats update received, skipping');
+        return;
+      }
+
       dates.push(data.created);
-      players.push(data.online);
-      cpu.push(data.cpu)
-      ram.push(data.mem_percent)
-      data = {
-        labels: dates,
-        datasets: [{
-          label: "Players",
-          data: players,
-          borderColor: [
-            'rgba(136, 98, 224, .5)',
-          ],
-          borderWidth: 2,
-          lineTension: 0,
-        },
-        {
-          label: "MEM",
-          data: ram,
-          borderColor: [
-            'rgba(33, 150, 243, .5)',
-          ],
-          borderWidth: 2,
-          lineTension: 0,
-        },
-        {
-          label: "CPU",
-          data: cpu,
-          borderColor: [
-            'rgba(255, 175, 0, .5)',
-          ],
-          borderWidth: 2,
-          lineTension: 0,
-        },
-        ]
+      {% if 'minecraft-java' in data['server_stats']['server_type'] %}
+      if (data.online !== undefined) {
+        players.push(data.online);
       }
+      {% end %}
+      cpu.push(data.cpu);
+      ram_percent.push(data.mem_percent);
+      ram_gb.push(bytesToGB(data.mem));
+
+      // Update chart data
+      hist_chart.data.labels = dates;
+      hist_chart.data.datasets[0].data = players;
+      hist_chart.data.datasets[1].data = ram_percent;
+      hist_chart.data.datasets[2].data = ram_gb;
+      hist_chart.data.datasets[3].data = cpu;
+
+      // Maintain reasonable window size
       if (!zoomed) {
-        hist_chart.options.scales.x.min = dates.length - 200;
+        const maxPoints = 360;
+        if (dates.length > maxPoints) {
+          dates.shift();
+          {% if 'minecraft-java' in data['server_stats']['server_type'] %}
+          players.shift();
+          {% end %}
+          ram_percent.shift();
+          ram_gb.shift();
+          cpu.shift();
+        }
       }
-      hist_chart.update(data)
+
+      hist_chart.update();
     });
 
     $(".reset-button").click(function () {

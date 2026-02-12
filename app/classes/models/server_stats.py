@@ -21,6 +21,7 @@ try:
         IntegerField,
         FloatField,
         DoesNotExist,
+        fn,
     )
 
 except ModuleNotFoundError as e:
@@ -165,6 +166,53 @@ class HelperServerStats:
             server_stats.append(DatabaseShortcuts.get_data_obj(stat))
         self.database.close()
         return server_stats
+
+    def get_history_stats_adaptive(self, server_id, num_hours):
+        """
+        Get server stats with adaptive sampling based on time range
+
+        Sampling strategy:
+        - <= 6 hours: Every point (full resolution)
+        - 6-24 hours: Every 2nd point
+        - 24-72 hours: Every 6th point
+        - > 72 hours: Every 12th point (maintains ~200 points)
+        """
+        self.database.connect(reuse_if_open=True)
+        max_age = datetime.datetime.now() - timedelta(hours=num_hours)
+
+        # Determine sample rate
+        sample_rate = self._calculate_sample_rate(num_hours)
+
+        query_stats = (
+            ServerStats.select()
+            .where(ServerStats.created > max_age)
+            .where(ServerStats.server_id == server_id)
+            .order_by(ServerStats.created.asc())
+            .execute(self.database)
+        )
+
+        # Apply sampling
+        server_stats = []
+        for idx, stat in enumerate(query_stats):
+            if idx % sample_rate == 0:
+                server_stats.append(DatabaseShortcuts.get_data_obj(stat))
+
+        self.database.close()
+        return server_stats
+
+    def _calculate_sample_rate(self, num_hours):
+        """Calculate appropriate sample rate for time range"""
+        # Input validation for safety
+        if num_hours <= 0:
+            return 1  # Safety: treat invalid input as minimum sample rate
+        if num_hours <= 6:
+            return 1  # Every point
+        elif num_hours <= 24:
+            return 2  # Every 2nd point
+        elif num_hours <= 72:
+            return 6  # Every 6th point
+        else:
+            return max(1, num_hours // 12)  # ~200 points max
 
     def insert_server_stats(self, server_stats):
         self.database.connect(reuse_if_open=True)

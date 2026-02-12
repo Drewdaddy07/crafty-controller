@@ -22,6 +22,8 @@ from app.classes.models.management import HelpersManagement
 from app.classes.controllers.roles_controller import RolesController
 from app.classes.helpers.helpers import Helpers
 from app.classes.shared.main_models import DatabaseShortcuts
+from app.classes.shared.metrics_time_helper import MetricsTimeRangeHelper
+from app.classes.shared.stats_helpers import StatsConverter
 from app.classes.web.base_handler import BaseHandler
 from app.classes.web.webhooks.webhook_factory import WebhookFactory
 
@@ -680,21 +682,50 @@ class PanelHandler(BaseHandler):
                 self.controller.servers.refresh_server_settings(server_id)
 
             if subpage == "metrics":
+                # Support both 'hours' and legacy 'days' parameter
+                hours_param = self.get_argument("hours", None)
+                days_param = self.get_argument("days", None)
+
                 try:
-                    days = int(self.get_argument("days", "1"))
+                    if hours_param is not None:
+                        hours = int(hours_param)
+                    elif days_param is not None:
+                        days = int(days_param)
+                        hours = days * 24
+                    else:
+                        hours = 24  # Default to 1 day
                 except ValueError as e:
                     self.redirect(
-                        f"/panel/error?error=Type error: Argument must be an int {e}"
+                        f"/panel/error?error=Type error: Time argument must be an int ({e})"
                     )
-                page_data["options"] = [1, 2, 3]
-                if not days in page_data["options"]:
-                    page_data["options"].insert(0, days)
-                else:
-                    page_data["options"].insert(
-                        0, page_data["options"].pop(page_data["options"].index(days))
-                    )
-                page_data["history_stats"] = self.controller.servers.get_history_stats(
-                    server_id, hours=(days * 24)
+                    return
+
+                # Validation: clamp to retention limits
+                max_retention_hours = self.helper.get_setting("history_max_age") * 24
+                hours = MetricsTimeRangeHelper.clamp_hours(hours, max_retention_hours)
+
+                # Generate dropdown options with formatted labels
+                hour_options_raw = MetricsTimeRangeHelper.get_time_options(hours)
+                page_data["hour_options"] = [
+                    {
+                        "value": h,
+                        "label": MetricsTimeRangeHelper.format_display_label(h)
+                    }
+                    for h in hour_options_raw
+                ]
+                page_data["selected_hours"] = hours
+                page_data["max_retention_hours"] = max_retention_hours
+
+                # Fetch stats with adaptive sampling
+                history_stats = self.controller.servers.get_history_stats_adaptive(
+                    server_id, hours=hours
+                )
+                page_data["history_stats"] = history_stats
+
+                # Prepare chart datasets using helper
+                page_data["chart_data"] = StatsConverter.prepare_chart_datasets(
+                    history_stats,
+                    server_type=page_data["server_stats"]["server_type"]
                 )
             if subpage == "webhooks":
                 page_data["webhooks"] = (
