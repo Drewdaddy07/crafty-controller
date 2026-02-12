@@ -1716,4 +1716,5 @@ class PanelHandler(BaseHandler):
             time=time,
             utc_offset=(time.timezone * -1 / 60 / 60),
             translate=self.translator.translate,
+            json=json,
         )
