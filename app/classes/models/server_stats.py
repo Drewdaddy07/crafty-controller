@@ -267,7 +267,7 @@ class HelperServerStats:
                 ServerStats.started: server_stats.get("started", ""),
                 ServerStats.running: server_stats.get("running", False),
                 ServerStats.cpu: server_stats.get("cpu", 0),
-                ServerStats.mem: server_stats.get("mem", 0),
+                ServerStats.mem: server_stats.get("mem_raw", 0),
                 ServerStats.mem_percent: server_stats.get("mem_percent", 0),
                 ServerStats.world_name: server_stats.get("world_name", ""),
                 ServerStats.world_size: server_stats.get("world_size", ""),
