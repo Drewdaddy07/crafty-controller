@@ -200,6 +200,45 @@ class HelperServerStats:
         self.database.close()
         return server_stats
 
+    def get_history_stats_by_date_range(self, server_id, start_time, end_time):
+        """
+        Get server stats for a custom date range with adaptive sampling
+
+        Args:
+            server_id: Server ID to query
+            start_time: datetime object for range start
+            end_time: datetime object for range end
+
+        Returns:
+            List of stat dictionaries with adaptive sampling applied
+        """
+        self.database.connect(reuse_if_open=True)
+
+        # Calculate hours for adaptive sampling
+        time_delta = end_time - start_time
+        num_hours = time_delta.total_seconds() / 3600
+
+        # Determine sample rate based on time span
+        sample_rate = self._calculate_sample_rate(num_hours)
+
+        query_stats = (
+            ServerStats.select()
+            .where(ServerStats.created >= start_time)
+            .where(ServerStats.created <= end_time)
+            .where(ServerStats.server_id == server_id)
+            .order_by(ServerStats.created.asc())
+            .execute(self.database)
+        )
+
+        # Apply sampling
+        server_stats = []
+        for idx, stat in enumerate(query_stats):
+            if idx % sample_rate == 0:
+                server_stats.append(DatabaseShortcuts.get_data_obj(stat))
+
+        self.database.close()
+        return server_stats
+
     def _calculate_sample_rate(self, num_hours):
         """Calculate appropriate sample rate for time range"""
         # Input validation for safety

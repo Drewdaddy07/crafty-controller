@@ -126,6 +126,12 @@ class ServersController(metaclass=Singleton):
         srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.get_history_stats_adaptive(server_id, hours)
 
+    def get_history_stats_by_date_range(self, server_id, start_time, end_time):
+        srv = ServersController().get_server_instance_by_id(server_id)
+        return srv.stats_helper.get_history_stats_by_date_range(
+            server_id, start_time, end_time
+        )
+
     @staticmethod
     def update_unloaded_server(server_obj):
         ret = HelperServers.update_server(server_obj)

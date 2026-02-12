@@ -682,27 +682,74 @@ class PanelHandler(BaseHandler):
                 self.controller.servers.refresh_server_settings(server_id)
 
             if subpage == "metrics":
+                # Check for custom date range parameters
+                start_param = self.get_argument("start", None)
+                end_param = self.get_argument("end", None)
+
                 # Support both 'hours' and legacy 'days' parameter
                 hours_param = self.get_argument("hours", None)
                 days_param = self.get_argument("days", None)
 
-                try:
-                    if hours_param is not None:
-                        hours = int(hours_param)
-                    elif days_param is not None:
-                        days = int(days_param)
-                        hours = days * 24
-                    else:
-                        hours = 24  # Default to 1 day
-                except ValueError as e:
-                    self.redirect(
-                        f"/panel/error?error=Type error: Time argument must be an int ({e})"
-                    )
-                    return
-
-                # Validation: clamp to retention limits
                 max_retention_hours = self.helper.get_setting("history_max_age") * 24
-                hours = MetricsTimeRangeHelper.clamp_hours(hours, max_retention_hours)
+
+                # Determine if using custom range or preset range
+                if start_param and end_param:
+                    # Custom date range mode
+                    try:
+                        # Parse ISO format datetime strings
+                        start_time = datetime.datetime.fromisoformat(start_param)
+                        end_time = datetime.datetime.fromisoformat(end_param)
+
+                        # Validation: ensure end is after start
+                        if end_time <= start_time:
+                            self.redirect(
+                                "/panel/error?error=End time must be after start time"
+                            )
+                            return
+
+                        # Fetch stats with custom date range
+                        history_stats = self.controller.servers.get_history_stats_by_date_range(
+                            server_id, start_time, end_time
+                        )
+
+                        # Calculate hours for display purposes
+                        time_delta = end_time - start_time
+                        hours = int(time_delta.total_seconds() / 3600)
+
+                        page_data["range_mode"] = "custom"
+                        page_data["start_time"] = start_time.isoformat()
+                        page_data["end_time"] = end_time.isoformat()
+
+                    except (ValueError, TypeError) as e:
+                        self.redirect(
+                            f"/panel/error?error=Invalid date format ({e})"
+                        )
+                        return
+                else:
+                    # Preset range mode (existing logic)
+                    try:
+                        if hours_param is not None:
+                            hours = int(hours_param)
+                        elif days_param is not None:
+                            days = int(days_param)
+                            hours = days * 24
+                        else:
+                            hours = 24  # Default to 1 day
+                    except ValueError as e:
+                        self.redirect(
+                            f"/panel/error?error=Type error: Time argument must be an int ({e})"
+                        )
+                        return
+
+                    # Validation: clamp to retention limits
+                    hours = MetricsTimeRangeHelper.clamp_hours(hours, max_retention_hours)
+
+                    # Fetch stats with adaptive sampling
+                    history_stats = self.controller.servers.get_history_stats_adaptive(
+                        server_id, hours=hours
+                    )
+
+                    page_data["range_mode"] = "preset"
 
                 # Generate dropdown options with formatted labels
                 hour_options_raw = MetricsTimeRangeHelper.get_time_options(hours)
@@ -715,11 +762,6 @@ class PanelHandler(BaseHandler):
                 ]
                 page_data["selected_hours"] = hours
                 page_data["max_retention_hours"] = max_retention_hours
-
-                # Fetch stats with adaptive sampling
-                history_stats = self.controller.servers.get_history_stats_adaptive(
-                    server_id, hours=hours
-                )
                 page_data["history_stats"] = history_stats
 
                 # Prepare chart datasets using helper

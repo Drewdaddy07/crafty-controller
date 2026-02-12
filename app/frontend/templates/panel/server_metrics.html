@@ -38,16 +38,67 @@
           <span class="d-block d-sm-none">
             {% include "parts/m_server_controls_list.html %}
           </span>
-          <div class="col-3">
+
+          <!-- Time Range Selector with Tabs -->
+          <div class="col-12 col-md-8 col-lg-6">
             <div class="form-group">
-              <label for="hours">Time Period</label>
-              <select required class="form-control form-control-lg select-css" id="hours" name="hours">
-                {% for option in data['hour_options'] %}
-                <option value="{{option['value']}}" {% if option['value'] == data['selected_hours'] %}selected{% end %}>
-                  {{option['label']}}
-                </option>
-                {% end %}
-              </select>
+              <label>Time Period</label>
+
+              <!-- Tab Navigation -->
+              <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link {% if data.get('range_mode', 'preset') == 'preset' %}active{% end %}"
+                     id="relative-tab" data-toggle="tab" href="#relative-range" role="tab">
+                    Relative
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link {% if data.get('range_mode') == 'custom' %}active{% end %}"
+                     id="absolute-tab" data-toggle="tab" href="#absolute-range" role="tab">
+                    Absolute
+                  </a>
+                </li>
+              </ul>
+
+              <!-- Tab Content -->
+              <div class="tab-content border border-top-0 p-3">
+                <!-- Relative Range Tab -->
+                <div class="tab-pane fade {% if data.get('range_mode', 'preset') == 'preset' %}show active{% end %}"
+                     id="relative-range" role="tabpanel">
+                  <select class="form-control" id="hours" name="hours">
+                    {% for option in data['hour_options'] %}
+                    <option value="{{option['value']}}"
+                            {% if option['value'] == data['selected_hours'] %}selected{% end %}>
+                      {{option['label']}}
+                    </option>
+                    {% end %}
+                  </select>
+                  <small class="form-text text-muted">Select a preset time range</small>
+                </div>
+
+                <!-- Absolute Range Tab -->
+                <div class="tab-pane fade {% if data.get('range_mode') == 'custom' %}show active{% end %}"
+                     id="absolute-range" role="tabpanel">
+                  <div class="row">
+                    <div class="col-md-5">
+                      <label for="start-time" class="small">Start</label>
+                      <input type="datetime-local" class="form-control" id="start-time"
+                             value="{% if data.get('start_time') %}{{ data['start_time'][:16] }}{% end %}">
+                    </div>
+                    <div class="col-md-5">
+                      <label for="end-time" class="small">End</label>
+                      <input type="datetime-local" class="form-control" id="end-time"
+                             value="{% if data.get('end_time') %}{{ data['end_time'][:16] }}{% end %}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                      <button type="button" class="btn btn-primary btn-block" id="apply-custom-range">
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                  <small class="form-text text-muted">Select specific start and end times</small>
+                </div>
+              </div>
             </div>
           </div>
           <button class="btn btn-outline-success reset-button float-right d-none" id="reset-button" hidden><i class="fas fa-undo"></i>&nbsp;{{ translate('serverMetrics', 'resetZoom', data['lang'])
@@ -71,6 +122,24 @@
 <style>
   .chart-wrapper {
     height: 65vh;
+  }
+
+  /* Fix tab contrast for readability */
+  #relative-tab.nav-link.active,
+  #absolute-tab.nav-link.active {
+    color: #fff !important;
+    background-color: #007bff !important;
+    border-color: #007bff #007bff #fff !important;
+  }
+
+  #relative-tab.nav-link:not(.active),
+  #absolute-tab.nav-link:not(.active) {
+    color: #007bff;
+  }
+
+  #relative-tab.nav-link:hover,
+  #absolute-tab.nav-link:hover {
+    border-color: #dee2e6 #dee2e6 #fff;
   }
 </style>
 <script type="text/javascript">
@@ -213,11 +282,37 @@
     }
   });
 
-  // Dropdown change handler
+  // Dropdown change handler (Relative range)
   $(window).ready(function () {
     $('#hours').on("change", function () {
       let hours = $('#hours').find(":selected").val();
       window.location.href = "/panel/server_detail?id=" + serverId + "&hours=" + hours + "&subpage=metrics";
+    });
+
+    // Custom range apply button handler (Absolute range)
+    $('#apply-custom-range').on("click", function () {
+      const startTime = $('#start-time').val();
+      const endTime = $('#end-time').val();
+
+      if (!startTime || !endTime) {
+        alert('Please select both start and end times');
+        return;
+      }
+
+      // Convert to ISO format for backend
+      const startISO = new Date(startTime).toISOString();
+      const endISO = new Date(endTime).toISOString();
+
+      // Validate that end is after start
+      if (new Date(endTime) <= new Date(startTime)) {
+        alert('End time must be after start time');
+        return;
+      }
+
+      window.location.href = "/panel/server_detail?id=" + serverId +
+        "&start=" + encodeURIComponent(startISO) +
+        "&end=" + encodeURIComponent(endISO) +
+        "&subpage=metrics";
     });
 
     $('body').click(function () {
@@ -229,7 +324,7 @@
   $(document).ready(function () {
     if ($(window).width() > 1000) {
       $('[data-toggle="popover"]').popover();
-      $('.hints').popover("show");
+      // Hint available on hover/click, not auto-shown
     }
 
     webSocket.on('update_server_details', function (data) {
