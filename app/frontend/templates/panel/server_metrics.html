@@ -146,6 +146,9 @@
   const serverId = new URLSearchParams(document.location.search).get('id');
   var zoomed = false;
 
+  // Detect if viewing custom date range (historical mode)
+  const isCustomRange = {% if data.get('range_mode') == 'custom' %}true{% else %}false{% end %};
+
   // Helper: Safe bytes to GB conversion
   function bytesToGB(bytes) {
     return bytes > 0 ? (bytes / (1024 * 1024 * 1024)).toFixed(2) : 0;
@@ -328,6 +331,11 @@
     }
 
     webSocket.on('update_server_details', function (data) {
+      // Skip live updates when viewing custom historical range
+      if (isCustomRange) {
+        return;
+      }
+
       // Validate required fields before updating
       if (!data || !data.created || data.cpu === undefined ||
           data.mem_raw === undefined || data.mem_percent === undefined) {
