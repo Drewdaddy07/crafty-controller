@@ -47,8 +47,8 @@ class StatsConverter:
         cpu = []
 
         for stat in stats:
-            # Only track players for Java Edition
-            if "minecraft-java" in server_type:
+            # Track players for Java Edition and Hytale
+            if "minecraft-java" in server_type or "hytale" in server_type:
                 players.append(stat.get("online", 0))
 
             # Format date for display

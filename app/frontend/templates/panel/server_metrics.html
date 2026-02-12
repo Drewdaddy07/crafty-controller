@@ -336,7 +336,7 @@
       }
 
       dates.push(data.created);
-      {% if 'minecraft-java' in data['server_stats']['server_type'] %}
+      {% if 'minecraft-java' in data['server_stats']['server_type'] or 'hytale' in data['server_stats']['server_type'] %}
       if (data.online !== undefined) {
         players.push(data.online);
       }
@@ -357,7 +357,7 @@
         const maxPoints = 360;
         if (dates.length > maxPoints) {
           dates.shift();
-          {% if 'minecraft-java' in data['server_stats']['server_type'] %}
+          {% if 'minecraft-java' in data['server_stats']['server_type'] or 'hytale' in data['server_stats']['server_type'] %}
           players.shift();
           {% end %}
           ram_percent.shift();
