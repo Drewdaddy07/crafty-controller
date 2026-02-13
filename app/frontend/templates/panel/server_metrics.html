@@ -183,22 +183,6 @@
     }
   }
 
-  // Initialize Air Datepicker with range mode on single input
-  const earliestDate = {% if data.get('earliest_metrics_date') %}"{{ data['earliest_metrics_date'] }}"{% else %}null{% end %};
-
-  const rangePicker = new AirDatepicker('#date-range', {
-    range: true,                     // Enable date range selection
-    timepicker: true,                // Enable time picker
-    minutesStep: 1,                  // Minute precision
-    dateFormat: 'yyyy-MM-dd',        // ISO date format
-    timeFormat: 'HH:mm',             // 24-hour time format
-    multipleDatesSeparator: ' - ',   // Separator between start and end
-    position: 'bottom left',         // Dropdown position
-
-    // Prevent invalid date selections
-    minDate: earliestDate ? new Date(earliestDate) : null,
-    maxDate: new Date()              // Can't select future dates
-  });
 
   // Helper: Safe bytes to GB conversion
   function bytesToGB(bytes) {
