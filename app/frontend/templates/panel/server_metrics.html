@@ -186,28 +186,38 @@
     }
   }
 
-  // Initialize Air Datepicker with range mode
+  // Initialize Air Datepicker for start and end times (two separate instances)
   const earliestDate = {% if data.get('earliest_metrics_date') %}"{{ data['earliest_metrics_date'] }}"{% else %}null{% end %};
 
-  const rangePicker = new AirDatepicker('#start-time', {
-    range: true,                     // Enable date range selection
-    timepicker: true,                // Enable time picker
-    minutesStep: 1,                  // Minute precision
-    dateFormat: 'yyyy-MM-dd',        // ISO date format
-    timeFormat: 'HH:mm',             // 24-hour time format
-    position: 'bottom left',         // Dropdown position
-
-    // Prevent invalid date selections
+  const startPicker = new AirDatepicker('#start-time', {
+    timepicker: true,
+    minutesStep: 1,
+    dateFormat: 'yyyy-MM-dd',
+    timeFormat: 'HH:mm',
+    position: 'bottom left',
     minDate: earliestDate ? new Date(earliestDate) : null,
-    maxDate: new Date(),             // Can't select future dates
+    maxDate: new Date(),
+    onSelect: function({date}) {
+      // Update end picker's minDate when start is selected
+      if (date && endPicker) {
+        endPicker.update({ minDate: date });
+      }
+    }
+  });
 
-    // Auto-fill both inputs when range selected
-    multipleDatesSeparator: ' - ',
-
-    // Callbacks for custom timezone handling (if needed)
-    onSelect: function({date, formattedDate, datepicker}) {
-      // Air Datepicker handles splitting range between start/end inputs
-      // Existing applyCustomRange() validation still applies on submit
+  const endPicker = new AirDatepicker('#end-time', {
+    timepicker: true,
+    minutesStep: 1,
+    dateFormat: 'yyyy-MM-dd',
+    timeFormat: 'HH:mm',
+    position: 'bottom left',
+    minDate: earliestDate ? new Date(earliestDate) : null,
+    maxDate: new Date(),
+    onSelect: function({date}) {
+      // Update start picker's maxDate when end is selected
+      if (date && startPicker) {
+        startPicker.update({ maxDate: date });
+      }
     }
   });
 
