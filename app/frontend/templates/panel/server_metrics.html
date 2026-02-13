@@ -186,6 +186,31 @@
     }
   }
 
+  // Initialize Air Datepicker with range mode
+  const earliestDate = {% if data.get('earliest_metrics_date') %}"{{ data['earliest_metrics_date'] }}"{% else %}null{% end %};
+
+  const rangePicker = new AirDatepicker('#start-time', {
+    range: true,                     // Enable date range selection
+    timepicker: true,                // Enable time picker
+    minutesStep: 1,                  // Minute precision
+    dateFormat: 'yyyy-MM-dd',        // ISO date format
+    timeFormat: 'HH:mm',             // 24-hour time format
+    position: 'bottom left',         // Dropdown position
+
+    // Prevent invalid date selections
+    minDate: earliestDate ? new Date(earliestDate) : null,
+    maxDate: new Date(),             // Can't select future dates
+
+    // Auto-fill both inputs when range selected
+    multipleDatesSeparator: ' - ',
+
+    // Callbacks for custom timezone handling (if needed)
+    onSelect: function({date, formattedDate, datepicker}) {
+      // Air Datepicker handles splitting range between start/end inputs
+      // Existing applyCustomRange() validation still applies on submit
+    }
+  });
+
   // Helper: Safe bytes to GB conversion
   function bytesToGB(bytes) {
     return bytes > 0 ? (bytes / (1024 * 1024 * 1024)).toFixed(2) : 0;
