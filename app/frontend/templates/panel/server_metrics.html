@@ -82,13 +82,9 @@
                 <div class="tab-pane fade {% if data.get('range_mode') == 'custom' %}show active{% end %}"
                      id="absolute-range" role="tabpanel">
                   <div class="row">
-                    <div class="col-md-5">
-                      <label for="start-time" class="small">Start</label>
-                      <input type="text" class="form-control" id="start-time" placeholder="Start date & time">
-                    </div>
-                    <div class="col-md-5">
-                      <label for="end-time" class="small">End</label>
-                      <input type="text" class="form-control" id="end-time" placeholder="End date & time">
+                    <div class="col-md-10">
+                      <label for="date-range" class="small">Date Range</label>
+                      <input type="text" class="form-control" id="date-range" placeholder="Select date & time range">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                       <button type="button" class="btn btn-primary btn-block" id="apply-custom-range">
@@ -173,52 +169,33 @@
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
-  // Populate custom range inputs if in custom mode
+  // Populate custom range input if in custom mode
   if (isCustomRange) {
     const startTimeUTC = {% if data.get('start_time') %}"{{ data['start_time'] }}"{% else %}null{% end %};
     const endTimeUTC = {% if data.get('end_time') %}"{{ data['end_time'] }}"{% else %}null{% end %};
 
-    if (startTimeUTC) {
-      document.getElementById('start-time').value = utcToServerLocal(startTimeUTC);
-    }
-    if (endTimeUTC) {
-      document.getElementById('end-time').value = utcToServerLocal(endTimeUTC);
+    if (startTimeUTC && endTimeUTC) {
+      const startLocal = utcToServerLocal(startTimeUTC);
+      const endLocal = utcToServerLocal(endTimeUTC);
+      document.getElementById('date-range').value = startLocal + ' - ' + endLocal;
     }
   }
 
-  // Initialize Air Datepicker for start and end times (two separate instances)
+  // Initialize Air Datepicker with range mode on single input
   const earliestDate = {% if data.get('earliest_metrics_date') %}"{{ data['earliest_metrics_date'] }}"{% else %}null{% end %};
 
-  const startPicker = new AirDatepicker('#start-time', {
-    timepicker: true,
-    minutesStep: 1,
-    dateFormat: 'yyyy-MM-dd',
-    timeFormat: 'HH:mm',
-    position: 'bottom left',
-    minDate: earliestDate ? new Date(earliestDate) : null,
-    maxDate: new Date(),
-    onSelect: function({date}) {
-      // Update end picker's minDate when start is selected
-      if (date && endPicker) {
-        endPicker.update({ minDate: date });
-      }
-    }
-  });
+  const rangePicker = new AirDatepicker('#date-range', {
+    range: true,                     // Enable date range selection
+    timepicker: true,                // Enable time picker
+    minutesStep: 1,                  // Minute precision
+    dateFormat: 'yyyy-MM-dd',        // ISO date format
+    timeFormat: 'HH:mm',             // 24-hour time format
+    multipleDatesSeparator: ' - ',   // Separator between start and end
+    position: 'bottom left',         // Dropdown position
 
-  const endPicker = new AirDatepicker('#end-time', {
-    timepicker: true,
-    minutesStep: 1,
-    dateFormat: 'yyyy-MM-dd',
-    timeFormat: 'HH:mm',
-    position: 'bottom left',
+    // Prevent invalid date selections
     minDate: earliestDate ? new Date(earliestDate) : null,
-    maxDate: new Date(),
-    onSelect: function({date}) {
-      // Update start picker's maxDate when end is selected
-      if (date && startPicker) {
-        startPicker.update({ maxDate: date });
-      }
-    }
+    maxDate: new Date()              // Can't select future dates
   });
 
   // Helper: Safe bytes to GB conversion
@@ -366,13 +343,23 @@
 
     // Custom range apply button handler (Absolute range)
     function applyCustomRange() {
-      const startTime = $('#start-time').val();
-      const endTime = $('#end-time').val();
+      const rangeValue = $('#date-range').val();
 
-      if (!startTime || !endTime) {
+      if (!rangeValue) {
+        alert('Please select a date range');
+        return;
+      }
+
+      // Parse the range (format: "YYYY-MM-DD HH:mm - YYYY-MM-DD HH:mm")
+      const rangeParts = rangeValue.split(' - ');
+
+      if (rangeParts.length !== 2) {
         alert('Please select both start and end times');
         return;
       }
+
+      const startTime = rangeParts[0].trim();
+      const endTime = rangeParts[1].trim();
 
       // Validate that end is after start
       if (endTime <= startTime) {
@@ -381,10 +368,8 @@
       }
 
       // Convert input (server local time) to UTC
-      // Input format: "YYYY-MM-DDTHH:MM" (meant as server local time)
-      // Parse as UTC first, then adjust for server timezone offset
-      const startDate = new Date(startTime + ':00Z');
-      const endDate = new Date(endTime + ':00Z');
+      const startDate = new Date(startTime.replace(' ', 'T') + ':00Z');
+      const endDate = new Date(endTime.replace(' ', 'T') + ':00Z');
 
       // Adjust for server timezone: UTC = server_local - server_offset
       startDate.setHours(startDate.getHours() - serverTimezoneOffset);
@@ -402,7 +387,7 @@
     $('#apply-custom-range').on("click", applyCustomRange);
 
     // Allow Enter key to apply custom range
-    $('#start-time, #end-time').on("keypress", function (e) {
+    $('#date-range').on("keypress", function (e) {
       if (e.which === 13) {  // Enter key
         e.preventDefault();
         applyCustomRange();
