@@ -322,7 +322,8 @@ class HelperServerStats:
             )
             self.database.close()
             return earliest
-        except Exception:
+        except DoesNotExist:
+            # No metrics exist for this server yet
             self.database.close()
             return None
 
