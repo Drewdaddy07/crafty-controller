@@ -177,7 +177,7 @@
     if (startTimeUTC && endTimeUTC) {
       const startLocal = utcToServerLocal(startTimeUTC);
       const endLocal = utcToServerLocal(endTimeUTC);
-      document.getElementById('date-range').value = startLocal + ' - ' + endLocal;
+      document.getElementById('date-range').value = startLocal.replace('T', ' ') + ' - ' + endLocal.replace('T', ' ');
     }
   }
 
