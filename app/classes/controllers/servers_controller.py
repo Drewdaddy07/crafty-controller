@@ -132,6 +132,10 @@ class ServersController(metaclass=Singleton):
             server_id, start_time, end_time
         )
 
+    def get_server_stats_earliest(self, server_id):
+        srv = ServersController().get_server_instance_by_id(server_id)
+        return srv.stats_helper.get_earliest_server_stats()
+
     @staticmethod
     def update_unloaded_server(server_obj):
         ret = HelperServers.update_server(server_obj)

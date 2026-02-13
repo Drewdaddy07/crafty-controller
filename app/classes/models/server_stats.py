@@ -310,6 +310,22 @@ class HelperServerStats:
         except IndexError:
             return {}
 
+    def get_earliest_server_stats(self):
+        self.database.connect(reuse_if_open=True)
+        try:
+            earliest = (
+                ServerStats.select()
+                .where(ServerStats.server_id == self.server_id)
+                .order_by(ServerStats.created.asc())
+                .limit(1)
+                .get(self.database)
+            )
+            self.database.close()
+            return earliest
+        except Exception:
+            self.database.close()
+            return None
+
     def get_server_stats(self):
         self.database.connect(reuse_if_open=True)
         stats = (

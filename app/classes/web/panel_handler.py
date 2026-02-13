@@ -184,6 +184,17 @@ class PanelHandler(BaseHandler):
                 return None
         return server_id
 
+    def get_earliest_metrics_date(self, server_id):
+        """Get the earliest metrics date for Air Datepicker minDate restriction"""
+        try:
+            earliest = self.controller.servers.get_server_stats_earliest(server_id)
+            if earliest is not None:
+                return earliest.created.isoformat()
+            return None
+        except Exception as e:
+            logger.warning(f"Failed to get earliest metrics date: {e}")
+            return None
+
     # Server fetching, spawned asynchronously
     # TODO: Make the related front-end elements update with AJAX
     def fetch_server_data(self, page_data):
@@ -763,6 +774,7 @@ class PanelHandler(BaseHandler):
                 page_data["selected_hours"] = hours
                 page_data["max_retention_hours"] = max_retention_hours
                 page_data["history_stats"] = history_stats
+                page_data["earliest_metrics_date"] = self.get_earliest_metrics_date(server_id)
 
                 # Prepare chart datasets using helper
                 page_data["chart_data"] = StatsConverter.prepare_chart_datasets(
