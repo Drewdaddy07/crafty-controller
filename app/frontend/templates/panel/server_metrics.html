@@ -84,11 +84,11 @@
                   <div class="row">
                     <div class="col-md-5">
                       <label for="start-time" class="small">Start</label>
-                      <input type="datetime-local" class="form-control" id="start-time">
+                      <input type="text" class="form-control" id="start-time" placeholder="Start date & time">
                     </div>
                     <div class="col-md-5">
                       <label for="end-time" class="small">End</label>
-                      <input type="datetime-local" class="form-control" id="end-time">
+                      <input type="text" class="form-control" id="end-time" placeholder="End date & time">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                       <button type="button" class="btn btn-primary btn-block" id="apply-custom-range">
@@ -99,6 +99,9 @@
                   <small class="form-text text-muted">Select specific start and end times</small>
                 </div>
               </div>
+              <small class="form-text text-muted mt-2">
+                Times are in server timezone (UTC{% if utc_offset >= 0 %}+{% end %}{{ utc_offset }})
+              </small>
             </div>
           </div>
           <button class="btn btn-outline-success reset-button float-right d-none" id="reset-button" hidden><i class="fas fa-undo"></i>&nbsp;{{ translate('serverMetrics', 'resetZoom', data['lang'])
