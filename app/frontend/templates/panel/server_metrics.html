@@ -142,6 +142,55 @@
     border-color: #dee2e6 #dee2e6 #fff;
   }
 
+  /* Vanilla Calendar Bootstrap Integration */
+  .vanilla-calendar {
+    --vc-border: #ced4da;
+    --vc-border-radius: 0.25rem;  /* Bootstrap default */
+    --vc-primary: #007bff;
+    --vc-primary-hover: #0056b3;
+    --vc-font-family: inherit;    /* Use Bootstrap's font stack */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);  /* Bootstrap dropdown */
+  }
+
+  /* Selected date/range styling */
+  .vanilla-calendar-day--selected {
+    background: #007bff !important;
+    color: #fff !important;
+  }
+
+  .vanilla-calendar-day--in-range {
+    background: rgba(0, 123, 255, 0.1) !important;
+  }
+
+  /* Time picker styling */
+  .vanilla-calendar-time__content {
+    border-top: 1px solid #dee2e6;
+  }
+
+  /* Dark theme support */
+  html.dark .vanilla-calendar {
+    --vc-bg: #2c2c2c;
+    --vc-border: #444;
+    --vc-text: #fff;
+    --vc-primary: #0056b3;
+  }
+
+  html.dark .vanilla-calendar-day {
+    color: #ccc;
+  }
+
+  html.dark .vanilla-calendar-day--selected {
+    background: #0056b3 !important;
+  }
+
+  html.dark .vanilla-calendar-day--in-range {
+    background: rgba(0, 86, 179, 0.2) !important;
+  }
+
+  html.dark .vanilla-calendar-time__content {
+    border-top-color: #444;
+  }
+
 </style>
 <!-- Vanilla Calendar Pro JS -->
 <script src="/static/assets/vendors/vanilla-calendar/vanilla-calendar.min.js"></script>
