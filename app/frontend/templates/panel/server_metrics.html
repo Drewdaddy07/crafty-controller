@@ -238,30 +238,21 @@
   // Create calendar instance (browser build uses window.VanillaCalendarPro)
   const { Calendar } = window.VanillaCalendarPro;
   const calendar = new Calendar('#date-range', {
-    input: true,                    // Attach to input element
-    type: 'multiple',               // Enable range selection
-    settings: {
-      range: {
-        min: earliestDate || null,  // Earliest metrics date
-        max: new Date().toISOString().split('T')[0]  // Today
-      },
-      selection: {
-        day: 'multiple-ranged',     // Range selection mode
-        time: 24                    // 24-hour time picker
-      },
-      visibility: {
-        theme: 'light'              // Match Bootstrap (conditional dark mode later)
-      }
-    },
-    actions: {
-      changeToInput(e, calendar, self) {
-        // Format selected dates as "YYYY-MM-DD HH:mm - YYYY-MM-DD HH:mm"
-        if (self.selectedDates.length === 2) {
-          const [start, end] = self.selectedDates.sort();
-          const startFormatted = start.replace('T', ' ').substring(0, 16);
-          const endFormatted = end.replace('T', ' ').substring(0, 16);
-          self.input.value = `${startFormatted} - ${endFormatted}`;
-        }
+    inputMode: true,                           // Correct: treat element as input
+    type: 'default',                           // Use default type (single calendar)
+    selectionDatesMode: 'multiple-ranged',     // Enable date range selection
+    selectionTimeMode: 24,                     // Enable 24-hour time picker
+    dateMin: earliestDate || undefined,        // Earliest selectable date
+    dateMax: new Date().toISOString().split('T')[0],  // Today (no future dates)
+
+    // Format selected dates into input
+    onChangeToInput(self) {
+      if (self.selectedDates && self.selectedDates.length === 2) {
+        const [start, end] = self.selectedDates.sort();
+        // Format as "YYYY-MM-DD HH:mm - YYYY-MM-DD HH:mm"
+        const startFormatted = start.replace('T', ' ').substring(0, 16);
+        const endFormatted = end.replace('T', ' ').substring(0, 16);
+        self.HTMLInputElement.value = `${startFormatted} - ${endFormatted}`;
       }
     }
   });
