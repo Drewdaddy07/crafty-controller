@@ -193,7 +193,7 @@
 
 </style>
 <!-- Vanilla Calendar Pro JS -->
-<script src="/static/assets/vendors/vanilla-calendar/vanilla-calendar.min.js"></script>
+<script src="/static/assets/vendors/vanilla-calendar/vanilla-calendar.js"></script>
 <script type="text/javascript">
   const serverId = new URLSearchParams(document.location.search).get('id');
   var zoomed = false;
@@ -235,8 +235,9 @@
   // Initialize Vanilla Calendar Pro with range + time selection
   const earliestDate = {% if data.get('earliest_metrics_date') %}"{{ data['earliest_metrics_date'] }}"{% else %}null{% end %};
 
-  // Create calendar instance
-  const calendar = new VanillaCalendar('#date-range', {
+  // Create calendar instance (browser build uses window.VanillaCalendarPro)
+  const { Calendar } = window.VanillaCalendarPro;
+  const calendar = new Calendar('#date-range', {
     input: true,                    // Attach to input element
     type: 'multiple',               // Enable range selection
     settings: {
