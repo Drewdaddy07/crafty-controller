@@ -140,6 +140,79 @@
   #absolute-tab.nav-link:hover {
     border-color: #dee2e6 #dee2e6 #fff;
   }
+
+  /* Air Datepicker Theme Integration */
+  .air-datepicker {
+    border: 1px solid #ced4da;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    font-family: inherit;
+  }
+
+  .air-datepicker-nav {
+    background: #007bff;
+    color: #fff;
+    border-bottom: 1px solid #0056b3;
+  }
+
+  .air-datepicker-nav--action {
+    color: #fff;
+  }
+
+  .air-datepicker-nav--action:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .air-datepicker-cell.-selected- {
+    background: #007bff;
+    color: #fff;
+  }
+
+  .air-datepicker-cell.-selected-:hover {
+    background: #0056b3;
+  }
+
+  .air-datepicker-cell.-in-range- {
+    background: rgba(0, 123, 255, 0.1);
+    color: #495057;
+  }
+
+  .air-datepicker-cell.-current- {
+    color: #007bff;
+    font-weight: bold;
+  }
+
+  .air-datepicker-time {
+    border-top: 1px solid #dee2e6;
+  }
+
+  /* Dark theme support (if app uses dark mode) */
+  html.dark .air-datepicker {
+    background: #2c2c2c;
+    border-color: #444;
+    color: #fff;
+  }
+
+  html.dark .air-datepicker-nav {
+    background: #1a1a1a;
+    border-color: #444;
+  }
+
+  html.dark .air-datepicker-cell {
+    color: #ccc;
+  }
+
+  html.dark .air-datepicker-cell.-selected- {
+    background: #0056b3;
+    color: #fff;
+  }
+
+  html.dark .air-datepicker-cell.-in-range- {
+    background: rgba(0, 86, 179, 0.2);
+  }
+
+  html.dark .air-datepicker-time {
+    border-color: #444;
+  }
 </style>
 <!-- Air Datepicker JS -->
 <script src="/static/assets/vendors/air-datepicker/air-datepicker.min.js"></script>
