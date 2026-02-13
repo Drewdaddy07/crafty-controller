@@ -1,6 +1,8 @@
 {% extends ../base.html %}
 
 {% block meta %}
+<!-- Air Datepicker CSS -->
+<link rel="stylesheet" href="/static/assets/vendors/air-datepicker/air-datepicker.min.css">
 {% end %}
 
 {% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
@@ -140,6 +142,8 @@
     border-color: #dee2e6 #dee2e6 #fff;
   }
 </style>
+<!-- Air Datepicker JS -->
+<script src="/static/assets/vendors/air-datepicker/air-datepicker.min.js"></script>
 <script type="text/javascript">
   const serverId = new URLSearchParams(document.location.search).get('id');
   var zoomed = false;
