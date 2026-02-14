@@ -1708,8 +1708,7 @@ class ServerInstance:
     def get_backup_config(self, backup_id) -> dict:
         if not backup_id:
             return HelpersManagement.get_default_server_backup(self.server_id)
-        else:
-            return HelpersManagement.get_backup_config(backup_id)
+        return HelpersManagement.get_backup_config(backup_id)
 
     def get_servers_stats(self):
         server_type = HelperServers.get_server_type_by_id(self.server_id)
