@@ -1,9 +1,8 @@
 {% extends ../base.html %}
 
 {% block meta %}
-<!-- Vanilla Calendar Pro CSS -->
-<link rel="stylesheet" href="/static/assets/vendors/vanilla-calendar/vanilla-calendar.min.css">
-<link rel="stylesheet" href="/static/assets/vendors/vanilla-calendar/themes/light.min.css">
+<!-- Date Range Picker CSS -->
+<link rel="stylesheet" href="/static/assets/vendors/vanilla-datetimerange-picker/vanilla-datetimerange-picker.css">
 {% end %}
 
 {% block title %}Crafty Controller - {{ translate('serverDetails', 'serverDetails', data['lang']) }}{% end %}
@@ -42,62 +41,13 @@
             {% include "parts/m_server_controls_list.html %}
           </span>
 
-          <!-- Time Range Selector with Tabs -->
+          <!-- Time Range Selector -->
           <div class="col-12 col-md-8 col-lg-6">
             <div class="form-group">
-              <label>Time Period</label>
-
-              <!-- Tab Navigation -->
-              <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item">
-                  <a class="nav-link {% if data.get('range_mode', 'preset') == 'preset' %}active{% end %}"
-                     id="relative-tab" data-toggle="tab" href="#relative-range" role="tab">
-                    Relative
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link {% if data.get('range_mode') == 'custom' %}active{% end %}"
-                     id="absolute-tab" data-toggle="tab" href="#absolute-range" role="tab">
-                    Absolute
-                  </a>
-                </li>
-              </ul>
-
-              <!-- Tab Content -->
-              <div class="tab-content border border-top-0 p-3">
-                <!-- Relative Range Tab -->
-                <div class="tab-pane fade {% if data.get('range_mode', 'preset') == 'preset' %}show active{% end %}"
-                     id="relative-range" role="tabpanel">
-                  <select class="form-control" id="hours" name="hours">
-                    {% for option in data['hour_options'] %}
-                    <option value="{{option['value']}}"
-                            {% if option['value'] == data['selected_hours'] %}selected{% end %}>
-                      {{option['label']}}
-                    </option>
-                    {% end %}
-                  </select>
-                  <small class="form-text text-muted">Select a preset time range</small>
-                </div>
-
-                <!-- Absolute Range Tab -->
-                <div class="tab-pane fade {% if data.get('range_mode') == 'custom' %}show active{% end %}"
-                     id="absolute-range" role="tabpanel">
-                  <div class="row">
-                    <div class="col-md-10">
-                      <label for="date-range" class="small">Date Range</label>
-                      <input type="text" class="form-control" id="date-range" placeholder="Select date & time range">
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                      <button type="button" class="btn btn-primary btn-block" id="apply-custom-range">
-                        Apply
-                      </button>
-                    </div>
-                  </div>
-                  <small class="form-text text-muted">Select specific start and end times</small>
-                </div>
-              </div>
-              <small class="form-text text-muted mt-2">
-                Times are in server timezone (UTC{% if utc_offset >= 0 %}+{% end %}{{ utc_offset }})
+              <label for="date-range">Time Period</label>
+              <input type="text" class="form-control" id="date-range" placeholder="Select time range...">
+              <small class="form-text text-muted">
+                Server timezone (UTC{% if utc_offset >= 0 %}+{% end %}{{ utc_offset }})
               </small>
             </div>
           </div>
@@ -124,97 +74,204 @@
     height: 65vh;
   }
 
-  /* Fix tab contrast for readability */
-  #relative-tab.nav-link.active,
-  #absolute-tab.nav-link.active {
-    color: #fff !important;
-    background-color: #007bff !important;
-    border-color: #007bff #007bff #fff !important;
+  /* Date range picker - Crafty theme integration */
+  .daterangepicker {
+    font-family: var(--font-family-sans-serif);
+    background-color: var(--card-banner-bg);
+    border-color: var(--outline);
+    color: var(--base-text);
   }
 
-  #relative-tab.nav-link:not(.active),
-  #absolute-tab.nav-link:not(.active) {
-    color: #007bff;
+  .daterangepicker:after {
+    border-bottom-color: var(--card-banner-bg);
   }
 
-  #relative-tab.nav-link:hover,
-  #absolute-tab.nav-link:hover {
-    border-color: #dee2e6 #dee2e6 #fff;
+  .daterangepicker:before {
+    border-bottom-color: var(--outline);
   }
 
-  /* Vanilla Calendar Bootstrap Integration */
-
-  /* Keep input styled as Bootstrap form-control */
-  #date-range.form-control {
-    display: block !important;
-    width: 100% !important;
-    padding: 0.375rem 0.75rem !important;
-    font-size: 1rem !important;
-    line-height: 1.5 !important;
-    color: #495057 !important;
-    background-color: #fff !important;
-    border: 1px solid #ced4da !important;
-    border-radius: 0.25rem !important;
+  .daterangepicker .calendar-table {
+    background-color: var(--card-banner-bg);
+    border-color: var(--card-banner-bg);
   }
 
-  #date-range.form-control:focus {
-    border-color: #80bdff !important;
-    outline: 0 !important;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+  .daterangepicker .calendar-table th,
+  .daterangepicker .calendar-table td {
+    color: var(--base-text);
   }
 
-  /* Calendar popup styling */
-  .vanilla-calendar {
-    --vc-border: #ced4da;
-    --vc-border-radius: 0.25rem;  /* Bootstrap default */
-    --vc-primary: #007bff;
-    --vc-primary-hover: #0056b3;
-    --vc-font-family: inherit;    /* Use Bootstrap's font stack */
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);  /* Bootstrap dropdown */
+  .daterangepicker .calendar-table .next span,
+  .daterangepicker .calendar-table .prev span {
+    border-color: var(--base-text);
   }
 
-  /* Selected date/range styling */
-  .vanilla-calendar-day--selected {
-    background: #007bff !important;
-    color: #fff !important;
+  .daterangepicker td.available:hover,
+  .daterangepicker th.available:hover {
+    background-color: var(--deep-bg);
+    color: var(--base-text);
   }
 
-  .vanilla-calendar-day--in-range {
-    background: rgba(0, 123, 255, 0.1) !important;
+  .daterangepicker td.off,
+  .daterangepicker td.off.in-range,
+  .daterangepicker td.off.start-date,
+  .daterangepicker td.off.end-date {
+    background-color: var(--card-banner-bg);
+    color: var(--gray);
   }
 
-  /* Time picker styling */
-  .vanilla-calendar-time__content {
-    border-top: 1px solid #dee2e6;
+  .daterangepicker td.in-range {
+    background-color: var(--deep-bg);
+    color: var(--base-text);
   }
 
-  /* Dark theme support */
-  html.dark .vanilla-calendar {
-    --vc-bg: #2c2c2c;
-    --vc-border: #444;
-    --vc-text: #fff;
-    --vc-primary: #0056b3;
+  .daterangepicker td.active,
+  .daterangepicker td.active:hover {
+    background-color: var(--primary);
+    color: var(--white);
   }
 
-  html.dark .vanilla-calendar-day {
-    color: #ccc;
+  .daterangepicker td.disabled,
+  .daterangepicker td.disabled:hover {
+    color: var(--outline);
+    text-decoration: line-through;
+    opacity: 0.35;
   }
 
-  html.dark .vanilla-calendar-day--selected {
-    background: #0056b3 !important;
+  .daterangepicker td.available {
+    color: var(--base-text);
+    font-weight: 500;
   }
 
-  html.dark .vanilla-calendar-day--in-range {
-    background: rgba(0, 86, 179, 0.2) !important;
+  .daterangepicker th.month {
+    color: var(--base-text);
+    font-weight: 600;
   }
 
-  html.dark .vanilla-calendar-time__content {
-    border-top-color: #444;
+  .daterangepicker select.monthselect,
+  .daterangepicker select.yearselect {
+    background-color: var(--deep-bg);
+    color: var(--base-text);
+    border: 1px solid var(--outline);
+  }
+
+  .daterangepicker select.hourselect,
+  .daterangepicker select.minuteselect,
+  .daterangepicker select.secondselect,
+  .daterangepicker select.ampmselect {
+    background-color: var(--deep-bg);
+    color: var(--base-text);
+    border: 1px solid var(--outline);
+    border-radius: 4px;
+    padding: 3px 4px;
+    font-weight: 500;
+  }
+
+  .daterangepicker select.hourselect:focus,
+  .daterangepicker select.minuteselect:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.25);
+    outline: none;
+  }
+
+  .daterangepicker option {
+    background-color: var(--card-banner-bg);
+    color: var(--base-text);
+  }
+
+  .daterangepicker option.disabled {
+    color: var(--outline);
+    opacity: 0.35;
+  }
+
+  .daterangepicker .calendar-time {
+    color: var(--base-text);
+    border-top: 1px solid var(--outline);
+    margin-top: 8px;
+    padding-top: 4px;
+  }
+
+  .daterangepicker .calendar-time select.disabled {
+    color: var(--outline);
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .daterangepicker .drp-buttons {
+    border-top-color: var(--outline);
+  }
+
+  .daterangepicker .drp-buttons .btn {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .daterangepicker .drp-buttons .btn.applyBtn {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--white);
+  }
+
+  .daterangepicker .drp-buttons .btn.applyBtn:hover {
+    opacity: 0.85;
+  }
+
+  .daterangepicker .drp-buttons .btn.cancelBtn {
+    background-color: transparent;
+    border: 1px solid var(--outline);
+    color: var(--base-text);
+  }
+
+  .daterangepicker .drp-buttons .btn.cancelBtn:hover {
+    background-color: var(--deep-bg);
+  }
+
+  .daterangepicker .drp-selected {
+    color: var(--base-text);
+  }
+
+  /* Border between left/right calendars */
+  .daterangepicker.show-ranges.ltr .drp-calendar.left,
+  .daterangepicker.show-ranges.single.ltr .drp-calendar.left {
+    border-left-color: var(--outline);
+  }
+
+  .daterangepicker .drp-calendar.left .calendar-table {
+    border-right-color: var(--outline);
+  }
+
+  /* Drop-up arrow colors */
+  .daterangepicker.drop-up:before {
+    border-top-color: var(--outline);
+  }
+
+  .daterangepicker.drop-up:after {
+    border-top-color: var(--card-banner-bg);
+  }
+
+  /* Ranges sidebar */
+  .daterangepicker .ranges li {
+    color: var(--base-text);
+  }
+
+  .daterangepicker .ranges li:hover {
+    background-color: var(--deep-bg);
+    color: var(--base-text);
+  }
+
+  .daterangepicker .ranges li.active {
+    background-color: var(--primary);
+    color: var(--white);
+  }
+
+  .daterangepicker.show-ranges.ltr .drp-calendar.left {
+    border-left: 1px solid var(--outline);
   }
 
 </style>
-<!-- Vanilla Calendar Pro JS -->
-<script src="/static/assets/vendors/vanilla-calendar/vanilla-calendar.js"></script>
+<!-- Date Range Picker JS -->
+<script src="/static/assets/vendors/vanilla-datetimerange-picker/vanilla-datetimerange-picker.js"></script>
 <script type="text/javascript">
   const serverId = new URLSearchParams(document.location.search).get('id');
   var zoomed = false;
@@ -225,60 +282,106 @@
   // Detect if viewing custom date range (historical mode)
   const isCustomRange = {% if data.get('range_mode') == 'custom' %}true{% else %}false{% end %};
 
-  // Helper: Convert UTC ISO string to server local time for datetime-local input
-  function utcToServerLocal(utcString) {
-    if (!utcString) return '';
-    const utcDate = new Date(utcString);
-    // Convert UTC to server local time: server_local = UTC + server_offset
-    utcDate.setHours(utcDate.getHours() + serverTimezoneOffset);
-
-    // Format as "YYYY-MM-DDTHH:MM" for datetime-local
-    const year = utcDate.getUTCFullYear();
-    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(utcDate.getUTCDate()).padStart(2, '0');
-    const hours = String(utcDate.getUTCHours()).padStart(2, '0');
-    const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  }
-
-  // Populate custom range input if in custom mode
-  if (isCustomRange) {
-    const startTimeUTC = {% if data.get('start_time') %}"{{ data['start_time'] }}"{% else %}null{% end %};
-    const endTimeUTC = {% if data.get('end_time') %}"{{ data['end_time'] }}"{% else %}null{% end %};
-
-    if (startTimeUTC && endTimeUTC) {
-      const startLocal = utcToServerLocal(startTimeUTC);
-      const endLocal = utcToServerLocal(endTimeUTC);
-      document.getElementById('date-range').value = startLocal.replace('T', ' ') + ' - ' + endLocal.replace('T', ' ');
-    }
-  }
-
-  // Initialize Vanilla Calendar Pro with range + time selection
+  // Build picker options
   const earliestDate = {% if data.get('earliest_metrics_date') %}"{{ data['earliest_metrics_date'] }}"{% else %}null{% end %};
 
-  // Create calendar instance (browser build uses window.VanillaCalendarPro)
-  const { Calendar } = window.VanillaCalendarPro;
-  const calendar = new Calendar('#date-range', {
-    inputMode: true,                           // Correct: treat element as input
-    type: 'default',                           // Use default type (single calendar)
-    selectionDatesMode: 'multiple-ranged',     // Enable date range selection
-    selectionTimeMode: 24,                     // Enable 24-hour time picker
-    dateMin: earliestDate || undefined,        // Earliest selectable date
-    dateMax: new Date().toISOString().split('T')[0],  // Today (no future dates)
+  // Server "now" - use UTC converted to server-local offset
+  function serverNow() {
+    return moment.utc().utcOffset(serverTimezoneOffset);
+  }
 
-    // Format selected dates into input
-    onChangeToInput(self) {
-      if (self.selectedDates && self.selectedDates.length === 2) {
-        const [start, end] = self.selectedDates.sort();
-        // Format as "YYYY-MM-DD HH:mm - YYYY-MM-DD HH:mm"
-        const startFormatted = start.replace('T', ' ').substring(0, 16);
-        const endFormatted = end.replace('T', ' ').substring(0, 16);
-        self.HTMLInputElement.value = `${startFormatted} - ${endFormatted}`;
-      }
+  // Preset ranges mapped to hours (matching backend DEFAULT_OPTIONS)
+  const presetRanges = {
+    'Last Hour':    [serverNow().subtract(1, 'hours'), serverNow()],
+    'Last 3 Hours': [serverNow().subtract(3, 'hours'), serverNow()],
+    'Last 6 Hours': [serverNow().subtract(6, 'hours'), serverNow()],
+    'Last 12 Hours':[serverNow().subtract(12, 'hours'), serverNow()],
+    'Last 24 Hours':[serverNow().subtract(24, 'hours'), serverNow()],
+    'Last 2 Days':  [serverNow().subtract(2, 'days'), serverNow()],
+    'Last 7 Days':  [serverNow().subtract(7, 'days'), serverNow()],
+  };
+
+  // Map preset labels to hours param values
+  const presetHours = {
+    'Last Hour': 1,
+    'Last 3 Hours': 3,
+    'Last 6 Hours': 6,
+    'Last 12 Hours': 12,
+    'Last 24 Hours': 24,
+    'Last 2 Days': 48,
+    'Last 7 Days': 168,
+  };
+
+  const pickerOpts = {
+    timePicker: true,
+    timePicker24Hour: true,
+    timePickerSeconds: false,
+    maxDate: moment.utc().utcOffset(serverTimezoneOffset),
+    ranges: presetRanges,
+    alwaysShowCalendars: true,
+    locale: {
+      format: 'YYYY-MM-DD HH:mm',
+      separator: ' - ',
+      customRangeLabel: 'Custom Range',
+    },
+    opens: 'right',
+    drops: 'auto',
+    autoApply: false,
+  };
+
+  if (earliestDate) {
+    pickerOpts.minDate = moment(earliestDate);
+  }
+
+  // Set initial dates from current view
+  const startTimeSaved = {% if data.get('start_time') %}"{{ data['start_time'] }}"{% else %}null{% end %};
+  const endTimeSaved = {% if data.get('end_time') %}"{{ data['end_time'] }}"{% else %}null{% end %};
+
+  if (isCustomRange && startTimeSaved && endTimeSaved) {
+    pickerOpts.startDate = moment(startTimeSaved);
+    pickerOpts.endDate = moment(endTimeSaved);
+  } else {
+    // Default to current preset range
+    const currentHours = {{ data.get('selected_hours', 24) }};
+    pickerOpts.startDate = serverNow().subtract(currentHours, 'hours');
+    pickerOpts.endDate = serverNow();
+  }
+
+  // Navigate: preset uses ?hours= param, custom uses ?start=&end=
+  function navigateToRange(start, end, label) {
+    if (label && presetHours[label]) {
+      window.location.href = "/panel/server_detail?id=" + serverId +
+        "&hours=" + presetHours[label] + "&subpage=metrics";
+    } else {
+      const fmt = 'YYYY-MM-DDTHH:mm:ss';
+      window.location.href = "/panel/server_detail?id=" + serverId +
+        "&start=" + encodeURIComponent(start.format(fmt)) +
+        "&end=" + encodeURIComponent(end.format(fmt)) +
+        "&subpage=metrics";
     }
+  }
+
+  // Initialize the date range picker
+  const picker = new DateRangePicker('date-range', pickerOpts, function(start, end, label) {
+    navigateToRange(start, end, label);
   });
 
-  calendar.init();
+  // Allow typing a range manually and pressing Enter
+  document.getElementById('date-range').addEventListener('keydown', function(e) {
+    if (e.keyCode !== 13) return;
+
+    const parts = this.value.split(' - ');
+    if (parts.length !== 2) return;
+
+    const startLocal = moment(parts[0].trim(), 'YYYY-MM-DD HH:mm');
+    const endLocal = moment(parts[1].trim(), 'YYYY-MM-DD HH:mm');
+
+    if (startLocal.isValid() && endLocal.isValid() && endLocal.isAfter(startLocal)) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      navigateToRange(startLocal, endLocal);
+    }
+  }, true);
 
 
   // Helper: Safe bytes to GB conversion
@@ -417,66 +520,7 @@
     }
   });
 
-  // Dropdown change handler (Relative range)
   $(window).ready(function () {
-    $('#hours').on("change", function () {
-      let hours = $('#hours').find(":selected").val();
-      window.location.href = "/panel/server_detail?id=" + serverId + "&hours=" + hours + "&subpage=metrics";
-    });
-
-    // Custom range apply button handler (Absolute range)
-    function applyCustomRange() {
-      const rangeValue = $('#date-range').val();
-
-      if (!rangeValue) {
-        alert('Please select a date range');
-        return;
-      }
-
-      // Parse the range (format: "YYYY-MM-DD HH:mm - YYYY-MM-DD HH:mm")
-      const rangeParts = rangeValue.split(' - ');
-
-      if (rangeParts.length !== 2) {
-        alert('Please select both start and end times');
-        return;
-      }
-
-      const startTime = rangeParts[0].trim();
-      const endTime = rangeParts[1].trim();
-
-      // Validate that end is after start
-      if (endTime <= startTime) {
-        alert('End time must be after start time');
-        return;
-      }
-
-      // Convert input (server local time) to UTC
-      const startDate = new Date(startTime.replace(' ', 'T') + ':00Z');
-      const endDate = new Date(endTime.replace(' ', 'T') + ':00Z');
-
-      // Adjust for server timezone: UTC = server_local - server_offset
-      startDate.setHours(startDate.getHours() - serverTimezoneOffset);
-      endDate.setHours(endDate.getHours() - serverTimezoneOffset);
-
-      const startISO = startDate.toISOString();
-      const endISO = endDate.toISOString();
-
-      window.location.href = "/panel/server_detail?id=" + serverId +
-        "&start=" + encodeURIComponent(startISO) +
-        "&end=" + encodeURIComponent(endISO) +
-        "&subpage=metrics";
-    }
-
-    $('#apply-custom-range').on("click", applyCustomRange);
-
-    // Allow Enter key to apply custom range
-    $('#date-range').on("keypress", function (e) {
-      if (e.which === 13) {  // Enter key
-        e.preventDefault();
-        applyCustomRange();
-      }
-    });
-
     $('body').click(function () {
       $('.hints').popover("hide");
     });
@@ -519,10 +563,11 @@
       hist_chart.data.datasets[2].data = ram_gb;
       hist_chart.data.datasets[3].data = cpu;
 
-      // Maintain reasonable window size
+      // Sliding window: trim data older than the selected time range
+      const currentHours = {{ data.get('selected_hours', 24) }};
       if (!zoomed) {
-        const maxPoints = 360;
-        if (dates.length > maxPoints) {
+        const cutoff = serverNow().subtract(currentHours, 'hours').format('YYYY/MM/DD, HH:mm:ss');
+        while (dates.length > 1 && dates[0] < cutoff) {
           dates.shift();
           {% if 'minecraft-java' in data['server_stats']['server_type'] or 'hytale' in data['server_stats']['server_type'] %}
           players.shift();
@@ -534,6 +579,12 @@
       }
 
       hist_chart.update();
+
+      // Update the picker's displayed range to reflect live data
+      picker.maxDate = serverNow();
+      picker.setStartDate(serverNow().subtract(currentHours, 'hours'));
+      picker.setEndDate(serverNow());
+      picker.updateElement();
     });
 
     $(".reset-button").click(function () {
