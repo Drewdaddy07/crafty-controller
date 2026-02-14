@@ -711,12 +711,21 @@ class PanelHandler(BaseHandler):
                         start_time = datetime.datetime.fromisoformat(start_param)
                         end_time = datetime.datetime.fromisoformat(end_param)
 
-                        # Validation: ensure end is after start
-                        if end_time <= start_time:
+                        # Validation: ensure end is not before start
+                        if end_time < start_time:
                             self.redirect(
                                 "/panel/error?error=End time must be after start time"
                             )
                             return
+
+                        # Same-date selection: expand to full day
+                        if end_time == start_time:
+                            start_time = start_time.replace(
+                                hour=0, minute=0, second=0
+                            )
+                            end_time = end_time.replace(
+                                hour=23, minute=59, second=59
+                            )
 
                         # Fetch stats with custom date range
                         history_stats = self.controller.servers.get_history_stats_by_date_range(
@@ -775,6 +784,26 @@ class PanelHandler(BaseHandler):
                 page_data["max_retention_hours"] = max_retention_hours
                 page_data["history_stats"] = history_stats
                 page_data["earliest_metrics_date"] = self.get_earliest_metrics_date(server_id)
+
+                # Fill gaps with zero-value points so the chart
+                # spans the full requested range
+                if page_data.get("range_mode") == "custom":
+                    range_start = datetime.datetime.fromisoformat(
+                        page_data["start_time"]
+                    )
+                    range_end = datetime.datetime.fromisoformat(
+                        page_data["end_time"]
+                    )
+                else:
+                    range_end = datetime.datetime.now()
+                    range_start = range_end - datetime.timedelta(
+                        hours=hours
+                    )
+                history_stats = StatsConverter.fill_gaps(
+                    history_stats,
+                    start_time=range_start,
+                    end_time=range_end,
+                )
 
                 # Prepare chart datasets using helper
                 page_data["chart_data"] = StatsConverter.prepare_chart_datasets(

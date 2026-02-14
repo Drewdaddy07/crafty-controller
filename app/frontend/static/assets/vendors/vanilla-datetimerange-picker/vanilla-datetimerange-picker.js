@@ -497,7 +497,8 @@ var DateRangePicker;
             if (this.timePicker && this.timePickerIncrement)
                 this.endDate.minute(Math.round(this.endDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
 
-            if (this.endDate.isBefore(this.startDate))
+            //same day: allow end before start so user can freely adjust times
+            if (this.endDate.isBefore(this.startDate) && !this.endDate.isSame(this.startDate, 'day'))
                 this.endDate = this.startDate.clone();
 
             if (this.maxDate && this.endDate.isAfter(this.maxDate))
@@ -934,7 +935,11 @@ var DateRangePicker;
                 minDate = this.minDate;
             } else if (side == 'right') {
                 selected = this.endDate.clone();
-                minDate = this.startDate;
+                //same day: don't constrain right hours to after start hour
+                //so user can freely pick any time, validation happens on apply
+                minDate = this.endDate.isSame(this.startDate, 'day')
+                    ? this.startDate.clone().startOf('day')
+                    : this.startDate;
 
                 //Preserve the time already selected
                 var timeSelector = this.container.querySelector('.drp-calendar.right .calendar-time');
@@ -1554,9 +1559,9 @@ var DateRangePicker;
                 this.setStartDate(start);
                 if (this.singleDatePicker) {
                     this.endDate = this.startDate.clone();
-                } else if (this.endDate && this.endDate.format('YYYY-MM-DD') == start.format('YYYY-MM-DD') && this.endDate.isBefore(start)) {
-                    this.setEndDate(start.clone());
                 }
+                //different days: force end >= start
+                //same day: let user freely adjust both times
             } else if (this.endDate) {
                 var end = this.endDate.clone();
                 end.hour(hour);
