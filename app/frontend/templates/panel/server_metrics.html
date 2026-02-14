@@ -272,6 +272,8 @@
 </style>
 <!-- Date Range Picker JS -->
 <script src="/static/assets/vendors/vanilla-datetimerange-picker/vanilla-datetimerange-picker.js"></script>
+<!-- Chart.js time-axis adapter (must load after moment.js from details_stats.html) -->
+<script src="/static/assets/vendors/js/chartjs-adapter-moment.min.js"></script>
 <script type="text/javascript">
   const serverId = new URLSearchParams(document.location.search).get('id');
   var zoomed = false;
@@ -386,27 +388,35 @@
 
   // Helper: Safe bytes to GB conversion
   function bytesToGB(bytes) {
-    return bytes > 0 ? (bytes / (1024 * 1024 * 1024)).toFixed(2) : 0;
+    return bytes > 0 ? parseFloat((bytes / (1024 * 1024 * 1024)).toFixed(2)) : 0;
   }
 
   // Use pre-formatted chart data from backend
   const chartData = {% raw json.dumps(data['chart_data']) %};
-  const players = chartData.players || [];
-  const dates = chartData.dates || [];
-  const ram_percent = chartData.ram_percent || [];
-  const ram_gb = chartData.ram_gb || [];
-  const cpu = chartData.cpu || [];
+  const rawDates = chartData.dates || [];
+  const rawPlayers = chartData.players || [];
+  const rawRamPercent = chartData.ram_percent || [];
+  const rawRamGb = chartData.ram_gb || [];
+  const rawCpu = chartData.cpu || [];
 
-  // Create chart with dual Y-axes
+  // Build {x, y} point arrays for time-axis decimation
+  // parsing:false requires numeric timestamps (ms) for x values
+  const dateFormat = 'YYYY/MM/DD, HH:mm:ss';
+  const timestamps = rawDates.map(d => moment(d, dateFormat).valueOf());
+  const playerData = timestamps.map((t, i) => ({x: t, y: rawPlayers[i]}));
+  const ramPercentData = timestamps.map((t, i) => ({x: t, y: rawRamPercent[i]}));
+  const ramGbData = timestamps.map((t, i) => ({x: t, y: rawRamGb[i]}));
+  const cpuData = timestamps.map((t, i) => ({x: t, y: rawCpu[i]}));
+
+  // Create chart with dual Y-axes and time-based x-axis
   var ctxL = document.getElementById("lineChart").getContext('2d');
   var hist_chart = new Chart(ctxL, {
     type: 'line',
     data: {
-      labels: dates,
       datasets: [
         {
           label: "Players",
-          data: players,
+          data: playerData,
           borderColor: 'rgba(136, 98, 224, .7)',
           borderWidth: 2,
           lineTension: 0,
@@ -414,7 +424,7 @@
         },
         {
           label: "RAM %",
-          data: ram_percent,
+          data: ramPercentData,
           borderColor: 'rgba(33, 150, 243, .8)',
           borderWidth: 2,
           lineTension: 0,
@@ -422,7 +432,7 @@
         },
         {
           label: "RAM GB",
-          data: ram_gb,
+          data: ramGbData,
           borderColor: 'rgba(0, 188, 212, .9)',
           borderWidth: 2,
           lineTension: 0,
@@ -430,7 +440,7 @@
         },
         {
           label: "CPU %",
-          data: cpu,
+          data: cpuData,
           borderColor: 'rgba(255, 175, 0, .7)',
           borderWidth: 2,
           lineTension: 0,
@@ -440,7 +450,14 @@
     },
     options: {
       maintainAspectRatio: false,
+      parsing: false,
       plugins: {
+        decimation: {
+          enabled: true,
+          algorithm: 'lttb',
+          samples: 360,
+          threshold: 360,
+        },
         zoom: {
           zoom: {
             onZoom() {
@@ -513,8 +530,15 @@
           }
         },
         x: {
+          type: 'time',
+          time: {
+            displayFormats: {
+              minute: 'HH:mm',
+              hour: 'MMM D, HH:mm',
+              day: 'MMM D',
+            }
+          },
           position: 'bottom',
-          // No hard-coded min - show all data
         }
       }
     }
@@ -546,35 +570,25 @@
         return;
       }
 
-      dates.push(data.created);
+      const ts = moment(data.created, dateFormat).valueOf();
       {% if 'minecraft-java' in data['server_stats']['server_type'] or 'hytale' in data['server_stats']['server_type'] %}
       if (data.online !== undefined) {
-        players.push(data.online);
+        playerData.push({x: ts, y: data.online});
       }
       {% end %}
-      cpu.push(data.cpu);
-      ram_percent.push(data.mem_percent);
-      ram_gb.push(bytesToGB(data.mem_raw));
-
-      // Update chart data
-      hist_chart.data.labels = dates;
-      hist_chart.data.datasets[0].data = players;
-      hist_chart.data.datasets[1].data = ram_percent;
-      hist_chart.data.datasets[2].data = ram_gb;
-      hist_chart.data.datasets[3].data = cpu;
+      cpuData.push({x: ts, y: data.cpu});
+      ramPercentData.push({x: ts, y: data.mem_percent});
+      ramGbData.push({x: ts, y: bytesToGB(data.mem_raw)});
 
       // Sliding window: trim data older than the selected time range
       const currentHours = {{ data.get('selected_hours', 24) }};
       if (!zoomed) {
-        const cutoff = serverNow().subtract(currentHours, 'hours').format('YYYY/MM/DD, HH:mm:ss');
-        while (dates.length > 1 && dates[0] < cutoff) {
-          dates.shift();
-          {% if 'minecraft-java' in data['server_stats']['server_type'] or 'hytale' in data['server_stats']['server_type'] %}
-          players.shift();
-          {% end %}
-          ram_percent.shift();
-          ram_gb.shift();
-          cpu.shift();
+        const cutoff = serverNow().subtract(currentHours, 'hours').valueOf();
+        while (cpuData.length > 1 && cpuData[0].x < cutoff) {
+          playerData.shift();
+          ramPercentData.shift();
+          ramGbData.shift();
+          cpuData.shift();
         }
       }
 
