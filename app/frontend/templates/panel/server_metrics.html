@@ -45,7 +45,7 @@
           <div class="col-12 col-md-8 col-lg-6">
             <div class="form-group">
               <label for="date-range">Time Period</label>
-              <input type="text" class="form-control" id="date-range" placeholder="Select time range...">
+              <input type="text" class="form-control" id="date-range" inputmode="none" placeholder="Select time range...">
               <small class="form-text text-muted">
                 Server timezone (UTC{% if utc_offset >= 0 %}+{% end %}{{ utc_offset }})
               </small>
@@ -267,6 +267,13 @@
 
   .daterangepicker.show-ranges.ltr .drp-calendar.left {
     border-left: 1px solid var(--outline);
+  }
+
+  /* Mobile full-screen overlay theme */
+  @media (max-width: 563px) {
+    .daterangepicker {
+      background-color: var(--card-banner-bg);
+    }
   }
 
 </style>
