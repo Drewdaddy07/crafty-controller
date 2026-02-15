@@ -409,7 +409,21 @@
   // Build {x, y} point arrays for time-axis decimation
   // parsing:false requires numeric timestamps (ms) for x values
   const dateFormat = 'YYYY/MM/DD, HH:mm:ss';
-  const timestamps = rawDates.map(d => moment(d, dateFormat).valueOf());
+
+  // Parse server-local time string as a numeric timestamp.
+  // moment() interprets the string in browser-local time, which means
+  // Chart.js displays the server's clock time on the x-axis.
+  function parseServerTime(dateStr) {
+    return moment(dateStr, dateFormat).valueOf();
+  }
+
+  // Build a cutoff timestamp using the same parsing path so trimming
+  // comparisons are consistent regardless of browser/server timezone.
+  function serverCutoff(hours) {
+    return moment(serverNow().subtract(hours, 'hours').format(dateFormat), dateFormat).valueOf();
+  }
+
+  const timestamps = rawDates.map(d => parseServerTime(d));
   const playerData = timestamps.map((t, i) => ({x: t, y: rawPlayers[i]}));
   const ramPercentData = timestamps.map((t, i) => ({x: t, y: rawRamPercent[i]}));
   const ramGbData = timestamps.map((t, i) => ({x: t, y: rawRamGb[i]}));
@@ -581,11 +595,9 @@
         return;
       }
 
-      const ts = moment(data.created, dateFormat).valueOf();
+      const ts = parseServerTime(data.created);
       {% if 'minecraft-java' in data['server_stats']['server_type'] or 'hytale' in data['server_stats']['server_type'] %}
-      if (data.online !== undefined) {
-        playerData.push({x: ts, y: data.online});
-      }
+      playerData.push({x: ts, y: data.online !== undefined ? data.online : null});
       {% end %}
       cpuData.push({x: ts, y: data.cpu});
       ramPercentData.push({x: ts, y: data.mem_percent});
@@ -594,7 +606,7 @@
       // Sliding window: trim data older than the selected time range
       const currentHours = {{ data.get('selected_hours', 24) }};
       if (!zoomed) {
-        const cutoff = serverNow().subtract(currentHours, 'hours').valueOf();
+        const cutoff = serverCutoff(currentHours);
         while (cpuData.length > 1 && cpuData[0].x < cutoff) {
           playerData.shift();
           ramPercentData.shift();
