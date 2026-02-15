@@ -1,6 +1,7 @@
 """
 Stats conversion and formatting utilities
 """
+
 import datetime
 import typing as t
 
@@ -27,7 +28,7 @@ class StatsConverter:
             return 0.0
         if bytes_value <= 0:
             return 0.0
-        return round(bytes_value / (1024 ** 3), 2)
+        return round(bytes_value / (1024**3), 2)
 
     @staticmethod
     def _make_zero_stat(dt: datetime.datetime) -> dict:
@@ -83,9 +84,7 @@ class StatsConverter:
             filled.append(cls._make_zero_stat(start_time))
             # Add another zero just before first real point for sharp edge
             filled.append(
-                cls._make_zero_stat(
-                    first_time - datetime.timedelta(seconds=1)
-                )
+                cls._make_zero_stat(first_time - datetime.timedelta(seconds=1))
             )
 
         # Walk through data and fill internal gaps
@@ -97,22 +96,16 @@ class StatsConverter:
                 if curr_time and next_time and next_time - curr_time > threshold:
                     # Insert zero at both edges of the gap for sharp drop/rise
                     filled.append(
-                        cls._make_zero_stat(
-                            curr_time + datetime.timedelta(seconds=1)
-                        )
+                        cls._make_zero_stat(curr_time + datetime.timedelta(seconds=1))
                     )
                     filled.append(
-                        cls._make_zero_stat(
-                            next_time - datetime.timedelta(seconds=1)
-                        )
+                        cls._make_zero_stat(next_time - datetime.timedelta(seconds=1))
                     )
 
         # Add zero at end of range if data ends earlier
         if end_time and last_time and end_time - last_time > threshold:
             filled.append(
-                cls._make_zero_stat(
-                    last_time + datetime.timedelta(seconds=1)
-                )
+                cls._make_zero_stat(last_time + datetime.timedelta(seconds=1))
             )
             filled.append(cls._make_zero_stat(end_time))
 
@@ -120,8 +113,7 @@ class StatsConverter:
 
     @staticmethod
     def prepare_chart_datasets(
-        stats: t.List[t.Dict[str, t.Any]],
-        server_type: str = "minecraft-java"
+        stats: t.List[t.Dict[str, t.Any]], server_type: str = "minecraft-java"
     ) -> t.Dict[str, t.List]:
         """
         Transform raw stats into Chart.js-compatible datasets

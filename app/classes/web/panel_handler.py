@@ -720,16 +720,14 @@ class PanelHandler(BaseHandler):
 
                         # Same-date selection: expand to full day
                         if end_time == start_time:
-                            start_time = start_time.replace(
-                                hour=0, minute=0, second=0
-                            )
-                            end_time = end_time.replace(
-                                hour=23, minute=59, second=59
-                            )
+                            start_time = start_time.replace(hour=0, minute=0, second=0)
+                            end_time = end_time.replace(hour=23, minute=59, second=59)
 
                         # Fetch stats with custom date range
-                        history_stats = self.controller.servers.get_history_stats_by_date_range(
-                            server_id, start_time, end_time
+                        history_stats = (
+                            self.controller.servers.get_history_stats_by_date_range(
+                                server_id, start_time, end_time
+                            )
                         )
 
                         # Calculate hours for display purposes
@@ -741,9 +739,7 @@ class PanelHandler(BaseHandler):
                         page_data["end_time"] = end_time.isoformat()
 
                     except (ValueError, TypeError) as e:
-                        self.redirect(
-                            f"/panel/error?error=Invalid date format ({e})"
-                        )
+                        self.redirect(f"/panel/error?error=Invalid date format ({e})")
                         return
                 else:
                     # Preset range mode (existing logic)
@@ -762,7 +758,9 @@ class PanelHandler(BaseHandler):
                         return
 
                     # Validation: clamp to retention limits
-                    hours = MetricsTimeRangeHelper.clamp_hours(hours, max_retention_hours)
+                    hours = MetricsTimeRangeHelper.clamp_hours(
+                        hours, max_retention_hours
+                    )
 
                     # Fetch stats with adaptive sampling
                     history_stats = self.controller.servers.get_history_stats_adaptive(
@@ -776,14 +774,16 @@ class PanelHandler(BaseHandler):
                 page_data["hour_options"] = [
                     {
                         "value": h,
-                        "label": MetricsTimeRangeHelper.format_display_label(h)
+                        "label": MetricsTimeRangeHelper.format_display_label(h),
                     }
                     for h in hour_options_raw
                 ]
                 page_data["selected_hours"] = hours
                 page_data["max_retention_hours"] = max_retention_hours
                 page_data["history_stats"] = history_stats
-                page_data["earliest_metrics_date"] = self.get_earliest_metrics_date(server_id)
+                page_data["earliest_metrics_date"] = self.get_earliest_metrics_date(
+                    server_id
+                )
 
                 # Fill gaps with zero-value points so the chart
                 # spans the full requested range
@@ -791,14 +791,10 @@ class PanelHandler(BaseHandler):
                     range_start = datetime.datetime.fromisoformat(
                         page_data["start_time"]
                     )
-                    range_end = datetime.datetime.fromisoformat(
-                        page_data["end_time"]
-                    )
+                    range_end = datetime.datetime.fromisoformat(page_data["end_time"])
                 else:
                     range_end = datetime.datetime.now()
-                    range_start = range_end - datetime.timedelta(
-                        hours=hours
-                    )
+                    range_start = range_end - datetime.timedelta(hours=hours)
                 history_stats = StatsConverter.fill_gaps(
                     history_stats,
                     start_time=range_start,
@@ -807,8 +803,7 @@ class PanelHandler(BaseHandler):
 
                 # Prepare chart datasets using helper
                 page_data["chart_data"] = StatsConverter.prepare_chart_datasets(
-                    history_stats,
-                    server_type=page_data["server_stats"]["server_type"]
+                    history_stats, server_type=page_data["server_stats"]["server_type"]
                 )
             if subpage == "webhooks":
                 page_data["webhooks"] = (
