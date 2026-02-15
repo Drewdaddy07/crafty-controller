@@ -9,8 +9,10 @@ import typing as t
 class StatsConverter:
     """Pure functions for stats transformations"""
 
-    # Gaps larger than this get filled with zero boundary points
-    GAP_THRESHOLD_SECONDS = 120  # 2 minutes
+    # Default gap threshold (used when fewer than 3 data points)
+    DEFAULT_GAP_THRESHOLD_SECONDS = 120  # 2 minutes
+    # Multiplier: a gap must be this many times the median interval to count
+    GAP_MULTIPLIER = 3
 
     @staticmethod
     def bytes_to_gigabytes(bytes_value: int) -> float:
@@ -31,15 +33,51 @@ class StatsConverter:
         return round(bytes_value / (1024**3), 2)
 
     @staticmethod
-    def _make_zero_stat(dt: datetime.datetime) -> dict:
-        """Create a zero-value stat entry at the given time"""
+    def _make_gap_marker(dt: datetime.datetime) -> dict:
+        """Create a null-value gap marker at the given time.
+
+        Chart.js breaks the line at null y-values (with spanGaps=false),
+        and LTTB decimation passes null points through unchanged.
+        """
         return {
             "created": dt,
-            "online": 0,
-            "mem_percent": 0,
-            "mem": 0,
-            "cpu": 0,
+            "online": None,
+            "mem_percent": None,
+            "mem": None,
+            "cpu": None,
         }
+
+    @classmethod
+    def _compute_gap_threshold(
+        cls, stats: t.List[t.Dict[str, t.Any]]
+    ) -> datetime.timedelta:
+        """
+        Derive gap threshold from median interval in the data.
+
+        After adaptive sampling, the interval between consecutive points
+        grows proportionally to the sample rate.  Using a fixed threshold
+        would treat normal sampled spacing as gaps.  Instead, we compute
+        the median interval and require a gap to be GAP_MULTIPLIER× that.
+        """
+        if len(stats) < 3:
+            return datetime.timedelta(seconds=cls.DEFAULT_GAP_THRESHOLD_SECONDS)
+
+        intervals = []
+        for i in range(len(stats) - 1):
+            t1 = stats[i].get("created")
+            t2 = stats[i + 1].get("created")
+            if t1 and t2:
+                intervals.append((t2 - t1).total_seconds())
+
+        if not intervals:
+            return datetime.timedelta(seconds=cls.DEFAULT_GAP_THRESHOLD_SECONDS)
+
+        intervals.sort()
+        median = intervals[len(intervals) // 2]
+        threshold_secs = max(
+            cls.DEFAULT_GAP_THRESHOLD_SECONDS, median * cls.GAP_MULTIPLIER
+        )
+        return datetime.timedelta(seconds=threshold_secs)
 
     @classmethod
     def fill_gaps(
@@ -49,65 +87,55 @@ class StatsConverter:
         end_time: datetime.datetime = None,
     ) -> t.List[t.Dict[str, t.Any]]:
         """
-        Fill time gaps in stats with zero-value points.
+        Insert null gap markers so Chart.js breaks the line during downtime.
 
-        Ensures the chart spans the full requested range and shows 0
-        during periods with no data (e.g., server offline).
+        Uses null y-values instead of zero-value boundary points.  LTTB
+        decimation preserves null points, so the line break survives
+        regardless of zoom level.
 
         Args:
             stats: Sorted list of stat dicts (ascending by 'created')
-            start_time: Requested range start (adds zero point if data
+            start_time: Requested range start (extends x-axis if data
                         starts later)
-            end_time: Requested range end (adds zero point if data
+            end_time: Requested range end (extends x-axis if data
                       ends earlier)
 
         Returns:
-            New list with zero-fill points inserted at gap boundaries
+            New list with null gap markers inserted where data is missing
         """
         if not stats:
-            # No data at all: return zeros at boundaries
             result = []
             if start_time:
-                result.append(cls._make_zero_stat(start_time))
+                result.append(cls._make_gap_marker(start_time))
             if end_time and end_time != start_time:
-                result.append(cls._make_zero_stat(end_time))
+                result.append(cls._make_gap_marker(end_time))
             return result
 
-        threshold = datetime.timedelta(seconds=cls.GAP_THRESHOLD_SECONDS)
+        # Compute adaptive gap threshold from the actual data spacing.
+        threshold = cls._compute_gap_threshold(stats)
         filled = []
 
         first_time = stats[0].get("created")
         last_time = stats[-1].get("created")
 
-        # Add zero at start of range if data begins later
+        # Extend x-axis to start of range if data begins later
         if start_time and first_time and first_time - start_time > threshold:
-            filled.append(cls._make_zero_stat(start_time))
-            # Add another zero just before first real point for sharp edge
-            filled.append(
-                cls._make_zero_stat(first_time - datetime.timedelta(seconds=1))
-            )
+            filled.append(cls._make_gap_marker(start_time))
 
-        # Walk through data and fill internal gaps
+        # Walk through data and insert gap markers between distant points
         for i, stat in enumerate(stats):
             filled.append(stat)
             if i < len(stats) - 1:
                 curr_time = stat.get("created")
                 next_time = stats[i + 1].get("created")
                 if curr_time and next_time and next_time - curr_time > threshold:
-                    # Insert zero at both edges of the gap for sharp drop/rise
-                    filled.append(
-                        cls._make_zero_stat(curr_time + datetime.timedelta(seconds=1))
-                    )
-                    filled.append(
-                        cls._make_zero_stat(next_time - datetime.timedelta(seconds=1))
-                    )
+                    # Single null marker in the middle breaks the line
+                    mid = curr_time + (next_time - curr_time) / 2
+                    filled.append(cls._make_gap_marker(mid))
 
-        # Add zero at end of range if data ends earlier
+        # Extend x-axis to end of range if data ends earlier
         if end_time and last_time and end_time - last_time > threshold:
-            filled.append(
-                cls._make_zero_stat(last_time + datetime.timedelta(seconds=1))
-            )
-            filled.append(cls._make_zero_stat(end_time))
+            filled.append(cls._make_gap_marker(end_time))
 
         return filled
 
@@ -116,7 +144,10 @@ class StatsConverter:
         stats: t.List[t.Dict[str, t.Any]], server_type: str = "minecraft-java"
     ) -> t.Dict[str, t.List]:
         """
-        Transform raw stats into Chart.js-compatible datasets
+        Transform raw stats into Chart.js-compatible datasets.
+
+        None values (from gap markers) are preserved as None so they
+        serialize to JSON null, causing Chart.js to break the line.
 
         Args:
             stats: List of stat dictionaries from database
@@ -132,19 +163,26 @@ class StatsConverter:
         cpu = []
 
         for stat in stats:
-            # Track players for Java Edition and Hytale
-            if "minecraft-java" in server_type or "hytale" in server_type:
-                players.append(stat.get("online", 0))
-
             # Format date for display
             created = stat.get("created")
             if created:
                 dates.append(created.strftime("%Y/%m/%d, %H:%M:%S"))
 
-            # Metrics
-            ram_percent.append(stat.get("mem_percent", 0))
-            ram_gb.append(StatsConverter.bytes_to_gigabytes(stat.get("mem", 0)))
-            cpu.append(stat.get("cpu", 0))
+            is_gap = stat.get("online") is None
+
+            if is_gap:
+                # Preserve null for Chart.js line breaks
+                if "minecraft-java" in server_type or "hytale" in server_type:
+                    players.append(None)
+                ram_percent.append(None)
+                ram_gb.append(None)
+                cpu.append(None)
+            else:
+                if "minecraft-java" in server_type or "hytale" in server_type:
+                    players.append(stat.get("online", 0))
+                ram_percent.append(stat.get("mem_percent", 0))
+                ram_gb.append(StatsConverter.bytes_to_gigabytes(stat.get("mem", 0)))
+                cpu.append(stat.get("cpu", 0))
 
         return {
             "players": players,
