@@ -561,7 +561,7 @@
   $(document).ready(function () {
     if ($(window).width() > 1000) {
       $('[data-toggle="popover"]').popover();
-      // Hint available on hover/click, not auto-shown
+      $('.hints').popover("show");
     }
 
     webSocket.on('update_server_details', function (data) {
