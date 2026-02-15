@@ -422,13 +422,13 @@
     data: {
       datasets: [
         {
-          label: "Players",
-          data: playerData,
-          borderColor: 'rgba(136, 98, 224, .7)',
+          label: "CPU %",
+          data: cpuData,
+          borderColor: 'rgba(255, 175, 0, .7)',
           borderWidth: 2,
           lineTension: 0,
           spanGaps: false,
-          yAxisID: 'y-right',
+          yAxisID: 'y-left',
         },
         {
           label: "RAM %",
@@ -449,13 +449,13 @@
           yAxisID: 'y-right',
         },
         {
-          label: "CPU %",
-          data: cpuData,
-          borderColor: 'rgba(255, 175, 0, .7)',
+          label: "Players",
+          data: playerData,
+          borderColor: 'rgba(136, 98, 224, .7)',
           borderWidth: 2,
           lineTension: 0,
           spanGaps: false,
-          yAxisID: 'y-left',
+          yAxisID: 'y-right',
         },
       ]
     },
