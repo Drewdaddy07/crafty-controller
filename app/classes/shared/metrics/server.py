@@ -53,6 +53,12 @@ class ServerMetrics:
             labelnames=["server_id", "server_name"],
             registry=self.registry
         )
+        self._pr_server_size = Gauge(
+            name="crafty_server_size",
+            documentation="The size of the server directory in bytes",
+            labelnames=["server_id", "server_name"],
+            registry=self.registry
+        )
 
     def _proxy(self, instance: ServerInstance) -> MetricProxy:
         return MetricProxy(self, instance)
@@ -67,6 +73,7 @@ class ServerMetrics:
             proxy.m_server_info.clear()
         proxy.m_online_players.set(server_stats["players"] or 0)
         proxy.m_max_players.set(server_stats["max"] or 0)
+        proxy.m_server_size.set(instance.server_size)
 
         if instance.check_running():
             start_time = datetime.fromisoformat(instance.start_time)
@@ -102,6 +109,7 @@ class MetricProxy:
     m_server_info: Info
     m_online_players: Gauge
     m_max_players: Gauge
+    m_server_size: Gauge
 
     def __init__(self, metrics: ServerMetrics, instance: ServerInstance):
         self._metrics = metrics
