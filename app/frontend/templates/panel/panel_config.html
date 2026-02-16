@@ -118,11 +118,19 @@
                               data-toggle="tooltip" title="{{ translate('userConfig', 'userName', data['lang'])}}"
                               id="username_{{user.user_id}}" class="edit_user clickable" data-name="{{user.username}}"
                               data-id="{{user.user_id}}"><i class="ph-fill ph-user"></i></span>
+                            {% if user.user_id != data['user_data']['user_id'] %}
+                            &nbsp;&nbsp;<span
+                              data-toggle="tooltip" title="{{ translate('tempPassword', 'resetPassword', data['lang'])}}"
+                              class="reset_password clickable" data-id="{{user.user_id}}"
+                              data-username="{{user.username}}"><i
+                                class="ph-fill ph-lock"></i></span>
+                            {% else %}
                             &nbsp;&nbsp;<span data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
                               data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"
-                              data-toggle="tooltip" title="{{ translate('userConfig', 'password', data['lang'])}}"
+                              data-toggle="tooltip" title="{{ translate('userConfig', 'changePass', data['lang'])}}"
                               class="edit_password clickable" data-id="{{user.user_id}}"><i
                                 class="ph-fill ph-lock"></i></span>
+                            {% end %}
                             &nbsp;&nbsp;<a data-toggle="tooltip"
                               title="{{ translate('userConfig', 'pageTitle', data['lang'])}}"
                               href="/panel/edit_user?id={{user.user_id}}"><i class="ph-fill ph-pencil-simple"></i></a>
@@ -162,10 +170,10 @@
                               data-toggle="tooltip" title="{{ translate('userConfig', 'userName', data['lang'])}}"
                               id="username_{{user.user_id}}" class="edit_user clickable" data-name="{{user.username}}"
                               data-id="{{user.user_id}}"><i class="ph-fill ph-user"></i></span>
-                            &nbsp;&nbsp;<span data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
-                              data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"
-                              data-toggle="tooltip" title="{{ translate('userConfig', 'password', data['lang'])}}"
-                              class="edit_password clickable" data-id="{{user.user_id}}"><i
+                            &nbsp;&nbsp;<span
+                              data-toggle="tooltip" title="{{ translate('tempPassword', 'resetPassword', data['lang'])}}"
+                              class="reset_password clickable" data-id="{{user.user_id}}"
+                              data-username="{{user.username}}"><i
                                 class="ph-fill ph-lock"></i></span>
                             &nbsp;&nbsp;<a data-toggle="tooltip"
                               title="{{ translate('userConfig', 'pageTitle', data['lang'])}}"
@@ -442,6 +450,167 @@
     if ($('#file').val()) {
       $('#upload-button').prop("disabled", false);
     }
+  });
+  function generatePassword(length) {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    let pass = '';
+    const array = new Uint32Array(length);
+    crypto.getRandomValues(array);
+    for (let i = 0; i < length; i++) {
+      pass += chars[array[i] % chars.length];
+    }
+    return pass;
+  }
+
+  $(".reset_password").on("click", function () {
+    const token = getCookie("_xsrf");
+    let resetUserId = $(this).data("id");
+    let resetUsername = $("<div>").text($(this).data("username")).html();
+    bootbox.dialog({
+      title: "{{ translate('tempPassword', 'resetPassword', data['lang']) }} - " + resetUsername,
+      message: `
+        <form class="form" id="reset-password-form">
+          <div class="form-group">
+            <label for="reset_password_field">{{ translate('tempPassword', 'newPassword', data['lang']) }}</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="reset_password_field"
+                placeholder="{{ translate('tempPassword', 'newPassword', data['lang']) }}" autocomplete="off">
+              <div class="input-group-append">
+                <button class="btn btn-outline-info" type="button" id="btn_generate_password">
+                  <i class="fas fa-dice"></i>
+                  {{ translate('tempPassword', 'generateRandom', data['lang']) }}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group mt-3">
+            <label for="reset_pw_length">{{ translate('tempPassword', 'passwordLength', data['lang']) }}</label>
+            <input type="number" class="form-control" id="reset_pw_length" value="16" min="8" max="128">
+          </div>
+          <div class="form-group mt-3">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="require_change" checked>
+              <label class="form-check-label" for="require_change">
+                {{ translate('tempPassword', 'requireChangeLabel', data['lang']) }}
+              </label>
+            </div>
+          </div>
+          <div class="form-group mt-3" id="expiry_group">
+            <label for="reset_expires">{{ translate('tempPassword', 'expiresIn', data['lang']) }}</label>
+            <select class="form-control" id="reset_expires" name="expires">
+              <option value="">{{ translate('tempPassword', 'noExpiry', data['lang']) }}</option>
+              <option value="1">{{ translate('tempPassword', 'oneHour', data['lang']) }}</option>
+              <option value="24" selected>{{ translate('tempPassword', 'twentyFourHours', data['lang']) }}</option>
+              <option value="168">{{ translate('tempPassword', 'sevenDays', data['lang']) }}</option>
+            </select>
+          </div>
+        </form>
+      `,
+      buttons: {
+        cancel: {
+          label: "{{ translate('login', 'cancel', data['lang']) }}",
+          className: "btn-secondary"
+        },
+        confirm: {
+          label: "{{ translate('tempPassword', 'setPassword', data['lang']) }}",
+          className: "btn-warning",
+          callback: function () {
+            let password = $("#reset_password_field").val();
+            if (!password || password.length < 8) {
+              bootbox.alert({
+                title: "Error",
+                message: "Password must be at least 8 characters."
+              });
+              return false;
+            }
+            let requireChange = $("#require_change").is(":checked");
+            let body = {
+              password: password,
+              require_password_change: requireChange,
+            };
+            if (requireChange) {
+              let expiresVal = $("#reset_expires").val();
+              if (expiresVal !== "") {
+                body.expires_hours = parseInt(expiresVal);
+              }
+            }
+
+            (async () => {
+              try {
+                let res = await fetch(`/api/v2/users/${resetUserId}/reset-password`, {
+                  method: 'POST',
+                  headers: {
+                    'X-XSRFToken': token,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(body),
+                });
+                let responseData = await res.json();
+
+                if (responseData.status === "ok") {
+                  let noticeText = "";
+                  if (requireChange) {
+                    noticeText += '<p class="text-info mt-2"><i class="fas fa-info-circle"></i> {{ translate("tempPassword", "requireChangeLabel", data["lang"]) }}</p>';
+                    if (responseData.data.expires) {
+                      noticeText += '<small class="text-muted">Expires: '
+                        + $("<div>").text(responseData.data.expires).html() + '</small>';
+                    }
+                  }
+                  bootbox.alert({
+                    title: "{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}",
+                    message: `
+                      <div class="form-group">
+                        <label>{{ translate('tempPassword', 'newPassword', data['lang']) }}</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="generated-password" readonly>
+                          <div class="input-group-append">
+                            <button class="btn btn-outline-primary" type="button"
+                              onclick="navigator.clipboard.writeText(document.getElementById('generated-password').value)">
+                              <i class="fas fa-copy"></i>
+                              {{ translate('tempPassword', 'copyPassword', data['lang']) }}
+                            </button>
+                          </div>
+                        </div>
+                        ` + noticeText + `
+                      </div>
+                    `,
+                  });
+                  setTimeout(function () {
+                    document.getElementById('generated-password').value = responseData.data.password;
+                  }, 100);
+                } else {
+                  bootbox.alert({
+                    title: $("<div>").text(responseData.error).html(),
+                    message: $("<div>").text(responseData.error_data).html()
+                  });
+                }
+              } catch (error) {
+                bootbox.alert({
+                  title: "Error",
+                  message: "Failed to reset password. Please try again."
+                });
+              }
+            })();
+          }
+        }
+      }
+    });
+
+    // Wire up generate button after dialog renders
+    setTimeout(function () {
+      $("#btn_generate_password").on("click", function () {
+        let len = parseInt($("#reset_pw_length").val()) || 16;
+        $("#reset_password_field").val(generatePassword(len));
+      });
+      // Toggle expiry visibility based on require change checkbox
+      $("#require_change").on("change", function () {
+        if ($(this).is(":checked")) {
+          $("#expiry_group").show();
+        } else {
+          $("#expiry_group").hide();
+        }
+      });
+    }, 200);
   });
 </script>
 <script src="../../static/assets/js/shared/backupCodes.js"></script>
