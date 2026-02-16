@@ -146,6 +146,21 @@ class UsersController:
                 "error": "typeBool",
                 "fill": True,
             },
+            "require_password_change": {
+                "type": "boolean",
+                "examples": [False],
+                "title": "Require Password Change",
+                "error": "typeBool",
+                "fill": True,
+            },
+            "password_expires": {
+                "type": ["string", "null"],
+                "format": "date-time",
+                "examples": [None],
+                "title": "Password Expires",
+                "error": "typeString",
+                "fill": True,
+            },
         }
 
     # **********************************************************************************
@@ -240,6 +255,10 @@ class UsersController:
             elif key == "password":
                 if user_data["password"] is not None and user_data["password"] != "":
                     up_data["password"] = self.helper.encode_pass(user_data["password"])
+                    # If user has require_password_change set, clear it
+                    if base_data.get("require_password_change"):
+                        up_data["require_password_change"] = False
+                        up_data["password_expires"] = None
             elif key == "lang":
                 up_data["lang"] = user_data["lang"]
             elif key == "hints":
