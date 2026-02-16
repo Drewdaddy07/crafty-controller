@@ -1,8 +1,9 @@
-from prometheus_client import Info
+from prometheus_client import REGISTRY, Info, Gauge
 from app.classes.web.metrics_handler import BaseMetricsHandler
+from app.classes.shared.metrics.server import ServerMetrics
 
-CRAFTY_INFO = Info("Crafty_Controller", "Infos of this Crafty Instance")
-
+CRAFTY_INFO = Info("crafty_controller", "Infos of this Crafty Instance")
+SERVER_METRICS = ServerMetrics(REGISTRY)
 
 # Decorate function with metric.
 class ApiOpenMetricsIndexHandler(BaseMetricsHandler):
@@ -10,12 +11,16 @@ class ApiOpenMetricsIndexHandler(BaseMetricsHandler):
         auth_data = self.authenticate_user()
         if not auth_data:
             return
+        authorized_servers = auth_data[0] # List[ServerInstance]
 
         version = f"{self.helper.get_version().get('major')} \
                     .{self.helper.get_version().get('minor')} \
                     .{self.helper.get_version().get('sub')}"
-        CRAFTY_INFO.info(
-            {"version": version, "docker": f"{self.helper.is_env_docker()}"}
-        )
+        CRAFTY_INFO.info({"version": version, "docker": f"{self.helper.is_env_docker()}"})
+
+        for server in authorized_servers:
+            server_id = server["server_id"]
+            instance = self.controller.servers.get_server_instance_by_id(server_id)
+            SERVER_METRICS.update(instance)
 
         self.get_registry()
