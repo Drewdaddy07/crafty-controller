@@ -429,6 +429,13 @@
   const ramGbData = timestamps.map((t, i) => ({x: t, y: rawRamGb[i]}));
   const cpuData = timestamps.map((t, i) => ({x: t, y: rawCpu[i]}));
 
+  // Compute decimation samples based on chart width (~1 point per 3 CSS pixels)
+  function getDecimationSamples() {
+    var canvas = document.getElementById("lineChart");
+    var width = canvas.clientWidth || canvas.offsetWidth || 800;
+    return Math.max(60, Math.round(width / 3));
+  }
+
   // Create chart with dual Y-axes and time-based x-axis
   var ctxL = document.getElementById("lineChart").getContext('2d');
   var hist_chart = new Chart(ctxL, {
@@ -476,12 +483,17 @@
     options: {
       maintainAspectRatio: false,
       parsing: false,
+      onResize(chart, size) {
+        var newSamples = Math.max(60, Math.round(size.width / 3));
+        chart.options.plugins.decimation.samples = newSamples;
+        chart.options.plugins.decimation.threshold = newSamples;
+      },
       plugins: {
         decimation: {
           enabled: true,
           algorithm: 'lttb',
-          samples: 360,
-          threshold: 360,
+          samples: getDecimationSamples(),
+          threshold: getDecimationSamples(),
         },
         zoom: {
           zoom: {
