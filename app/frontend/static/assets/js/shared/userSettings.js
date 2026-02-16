@@ -1,21 +1,3 @@
-function validateForm() {
-    let password0 = document.getElementById("password0").value;
-    let password1 = document.getElementById("password1").value;
-    if (password0 != password1) {
-        $('.passwords-match').popover('show');
-        $('.popover-body').click(function () {
-            $('.passwords-match').popover("hide");
-        });
-        document.body.scrollTop = 0;
-        document.documentElement.scrollTop = 0;
-        $("#password0").css("outline", "1px solid red");
-        $("#password1").css("outline", "1px solid red");
-        return false;
-    } else {
-        return password1;
-    }
-}
-
 $(document).on("submit", ".bootbox form", function (e) {
     e.preventDefault();
     $(".bootbox .btn-primary").click();
@@ -46,22 +28,25 @@ $(".edit_password").on("click", async function () {
                 label: "OK",
                 className: "btn-primary",
                 callback: function () {
-                    let password = validateForm();
-                    if (!password) {
+                    let pw0 = document.getElementById("password0").value;
+                    let pw1 = document.getElementById("password1").value;
+                    if (!pw0 || pw0 !== pw1) {
+                        bootbox.alert({
+                            title: "Error",
+                            message: "Passwords must match"
+                        });
                         return false;
                     }
 
                     (async () => {
-                        password = password.toString();
                         let res = await fetch(`/api/v2/users/${user_id}`, {
                             method: 'PATCH',
                             headers: { 'X-XSRFToken': token },
-                            body: JSON.stringify({ "password": password }),
+                            body: JSON.stringify({ "password": pw0.toString() }),
                         });
                         let responseData = await res.json();
 
                         if (responseData.status === "ok") {
-                            console.log(responseData.data);
                             bootbox.hideAll();
                         } else {
                             bootbox.hideAll();
@@ -75,7 +60,6 @@ $(".edit_password").on("click", async function () {
             }
         }
     });
-
 });
 
 $(".edit_user").on("click", function () {

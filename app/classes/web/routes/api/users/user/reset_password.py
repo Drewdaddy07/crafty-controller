@@ -28,6 +28,9 @@ reset_password_schema = {
             "minimum": 8,
             "maximum": 128,
         },
+        "require_password_change": {
+            "type": "boolean",
+        },
     },
     "additionalProperties": False,
 }
@@ -118,7 +121,9 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
             user_id,
             {
                 "password": self.helper.encode_pass(password),
-                "require_password_change": True,
+                "require_password_change": data.get(
+                    "require_password_change", True
+                ),
                 "password_expires": password_expires,
                 "valid_tokens_from": Helpers.get_utc_now(),
             },

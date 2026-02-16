@@ -803,7 +803,10 @@
         "confirmNewPassword": "Confirm New Password",
         "passwordChanged": "Your password has been changed successfully.",
         "mustChangePassword": "You must change your password before you can continue.",
-        "passwordLength": "Password Length"
+        "passwordLength": "Password Length",
+        "generateRandom": "Generate",
+        "setPassword": "Set Password",
+        "requireChangeLabel": "Require password change on next login"
     },
     "userConfig": {
         "apiKey": "API Keys",
