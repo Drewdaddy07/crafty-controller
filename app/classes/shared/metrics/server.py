@@ -118,6 +118,7 @@ class ServerMetrics:
             proxy.m_cpu_time("children_user").set(0)
             proxy.m_cpu_time("children_system").set(0)
 
+
 class MetricProxy:
     m_running_time: UncheckedCounter
     m_resident_memory: Gauge
