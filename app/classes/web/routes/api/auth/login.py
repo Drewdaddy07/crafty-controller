@@ -274,6 +274,34 @@ class ApiAuthLoginHandler(BaseApiHandler):
             query.last_login = Helpers.get_time_as_string()
             query.save()
 
+            # Check if temp password has expired
+            if (
+                user_data.password_expires
+                and user_data.password_expires < Helpers.get_utc_now()
+            ):
+                auth_log.warning(
+                    f"User {username} attempted login with expired temp password"
+                    f" from {self.get_remote_ip()}"
+                )
+                self.controller.management.add_to_audit_log(
+                    user_data.user_id,
+                    "login rejected: temporary password expired",
+                    None,
+                    self.get_remote_ip(),
+                )
+                return self.finish_json(
+                    401,
+                    {
+                        "status": "error",
+                        "error": "TEMP_PASSWORD_EXPIRED",
+                        "error_data": self.helper.translation.translate(
+                            "login",
+                            "tempPasswordExpired",
+                            self.helper.get_setting("language"),
+                        ),
+                    },
+                )
+
             # log this login
             self.controller.management.add_to_audit_log(
                 user_data.user_id, "logged in via the API", None, self.get_remote_ip()
@@ -283,37 +311,32 @@ class ApiAuthLoginHandler(BaseApiHandler):
             )
 
             self.set_current_user(user_data.user_id, token)
+
+            # Build login response
+            response_data = {
+                "token": token,
+                "user_id": str(user_data.user_id),
+                "page": "/panel/dashboard",
+            }
             if valid_backup_code:
-                return self.finish_json(
-                    200,
-                    {
-                        "status": "ok",
-                        "data": {
-                            "token": token,
-                            "user_id": str(user_data.user_id),
-                            "page": "/panel/dashboard",
-                            "warning": self.helper.translation.translate(
-                                "login",
-                                "burnedBackupCode",
-                                self.controller.users.get_user_lang_by_id(
-                                    user_data.user_id
-                                ),
-                            ),
-                        },
-                    },
+                response_data["warning"] = self.helper.translation.translate(
+                    "login",
+                    "burnedBackupCode",
+                    self.controller.users.get_user_lang_by_id(
+                        user_data.user_id
+                    ),
+                )
+            if user_data.require_password_change:
+                response_data["require_password_change"] = True
+                response_data["page"] = "/panel/change_password"
+                self.controller.management.add_to_audit_log(
+                    user_data.user_id,
+                    "logged in with temporary password",
+                    None,
+                    self.get_remote_ip(),
                 )
 
-            return self.finish_json(
-                200,
-                {
-                    "status": "ok",
-                    "data": {
-                        "token": token,
-                        "user_id": str(user_data.user_id),
-                        "page": "/panel/dashboard",
-                    },
-                },
-            )
+            return self.finish_json(200, {"status": "ok", "data": response_data})
 
         # log this failed login attempt
         self.controller.management.add_to_audit_log(
