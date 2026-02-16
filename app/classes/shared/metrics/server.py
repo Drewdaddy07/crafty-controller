@@ -1,9 +1,10 @@
+from datetime import datetime
+from psutil import Process
+
 from prometheus_client import CollectorRegistry, Gauge, Info
 
 from app.classes.shared.metrics.unchecked_counter import UncheckedCounter
 from app.classes.shared.server import ServerInstance
-from datetime import datetime
-from psutil import Process
 
 
 class ServerMetrics:

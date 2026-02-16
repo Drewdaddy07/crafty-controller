@@ -1,4 +1,4 @@
-from prometheus_client import REGISTRY, Info, Gauge
+from prometheus_client import REGISTRY, Info
 from app.classes.web.metrics_handler import BaseMetricsHandler
 from app.classes.shared.metrics.server import ServerMetrics
 

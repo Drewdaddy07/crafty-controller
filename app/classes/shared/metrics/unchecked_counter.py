@@ -1,9 +1,8 @@
-from prometheus_client import CollectorRegistry, Gauge, Info
+from typing import Iterable
+
 from prometheus_client.metrics import MetricWrapperBase
 from prometheus_client.samples import Sample
 from prometheus_client.values import ValueClass
-
-from typing import Iterable
 
 
 class UncheckedCounter(MetricWrapperBase):
