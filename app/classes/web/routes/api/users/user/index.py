@@ -9,7 +9,6 @@ from app.classes.models.roles import HelperRoles
 from app.classes.models.users import HelperUsers
 from app.classes.web.base_api_handler import BaseApiHandler
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -392,14 +391,18 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
             crafty_perms,
         )
 
-        self.controller.management.add_to_audit_log(
-            user["user_id"],
-            (
-                f"edited user {user_obj.username} (UID: {user_id})"
-                f"with roles {user_obj.roles}"
-            ),
-            server_id=None,
-            source_ip=self.get_remote_ip(),
-        )
+        # Skip audit log for silent preference-only updates (e.g. column
+        # visibility, server ordering) to avoid spamming notifications.
+        silent_fields = {"dashboard_columns", "server_order"}
+        if not set(data.keys()).issubset(silent_fields):
+            self.controller.management.add_to_audit_log(
+                user["user_id"],
+                (
+                    f"edited user {user_obj.username} (UID: {user_id})"
+                    f"with roles {user_obj.roles}"
+                ),
+                server_id=None,
+                source_ip=self.get_remote_ip(),
+            )
 
         return self.finish_json(200, {"status": "ok"})
