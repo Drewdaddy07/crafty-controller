@@ -61,7 +61,7 @@ class ServerMetrics:
             registry=self.registry,
         )
 
-    def _proxy(self, instance: ServerInstance) -> MetricProxy:
+    def _proxy(self, instance: ServerInstance):
         return MetricProxy(self, instance)
 
     def update(self, instance: ServerInstance):
