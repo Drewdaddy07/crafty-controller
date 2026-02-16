@@ -1000,30 +1000,35 @@
   .column-settings {
     position: relative;
     display: inline-block;
+    margin-left: 8px;
   }
 
   .column-settings-btn {
     cursor: pointer;
-    padding: 6px 10px;
-    color: #6c757d;
+    padding: 4px 8px;
+    color: var(--base-text, #6c757d);
+    font-size: 1rem;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.15s;
   }
 
   .column-settings-btn:hover {
-    color: #495057;
+    opacity: 1;
   }
 
   .column-settings-dropdown {
     display: none;
-    position: absolute;
-    right: 0;
-    top: 100%;
-    background: var(--card-bg, #fff);
-    border: 1px solid rgba(0,0,0,.15);
+    position: fixed;
+    background: var(--dropdown-bg, #222437);
+    border: 1px solid var(--outline, #383e5d);
     border-radius: 4px;
-    padding: 8px 0;
-    min-width: 180px;
-    z-index: 1000;
-    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    padding: 6px 0;
+    min-width: 190px;
+    height: fit-content;
+    z-index: 1050;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-size: 0.875rem;
   }
 
   .column-settings-dropdown.show {
@@ -1031,20 +1036,29 @@
   }
 
   .column-settings-dropdown label {
-    display: block;
-    padding: 4px 16px;
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 1rem;
     margin: 0;
     cursor: pointer;
     white-space: nowrap;
     font-weight: normal;
+    color: var(--base-text, #b9c0d3);
+    transition: background-color 0.1s;
   }
 
   .column-settings-dropdown label:hover {
-    background: rgba(0,0,0,.05);
+    background-color: var(--card-banner-bg, #282a40);
+  }
+
+  .column-settings-dropdown label.disabled {
+    opacity: 0.5;
+    cursor: default;
   }
 
   .column-settings-dropdown input[type="checkbox"] {
-    margin-right: 8px;
+    margin-right: 10px;
+    accent-color: var(--primary, #2196f3);
   }
 </style>
 <script>
@@ -1075,36 +1089,50 @@
       { key: 'status', label: "{{ translate('dashboard', 'status', data['lang']) }}", locked: true },
     ];
 
-    const visibleColumns = new Set({{ json_encode(data['dashboard_columns']) }});
+    const visibleColumns = new Set({% raw json_encode(data['dashboard_columns']) %});
 
     // Build dropdown HTML
     let dropdownHtml = '<div class="column-settings">' +
-      '<span class="column-settings-btn" title="{{ translate(\'dashboard\', \'columnSettings\', data[\'lang\']) }}">' +
+      '<span class="column-settings-btn" title="{{ translate("dashboard", "columnSettings", data["lang"]) }}">' +
       '<i class="fas fa-cog"></i></span>' +
       '<div class="column-settings-dropdown">';
 
     columnDefs.forEach(function(col) {
       const checked = visibleColumns.has(col.key) ? 'checked' : '';
       const disabled = col.locked ? 'disabled' : '';
-      dropdownHtml += '<label><input type="checkbox" ' +
+      const labelClass = col.locked ? ' class="disabled"' : '';
+      dropdownHtml += '<label' + labelClass + '><input type="checkbox" ' +
         'data-column="' + col.key + '" ' +
         checked + ' ' + disabled + '> ' + col.label + '</label>';
     });
 
     dropdownHtml += '</div></div>';
 
-    // Insert next to DataTables search
-    $('.dataTables_filter').css('display', 'flex').css('align-items', 'center').css('gap', '8px');
+    // Insert next to DataTables search (append inline, don't change filter layout)
     $('.dataTables_filter').append(dropdownHtml);
 
-    // Toggle dropdown
+    // Toggle dropdown (position fixed to escape overflow clipping)
     $(document).on('click', '.column-settings-btn', function(e) {
       e.stopPropagation();
-      $('.column-settings-dropdown').toggleClass('show');
+      var $dropdown = $('.column-settings-dropdown');
+      if ($dropdown.hasClass('show')) {
+        $dropdown.removeClass('show');
+      } else {
+        var rect = this.getBoundingClientRect();
+        $dropdown.css({
+          top: rect.bottom + 4 + 'px',
+          right: (window.innerWidth - rect.right) + 'px'
+        });
+        $dropdown.addClass('show');
+      }
     });
 
-    // Close on click outside
+    // Close on click outside or scroll
     $(document).on('click', function() {
+      $('.column-settings-dropdown').removeClass('show');
+    });
+
+    $(window).on('scroll', function() {
       $('.column-settings-dropdown').removeClass('show');
     });
 
