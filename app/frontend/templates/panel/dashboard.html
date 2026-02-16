@@ -178,22 +178,32 @@
           {% if len(data['servers']) > 0 or len(data['failed_servers']) > 0 %}
           <!-- View for Large screen -->
           <div class="table-responsive d-none d-sm-block">
+            <style id="column-visibility">
+              {% set all_columns = ['server', 'actions', 'cpuUsage', 'memUsage', 'size', 'players', 'port', 'version', 'status'] %}
+              {% for col in all_columns %}
+                {% if col not in data['dashboard_columns'] %}
+              #servers_table .col-{{ col }} { display: none; }
+                {% end %}
+              {% end %}
+            </style>
             <table id="servers_table" class="table table-hover">
               <thead>
                 <tr class="rounded" id="first" draggable="false">
-                  <th draggable="false">{{ translate('dashboard', 'server', data['lang']) }}</th>
-                  <th draggable="false">{{ translate('dashboard', 'actions', data['lang']) }}</th>
-                  <th draggable="false">{{ translate('dashboard', 'cpuUsage', data['lang']) }}</th>
-                  <th draggable="false">{{ translate('dashboard', 'memUsage', data['lang']) }}</th>
-                  <th draggable="false">{{ translate('dashboard', 'size', data['lang']) }}</th>
-                  <th draggable="false">{{ translate('dashboard', 'players', data['lang']) }}</th>
-                  <th draggable="false">{{ translate('dashboard', 'status', data['lang']) }}</th>
+                  <th class="col-server" draggable="false">{{ translate('dashboard', 'server', data['lang']) }}</th>
+                  <th class="col-actions" draggable="false">{{ translate('dashboard', 'actions', data['lang']) }}</th>
+                  <th class="col-cpuUsage" draggable="false">{{ translate('dashboard', 'cpuUsage', data['lang']) }}</th>
+                  <th class="col-memUsage" draggable="false">{{ translate('dashboard', 'memUsage', data['lang']) }}</th>
+                  <th class="col-size" draggable="false">{{ translate('dashboard', 'size', data['lang']) }}</th>
+                  <th class="col-players" draggable="false">{{ translate('dashboard', 'players', data['lang']) }}</th>
+                  <th class="col-port" draggable="false">{{ translate('dashboard', 'port', data['lang']) }}</th>
+                  <th class="col-version" draggable="false">{{ translate('dashboard', 'version', data['lang']) }}</th>
+                  <th class="col-status" draggable="false">{{ translate('dashboard', 'status', data['lang']) }}</th>
                 </tr>
               </thead>
               <tbody>
                 {% for server in data['servers'] %}
                 <tr id="{{server['server_data']['server_id']}}" draggable="true">
-                  <td draggable="false">
+                  <td class="col-server" draggable="false">
                     <i class="fas fa-server"></i>
                     {% if server['alert'] %}
                     <a class="server-alert" draggable="false"
@@ -206,7 +216,7 @@
                     </a>
                     {% end %}
                   </td>
-                  <td draggable="false" id="controls{{server['server_data']['server_id']}}" class="actions_serverlist">
+                  <td draggable="false" id="controls{{server['server_data']['server_id']}}" class="col-actions actions_serverlist">
                     {% if server['user_command_permission'] %}
                     {% if server['stats']['importing'] and server['stats']['running'] %}
                     <!-- WHAT HAPPENED HERE -->
@@ -258,7 +268,7 @@
                     {% end %}
                     {% end %}
                   </td>
-                  <td draggable="false" id="server_cpu_{{server['server_data']['server_id']}}">
+                  <td class="col-cpuUsage" draggable="false" id="server_cpu_{{server['server_data']['server_id']}}">
                     <div class="progress mb-1" data-toggle="tooltip" data-placement="top"
                       title="{{server['stats']['cpu']}}">
                       <div class="progress-bar
@@ -274,7 +284,7 @@
                     </div>
                     {{server['stats']['cpu']}}%
                   </td>
-                  <td draggable="false" id="server_mem_{{server['server_data']['server_id']}}">
+                  <td class="col-memUsage" draggable="false" id="server_mem_{{server['server_data']['server_id']}}">
                     <div class="progress mb-1" data-toggle="tooltip" data-placement="top"
                       title="{{server['stats']['mem']}}">
                       <div class="progress-bar
@@ -296,10 +306,10 @@
                     {{server['stats']['mem']}}
                     {% end %}
                   </td>
-                  <td draggable="false" id="server_world_{{server['server_data']['server_id']}}">
+                  <td class="col-size" draggable="false" id="server_world_{{server['server_data']['server_id']}}">
                     {{ server['stats']['world_size'] }}
                   </td>
-                  <td draggable="false">
+                  <td class="col-players" draggable="false">
                     {% if server['stats']['int_ping_results'] %}
                     <span id="server_desc_{{server['server_data']['server_id']}}">
                       {{ server['stats']['online'] }} / {{ server['stats']['max'] }} {{ translate('dashboard', 'max',
@@ -311,9 +321,14 @@
                       data-players="{{ server['stats']['online']}}" data-max="{{ server['stats']['max'] }}"
                       data-count="{{server['server_data']['count_players']}}"></span>
                   </td>
-                  <td draggable="false">
-                    <div id="server_running_status_{{server['server_data']['server_id']}}" data-toggle="tooltip" title="{{
-                        server['server_data']['server_port'] }}">
+                  <td class="col-port" draggable="false" id="server_port_{{server['server_data']['server_id']}}">
+                    {{ server['stats']['server_port'] }}
+                  </td>
+                  <td class="col-version" draggable="false" id="server_version_{{server['server_data']['server_id']}}">
+                    {{ server['stats']['version'] }}
+                  </td>
+                  <td class="col-status" draggable="false">
+                    <div id="server_running_status_{{server['server_data']['server_id']}}">
                       {% if server['stats']['running'] %}
                       <span class="text-success"><i class="fas fa-signal"></i> {{ translate('dashboard', 'online',
                         data['lang']) }}</span>
@@ -331,15 +346,17 @@
           </div>
           {% for server in data['failed_servers'] %}
           <tr id="{{server['server_id']}}" draggable="false">
-            <td class="text-warning"><i class="fas fa-server"></i>&nbsp;<a class="text-warning"
+            <td class="col-server text-warning"><i class="fas fa-server"></i>&nbsp;<a class="text-warning"
                 href="/panel/server_detail?id={{server['server_id']}}&subpage=config">{{server['server_name']}}</a>
             </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><i class="fas fa-cloud"></i>&nbsp;Unloaded</td>
+            <td class="col-actions"></td>
+            <td class="col-cpuUsage"></td>
+            <td class="col-memUsage"></td>
+            <td class="col-size"></td>
+            <td class="col-players"></td>
+            <td class="col-port"></td>
+            <td class="col-version"></td>
+            <td class="col-status"><i class="fas fa-cloud"></i>&nbsp;Unloaded</td>
           </tr>
           {% end %}
           </tbody>
