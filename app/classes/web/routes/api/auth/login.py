@@ -275,10 +275,14 @@ class ApiAuthLoginHandler(BaseApiHandler):
             query.save()
 
             # Check if temp password has expired
-            if (
-                user_data.password_expires
-                and user_data.password_expires < Helpers.get_utc_now()
-            ):
+            # password_expires may be a string or datetime from SQLite
+            password_expires = user_data.password_expires
+            if password_expires and isinstance(password_expires, str):
+                try:
+                    password_expires = datetime.fromisoformat(password_expires)
+                except (ValueError, TypeError):
+                    password_expires = None
+            if password_expires and password_expires < Helpers.get_utc_now():
                 auth_log.warning(
                     f"User {username} attempted login with expired temp password"
                     f" from {self.get_remote_ip()}"
