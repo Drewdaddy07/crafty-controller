@@ -1693,6 +1693,10 @@ class PanelHandler(BaseHandler):
 
         elif page == "wiki":
             template = "panel/wiki.html"
+        elif page == "change_password":
+            page_data["user"] = exec_user
+            template = "panel/change_password.html"
+
         elif page == "edit_file":
             template = "panel/server_file_edit.html"
         if self.helper.crafty_starting:
