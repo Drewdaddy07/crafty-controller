@@ -5,6 +5,7 @@ from app.classes.shared.server import ServerInstance
 from datetime import datetime
 from psutil import Process
 
+
 class ServerMetrics:
     registry: CollectorRegistry
 
@@ -15,49 +16,49 @@ class ServerMetrics:
             name="crafty_server",
             documentation="The version of the minecraft of this server",
             labelnames=["server_id", "server_name"],
-            registry=self.registry
+            registry=self.registry,
         )
         self._pr_running_time = UncheckedCounter(
             name="crafty_server_running_seconds",
             documentation="Server's running time in seconds since its start",
             labelnames=["server_id", "server_name"],
-            registry=self.registry
+            registry=self.registry,
         )
         self._pr_cpu_time = UncheckedCounter(
             name="crafty_server_cpu_seconds",
             documentation="The CPU usage of the server",
             labelnames=["server_id", "server_name", "mode"],
-            registry=self.registry
+            registry=self.registry,
         )
         self._pr_resident_memory = Gauge(
             name="crafty_server_resident_memory",
             documentation="The resident memory usage of the server",
             labelnames=["server_id", "server_name"],
-            registry=self.registry
+            registry=self.registry,
         )
         self._pr_virtual_memory = Gauge(
             name="crafty_server_virtual_memory",
             documentation="The virtual memory usage of the server",
             labelnames=["server_id", "server_name"],
-            registry=self.registry
+            registry=self.registry,
         )
         self._pr_online_players = Gauge(
             name="crafty_server_online_players",
             documentation="The number of players online for a server",
             labelnames=["server_id", "server_name"],
-            registry=self.registry
+            registry=self.registry,
         )
         self._pr_max_players = Gauge(
             name="crafty_server_max_players",
             documentation="The maximum number of online players",
             labelnames=["server_id", "server_name"],
-            registry=self.registry
+            registry=self.registry,
         )
         self._pr_server_size = Gauge(
             name="crafty_server_size",
             documentation="The size of the server directory in bytes",
             labelnames=["server_id", "server_name"],
-            registry=self.registry
+            registry=self.registry,
         )
 
     def _proxy(self, instance: ServerInstance) -> MetricProxy:
@@ -68,7 +69,12 @@ class ServerMetrics:
 
         server_stats = instance.get_servers_stats()
         if server_stats["version"] and server_stats["desc"]:
-            proxy.m_server_info.info({"version": server_stats["version"], "description": server_stats["desc"]})
+            proxy.m_server_info.info(
+                {
+                    "version": server_stats["version"],
+                    "description": server_stats["desc"],
+                }
+            )
         else:
             proxy.m_server_info.clear()
         proxy.m_online_players.set(server_stats["players"] or 0)
@@ -101,6 +107,7 @@ class ServerMetrics:
             proxy.m_cpu_time("system").set(0)
             proxy.m_cpu_time("children_user").set(0)
             proxy.m_cpu_time("children_system").set(0)
+
 
 class MetricProxy:
     m_running_time: UncheckedCounter
