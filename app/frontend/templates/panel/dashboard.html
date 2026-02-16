@@ -996,6 +996,56 @@
     cursor: grab !important;
     padding: 2px;
   }
+
+  .column-settings {
+    position: relative;
+    display: inline-block;
+  }
+
+  .column-settings-btn {
+    cursor: pointer;
+    padding: 6px 10px;
+    color: #6c757d;
+  }
+
+  .column-settings-btn:hover {
+    color: #495057;
+  }
+
+  .column-settings-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--card-bg, #fff);
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    padding: 8px 0;
+    min-width: 180px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+
+  .column-settings-dropdown.show {
+    display: block;
+  }
+
+  .column-settings-dropdown label {
+    display: block;
+    padding: 4px 16px;
+    margin: 0;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: normal;
+  }
+
+  .column-settings-dropdown label:hover {
+    background: rgba(0,0,0,.05);
+  }
+
+  .column-settings-dropdown input[type="checkbox"] {
+    margin-right: 8px;
+  }
 </style>
 <script>
 
@@ -1010,6 +1060,96 @@
     $('.dataTables_length').addClass('bs-select');
   });
   /* Search Bar End */
+
+  /* Column Settings Dropdown */
+  $(document).ready(function() {
+    const columnDefs = [
+      { key: 'server', label: "{{ translate('dashboard', 'server', data['lang']) }}", locked: true },
+      { key: 'actions', label: "{{ translate('dashboard', 'actions', data['lang']) }}", locked: false },
+      { key: 'cpuUsage', label: "{{ translate('dashboard', 'cpuUsage', data['lang']) }}", locked: false },
+      { key: 'memUsage', label: "{{ translate('dashboard', 'memUsage', data['lang']) }}", locked: false },
+      { key: 'size', label: "{{ translate('dashboard', 'size', data['lang']) }}", locked: false },
+      { key: 'players', label: "{{ translate('dashboard', 'players', data['lang']) }}", locked: false },
+      { key: 'port', label: "{{ translate('dashboard', 'port', data['lang']) }}", locked: false },
+      { key: 'version', label: "{{ translate('dashboard', 'version', data['lang']) }}", locked: false },
+      { key: 'status', label: "{{ translate('dashboard', 'status', data['lang']) }}", locked: true },
+    ];
+
+    const visibleColumns = new Set({{ json_encode(data['dashboard_columns']) }});
+
+    // Build dropdown HTML
+    let dropdownHtml = '<div class="column-settings">' +
+      '<span class="column-settings-btn" title="{{ translate(\'dashboard\', \'columnSettings\', data[\'lang\']) }}">' +
+      '<i class="fas fa-cog"></i></span>' +
+      '<div class="column-settings-dropdown">';
+
+    columnDefs.forEach(function(col) {
+      const checked = visibleColumns.has(col.key) ? 'checked' : '';
+      const disabled = col.locked ? 'disabled' : '';
+      dropdownHtml += '<label><input type="checkbox" ' +
+        'data-column="' + col.key + '" ' +
+        checked + ' ' + disabled + '> ' + col.label + '</label>';
+    });
+
+    dropdownHtml += '</div></div>';
+
+    // Insert next to DataTables search
+    $('.dataTables_filter').css('display', 'flex').css('align-items', 'center').css('gap', '8px');
+    $('.dataTables_filter').append(dropdownHtml);
+
+    // Toggle dropdown
+    $(document).on('click', '.column-settings-btn', function(e) {
+      e.stopPropagation();
+      $('.column-settings-dropdown').toggleClass('show');
+    });
+
+    // Close on click outside
+    $(document).on('click', function() {
+      $('.column-settings-dropdown').removeClass('show');
+    });
+
+    $(document).on('click', '.column-settings-dropdown', function(e) {
+      e.stopPropagation();
+    });
+
+    // Handle checkbox toggle
+    $(document).on('change', '.column-settings-dropdown input[type="checkbox"]', function() {
+      const col = $(this).data('column');
+      const visible = $(this).is(':checked');
+      const styleEl = document.getElementById('column-visibility');
+
+      if (visible) {
+        visibleColumns.add(col);
+      } else {
+        visibleColumns.delete(col);
+      }
+
+      // Rebuild style rules
+      let css = '';
+      columnDefs.forEach(function(c) {
+        if (!visibleColumns.has(c.key)) {
+          css += '#servers_table .col-' + c.key + ' { display: none; }\n';
+        }
+      });
+      styleEl.textContent = css;
+
+      // Save to server
+      const token = getCookie("_xsrf");
+      fetch('/api/v2/users/@me', {
+        method: 'PATCH',
+        headers: { 'X-XSRFToken': token },
+        body: JSON.stringify({
+          dashboard_columns: Array.from(visibleColumns).join(','),
+        }),
+      }).then(function(res) {
+        return res.json();
+      }).then(function(data) {
+        if (data.status !== "ok") {
+          bootbox.alert({ title: data.error, message: data.error_data });
+        }
+      });
+    });
+  });
 
   $(document).on("mousedown keyup click", function (event) {
     const value = $('.dataTables_filter input').val();
