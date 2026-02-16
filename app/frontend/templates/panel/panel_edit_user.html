@@ -82,11 +82,21 @@ data['lang']) }}{% end %}
                       <h4 class="card-title"><i class="ph-fill ph-user"></i> {{ translate('userConfig', 'userSettings',
                         data['lang']) }}</h4>
 
-                      <span data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
-                        data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"
-                        data-toggle="tooltip" title="{{ translate('userConfig', 'password', data['lang'])}}"
-                        class="edit_password clickable" data-id="{{data['user']['user_id']}}"><i
-                          class="fa-solid fa-lock"></i></span>
+                      <span>
+                        {% if not data['new_user'] and data['superuser'] %}
+                        <span data-toggle="tooltip"
+                          title="{{ translate('tempPassword', 'resetPassword', data['lang']) }}"
+                          class="reset_password clickable mr-2"
+                          data-id="{{data['user']['user_id']}}"
+                          data-username="{{data['user']['username']}}"><i
+                            class="fa-solid fa-rotate-right"></i></span>
+                        {% end %}
+                        <span data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
+                          data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"
+                          data-toggle="tooltip" title="{{ translate('userConfig', 'password', data['lang'])}}"
+                          class="edit_password clickable" data-id="{{data['user']['user_id']}}"><i
+                            class="fa-solid fa-lock"></i></span>
+                      </span>
                     </div>
                     <div class="card-body">
                       {% if data['new_user'] %}
@@ -623,6 +633,84 @@ data['lang']) }}{% end %}
 
   });
 
+  $(".reset_password").on("click", function () {
+    const token = getCookie("_xsrf");
+    let resetUserId = $(this).data("id");
+    let resetUsername = $(this).data("username");
+    bootbox.dialog({
+      title: "{{ translate('tempPassword', 'resetPassword', data['lang']) }} - " + resetUsername,
+      message: `
+        <form class="form" id="reset-password-form">
+          <div class="form-group">
+            <label for="reset_expires">{{ translate('tempPassword', 'expiresIn', data['lang']) }}</label>
+            <select class="form-control" id="reset_expires" name="expires">
+              <option value="">{{ translate('tempPassword', 'noExpiry', data['lang']) }}</option>
+              <option value="1">{{ translate('tempPassword', 'oneHour', data['lang']) }}</option>
+              <option value="24" selected>{{ translate('tempPassword', 'twentyFourHours', data['lang']) }}</option>
+              <option value="168">{{ translate('tempPassword', 'sevenDays', data['lang']) }}</option>
+            </select>
+          </div>
+        </form>
+      `,
+      buttons: {
+        cancel: {
+          label: "{{ translate('login', 'cancel', data['lang']) }}",
+          className: "btn-secondary"
+        },
+        confirm: {
+          label: "{{ translate('tempPassword', 'resetPassword', data['lang']) }}",
+          className: "btn-warning",
+          callback: function () {
+            let expiresVal = $("#reset_expires").val();
+            let body = {};
+            if (expiresVal !== "") {
+              body.expires_hours = parseInt(expiresVal);
+            }
+
+            (async () => {
+              let res = await fetch(`/api/v2/users/${resetUserId}/reset-password`, {
+                method: 'POST',
+                headers: {
+                  'X-XSRFToken': token,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+              });
+              let responseData = await res.json();
+
+              if (responseData.status === "ok") {
+                bootbox.alert({
+                  title: "{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}",
+                  message: `
+                    <div class="form-group">
+                      <label>{{ translate('tempPassword', 'newPassword', data['lang']) }}</label>
+                      <div class="input-group">
+                        <input type="text" class="form-control" id="generated-password"
+                          value="${responseData.data.password}" readonly>
+                        <div class="input-group-append">
+                          <button class="btn btn-outline-primary" type="button"
+                            onclick="navigator.clipboard.writeText(document.getElementById('generated-password').value)">
+                            <i class="fas fa-copy"></i>
+                            {{ translate('tempPassword', 'copyPassword', data['lang']) }}
+                          </button>
+                        </div>
+                      </div>
+                      ${responseData.data.expires ? '<small class="text-muted mt-1">Expires: ' + responseData.data.expires + '</small>' : ''}
+                    </div>
+                  `,
+                });
+              } else {
+                bootbox.alert({
+                  title: responseData.error,
+                  message: responseData.error_data
+                });
+              }
+            })();
+          }
+        }
+      }
+    });
+  });
 
 </script>
 <script src="../../static/assets/js/shared/userSettings.js"></script>
