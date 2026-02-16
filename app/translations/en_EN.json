@@ -834,6 +834,7 @@
         "notExist": "You cannot delete something that doesn't exist!",
         "pageTitle": "Edit User",
         "pageTitleNew": "Create User",
+        "passNotMatch": "Passwords must match",
         "password": "New Password",
         "permName": "Permission Name",
         "repeat": "Confirm Password",
