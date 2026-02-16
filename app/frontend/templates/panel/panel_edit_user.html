@@ -636,7 +636,7 @@ data['lang']) }}{% end %}
   $(".reset_password").on("click", function () {
     const token = getCookie("_xsrf");
     let resetUserId = $(this).data("id");
-    let resetUsername = $(this).data("username");
+    let resetUsername = $("<div>").text($(this).data("username")).html();
     bootbox.dialog({
       title: "{{ translate('tempPassword', 'resetPassword', data['lang']) }} - " + resetUsername,
       message: `
@@ -668,41 +668,56 @@ data['lang']) }}{% end %}
             }
 
             (async () => {
-              let res = await fetch(`/api/v2/users/${resetUserId}/reset-password`, {
-                method: 'POST',
-                headers: {
-                  'X-XSRFToken': token,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(body),
-              });
-              let responseData = await res.json();
-
-              if (responseData.status === "ok") {
-                bootbox.alert({
-                  title: "{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}",
-                  message: `
-                    <div class="form-group">
-                      <label>{{ translate('tempPassword', 'newPassword', data['lang']) }}</label>
-                      <div class="input-group">
-                        <input type="text" class="form-control" id="generated-password"
-                          value="${responseData.data.password}" readonly>
-                        <div class="input-group-append">
-                          <button class="btn btn-outline-primary" type="button"
-                            onclick="navigator.clipboard.writeText(document.getElementById('generated-password').value)">
-                            <i class="fas fa-copy"></i>
-                            {{ translate('tempPassword', 'copyPassword', data['lang']) }}
-                          </button>
-                        </div>
-                      </div>
-                      ${responseData.data.expires ? '<small class="text-muted mt-1">Expires: ' + responseData.data.expires + '</small>' : ''}
-                    </div>
-                  `,
+              try {
+                let res = await fetch(`/api/v2/users/${resetUserId}/reset-password`, {
+                  method: 'POST',
+                  headers: {
+                    'X-XSRFToken': token,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(body),
                 });
-              } else {
+                let responseData = await res.json();
+
+                if (responseData.status === "ok") {
+                  let expiryText = "";
+                  if (responseData.data.expires) {
+                    expiryText = '<small class="text-muted mt-1">Expires: '
+                      + $("<div>").text(responseData.data.expires).html() + '</small>';
+                  }
+                  bootbox.alert({
+                    title: "{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}",
+                    message: `
+                      <div class="form-group">
+                        <label>{{ translate('tempPassword', 'newPassword', data['lang']) }}</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="generated-password" readonly>
+                          <div class="input-group-append">
+                            <button class="btn btn-outline-primary" type="button"
+                              onclick="navigator.clipboard.writeText(document.getElementById('generated-password').value)">
+                              <i class="fas fa-copy"></i>
+                              {{ translate('tempPassword', 'copyPassword', data['lang']) }}
+                            </button>
+                          </div>
+                        </div>
+                        ` + expiryText + `
+                      </div>
+                    `,
+                  });
+                  // Set password value safely via DOM after bootbox renders
+                  setTimeout(function () {
+                    document.getElementById('generated-password').value = responseData.data.password;
+                  }, 100);
+                } else {
+                  bootbox.alert({
+                    title: $("<div>").text(responseData.error).html(),
+                    message: $("<div>").text(responseData.error_data).html()
+                  });
+                }
+              } catch (error) {
                 bootbox.alert({
-                  title: responseData.error,
-                  message: responseData.error_data
+                  title: "Error",
+                  message: "Failed to reset password. Please try again."
                 });
               }
             })();
