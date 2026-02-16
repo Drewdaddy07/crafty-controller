@@ -46,6 +46,8 @@ class Users(BaseModel):
     theme = CharField(default="default")
     cleared_notifs = CharField(default="default")
     disable_password_auth = BooleanField(default=False)
+    require_password_change = BooleanField(default=False)
+    password_expires = DateTimeField(null=True, default=None)
 
     class Meta:
         table_name = "users"
