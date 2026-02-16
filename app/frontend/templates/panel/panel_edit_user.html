@@ -650,6 +650,10 @@ data['lang']) }}{% end %}
               <option value="168">{{ translate('tempPassword', 'sevenDays', data['lang']) }}</option>
             </select>
           </div>
+          <div class="form-group mt-3">
+            <label for="reset_pw_length">{{ translate('tempPassword', 'passwordLength', data['lang']) }}</label>
+            <input type="number" class="form-control" id="reset_pw_length" value="16" min="8" max="128">
+          </div>
         </form>
       `,
       buttons: {
@@ -662,7 +666,8 @@ data['lang']) }}{% end %}
           className: "btn-warning",
           callback: function () {
             let expiresVal = $("#reset_expires").val();
-            let body = {};
+            let pwLength = parseInt($("#reset_pw_length").val()) || 16;
+            let body = { password_length: pwLength };
             if (expiresVal !== "") {
               body.expires_hours = parseInt(expiresVal);
             }

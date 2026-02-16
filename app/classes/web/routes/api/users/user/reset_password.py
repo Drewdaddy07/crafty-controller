@@ -23,6 +23,11 @@ reset_password_schema = {
             "type": ["number", "null"],
             "minimum": 0,
         },
+        "password_length": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 128,
+        },
     },
     "additionalProperties": False,
 }
@@ -99,7 +104,8 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
             )
 
         # Generate or use provided password
-        password = data.get("password") or self.helper.create_pass()
+        password_length = data.get("password_length", 16)
+        password = data.get("password") or self.helper.create_pass(password_length)
 
         # Calculate expiry if requested
         password_expires = None

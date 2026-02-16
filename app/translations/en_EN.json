@@ -802,7 +802,8 @@
         "newPassword": "New Password",
         "confirmNewPassword": "Confirm New Password",
         "passwordChanged": "Your password has been changed successfully.",
-        "mustChangePassword": "You must change your password before you can continue."
+        "mustChangePassword": "You must change your password before you can continue.",
+        "passwordLength": "Password Length"
     },
     "userConfig": {
         "apiKey": "API Keys",
