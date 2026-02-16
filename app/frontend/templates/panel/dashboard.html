@@ -562,6 +562,21 @@
                       </div>
                     </div>
                   </div>
+                  <br />
+                  <div class="row">
+                    <div class="col-6">
+                      <h6>{{ translate('dashboard', 'port', data['lang']) }}</h6>
+                      <div draggable="false" id="m_server_port_{{server['server_data']['server_id']}}">
+                        {{ server['stats']['server_port'] }}
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <h6>{{ translate('dashboard', 'version', data['lang']) }}</h6>
+                      <div draggable="false" id="m_server_version_{{server['server_data']['server_id']}}">
+                        {{ server['stats']['version'] }}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -704,6 +719,8 @@
     m_server_cpu = document.getElementById('m_server_cpu_' + server.id);
     m_server_mem = document.getElementById('m_server_mem_' + server.id);
     m_server_world = document.getElementById('m_server_world_' + server.id);
+    m_server_port = document.getElementById('m_server_port_' + server.id);
+    m_server_version = document.getElementById('m_server_version_' + server.id);
     m_server_desc = document.getElementById('m_server_desc_' + server.id);
     m_server_online_status = document.getElementById('m_server_running_status_' + server.id);
 
@@ -747,10 +764,16 @@
     if (server_port) {
       server_port.innerHTML = server.server_port;
     }
+    if (m_server_port) {
+      m_server_port.innerHTML = server.server_port;
+    }
 
     /* Update Version */
     if (server_version) {
       server_version.innerHTML = server.version;
+    }
+    if (m_server_version) {
+      m_server_version.innerHTML = server.version;
     }
 
     /* Update Server Infos */
