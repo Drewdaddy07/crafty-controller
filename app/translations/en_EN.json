@@ -806,7 +806,8 @@
         "passwordLength": "Password Length",
         "generateRandom": "Generate",
         "setPassword": "Set Password",
-        "requireChangeLabel": "Require password change on next login"
+        "requireChangeLabel": "Require password change on next login",
+        "tempPasswordStatus": "Temporary password active"
     },
     "userConfig": {
         "apiKey": "API Keys",

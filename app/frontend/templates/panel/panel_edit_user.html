@@ -350,6 +350,16 @@ data['lang']) }}{% end %}
                       <br />
                       {{ translate('userConfig', 'manager', data['lang'])}}: {{data['manager']['username'] }}
                       <br />
+                      {% if data['user'].get('require_password_change') %}
+                      <span class="text-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{ translate('tempPassword', 'tempPasswordStatus', data['lang']) }}
+                        {% if data['user'].get('password_expires') %}
+                          ({{ translate('tempPassword', 'expiresIn', data['lang']) }}: {{ str(data['user']['password_expires']).split('.')[0] }})
+                        {% end %}
+                      </span>
+                      <br />
+                      {% end %}
                     </p>
                   </blockquote>
                 </div>
