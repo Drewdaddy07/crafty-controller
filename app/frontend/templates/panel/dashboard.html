@@ -179,7 +179,7 @@
           <!-- View for Large screen -->
           <div class="table-responsive d-none d-sm-block">
             <style id="column-visibility">
-              {% set all_columns = ['server', 'actions', 'cpuUsage', 'memUsage', 'size', 'players', 'port', 'version', 'status'] %}
+              {% set all_columns = ['server', 'serverIcon', 'actions', 'cpuUsage', 'memUsage', 'size', 'players', 'port', 'version', 'status'] %}
               {% for col in all_columns %}
                 {% if col not in data['dashboard_columns'] %}
               #servers_table .col-{{ col }} { display: none; }
@@ -190,6 +190,7 @@
               <thead>
                 <tr class="rounded" id="first" draggable="false">
                   <th class="col-server" draggable="false">{{ translate('dashboard', 'server', data['lang']) }}</th>
+                  <th class="col-serverIcon" draggable="false">{{ translate('dashboard', 'serverIcon', data['lang']) }}</th>
                   <th class="col-actions" draggable="false">{{ translate('dashboard', 'actions', data['lang']) }}</th>
                   <th class="col-cpuUsage" draggable="false">{{ translate('dashboard', 'cpuUsage', data['lang']) }}</th>
                   <th class="col-memUsage" draggable="false">{{ translate('dashboard', 'memUsage', data['lang']) }}</th>
@@ -214,6 +215,11 @@
                     <a draggable="false" href="/panel/server_detail?id={{server['server_data']['server_id']}}">
                       {{ server['server_data']['server_name'] }}
                     </a>
+                    {% end %}
+                  </td>
+                  <td class="col-serverIcon" draggable="false">
+                    {% if server['stats']['icon'] %}
+                    <img src="data:image/png;base64,{{ server['stats']['icon'] }}" alt="Server Icon" style="width: 32px; height: 32px;" />
                     {% end %}
                   </td>
                   <td draggable="false" id="controls{{server['server_data']['server_id']}}" class="col-actions actions_serverlist">
@@ -349,6 +355,7 @@
             <td class="col-server text-warning"><i class="fas fa-server"></i>&nbsp;<a class="text-warning"
                 href="/panel/server_detail?id={{server['server_id']}}&subpage=config">{{server['server_name']}}</a>
             </td>
+            <td class="col-serverIcon"></td>
             <td class="col-actions"></td>
             <td class="col-cpuUsage"></td>
             <td class="col-memUsage"></td>
@@ -816,6 +823,16 @@
       m_server_desc.innerHTML = m_server_infos;
     }
 
+    /* Update Icon */
+    var serverIconCell = document.querySelector('#' + server.id + ' .col-serverIcon');
+    if (serverIconCell) {
+      if (server.icon && server.icon !== 'False') {
+        serverIconCell.innerHTML = '<img src="data:image/png;base64,' + server.icon + '" alt="Server Icon" style="width: 32px; height: 32px;" />';
+      } else {
+        serverIconCell.innerHTML = '';
+      }
+    }
+
     /* Update Online Status */
     let online_status = `<span class="text-warning"><i class="fas fa-ban"></i> {{ translate('dashboard', 'offline', data['lang'])}}</span>`;
 
@@ -1119,6 +1136,7 @@
   $(document).ready(function() {
     const columnDefs = [
       { key: 'server', label: "{{ translate('dashboard', 'server', data['lang']) }}", locked: true },
+      { key: 'serverIcon', label: "{{ translate('dashboard', 'serverIcon', data['lang']) }}", locked: false },
       { key: 'actions', label: "{{ translate('dashboard', 'actions', data['lang']) }}", locked: false },
       { key: 'cpuUsage', label: "{{ translate('dashboard', 'cpuUsage', data['lang']) }}", locked: false },
       { key: 'memUsage', label: "{{ translate('dashboard', 'memUsage', data['lang']) }}", locked: false },

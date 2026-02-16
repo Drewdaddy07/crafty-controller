@@ -143,6 +143,7 @@
         "restart": "Restart",
         "sendingCommand": "Sending your command",
         "server": "Server",
+        "serverIcon": "Server Icon",
         "servers": "Servers",
         "size": "Server Dir Size",
         "start": "Start",
