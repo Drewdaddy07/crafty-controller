@@ -18,6 +18,7 @@ class ApiOpenMetricsIndexHandler(BaseMetricsHandler):
         CRAFTY_INFO.info(
             {"version": version, "docker": f"{self.helper.is_env_docker()}"}
         )
+        SERVER_METRICS.clear()
 
         for server in authorized_servers:
             server_id = server["server_id"]

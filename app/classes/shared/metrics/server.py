@@ -64,6 +64,16 @@ class ServerMetrics:
     def _proxy(self, instance: ServerInstance):
         return MetricProxy(self, instance)
 
+    def clear(self):
+        self._pr_server_info.clear()
+        self._pr_running_time.clear()
+        self._pr_cpu_time.clear()
+        self._pr_resident_memory.clear()
+        self._pr_virtual_memory.clear()
+        self._pr_online_players.clear()
+        self._pr_max_players.clear()
+        self._pr_server_size.clear()
+
     def update(self, instance: ServerInstance):
         proxy = self._proxy(instance)
 
@@ -107,7 +117,6 @@ class ServerMetrics:
             proxy.m_cpu_time("system").set(0)
             proxy.m_cpu_time("children_user").set(0)
             proxy.m_cpu_time("children_system").set(0)
-
 
 class MetricProxy:
     m_running_time: UncheckedCounter
