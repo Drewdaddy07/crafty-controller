@@ -71,10 +71,12 @@ class MetricsTimeRangeHelper:
             int: Clamped hours (between 1 and max_retention_hours)
         """
         if hours < 1:
-            return 1
+            result = 1
         elif hours > max_retention_hours:
-            return max_retention_hours
-        return hours
+            result = max_retention_hours
+        else:
+            result = hours
+        return result
 
     @staticmethod
     def format_display_label(hours: int) -> str:
@@ -89,13 +91,14 @@ class MetricsTimeRangeHelper:
         """
         if hours < 24:
             # Less than a day: show hours
-            return f"{hours} Hour{'s' if hours != 1 else ''}"
+            label = f"{hours} Hour{'s' if hours != 1 else ''}"
         else:
             # One day or more: show days with hour notation
             days = hours // 24
             if hours % 24 == 0:
                 # Exact days
-                return f"{days} Day{'s' if days != 1 else ''}"
+                label = f"{days} Day{'s' if days != 1 else ''}"
             else:
                 # Fractional days, show hours too
-                return f"{hours}h (~{days}d)"
+                label = f"{hours}h (~{days}d)"
+        return label

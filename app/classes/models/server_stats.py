@@ -20,7 +20,6 @@ try:
         IntegerField,
         FloatField,
         DoesNotExist,
-        fn,
     )
 
 except ModuleNotFoundError as e:
@@ -240,17 +239,17 @@ class HelperServerStats:
 
     def _calculate_sample_rate(self, num_hours):
         """Calculate appropriate sample rate for time range"""
-        # Input validation for safety
         if num_hours <= 0:
-            return 1  # Safety: treat invalid input as minimum sample rate
-        if num_hours <= 6:
-            return 1  # Every point
+            rate = 1  # Safety: treat invalid input as minimum
+        elif num_hours <= 6:
+            rate = 1  # Every point
         elif num_hours <= 24:
-            return 2  # Every 2nd point
+            rate = 2  # Every 2nd point
         elif num_hours <= 72:
-            return 6  # Every 6th point
+            rate = 6  # Every 6th point
         else:
-            return max(1, num_hours // 12)  # ~200 points max
+            rate = max(1, num_hours // 12)  # ~200 points max
+        return rate
 
     def insert_server_stats(self, server_stats):
         self.database.connect(reuse_if_open=True)

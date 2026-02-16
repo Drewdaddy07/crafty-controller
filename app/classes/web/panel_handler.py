@@ -1638,7 +1638,9 @@ class PanelHandler(BaseHandler):
                 return
             if int(user_id) != exec_user["user_id"] and not exec_user["superuser"]:
                 self.redirect(
-                    "/panel/error?error=Unauthorized access: you do not have permission to edit this user's passkey settings."
+                    "/panel/error?error=Unauthorized access: "
+                    "you do not have permission to edit "
+                    "this user's passkey settings."
                 )
                 return
 
