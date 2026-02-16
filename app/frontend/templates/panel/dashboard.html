@@ -1020,6 +1020,10 @@
     padding: 2px;
   }
 
+  .table-responsive {
+    padding-bottom: 8px;
+  }
+
   @media (max-width: 992px) {
     #servers_table {
       min-width: 750px;
@@ -1049,13 +1053,14 @@
 
   .column-settings-dropdown {
     display: none;
-    position: fixed;
+    position: absolute;
     background: var(--dropdown-bg, #222437);
     border: 1px solid var(--outline, #383e5d);
     border-radius: 4px;
     padding: 6px 0;
     min-width: 190px;
-    height: fit-content;
+    max-height: 60vh;
+    overflow-y: auto;
     z-index: 1050;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     font-size: 0.875rem;
@@ -1143,35 +1148,41 @@
 
     dropdownHtml += '</div></div>';
 
-    // Insert next to DataTables search (append inline, don't change filter layout)
+    // Insert gear button inline with search; move dropdown to body so it
+    // escapes any overflow clipping from table-responsive / DataTables wrapper.
     $('.dataTables_filter').append(dropdownHtml);
+    var $dropdown = $('.column-settings-dropdown').detach();
+    $('body').append($dropdown);
 
-    // Toggle dropdown (position fixed to escape overflow clipping)
+    // Position dropdown below gear icon (absolute, accounts for scroll)
+    function positionDropdown() {
+      var btn = document.querySelector('.column-settings-btn');
+      if (!btn) return;
+      var rect = btn.getBoundingClientRect();
+      $dropdown.css({
+        top: rect.bottom + window.scrollY + 4 + 'px',
+        right: (window.innerWidth - rect.right) + 'px',
+        left: ''
+      });
+    }
+
+    // Toggle dropdown
     $(document).on('click', '.column-settings-btn', function(e) {
       e.stopPropagation();
-      var $dropdown = $('.column-settings-dropdown');
       if ($dropdown.hasClass('show')) {
         $dropdown.removeClass('show');
       } else {
-        var rect = this.getBoundingClientRect();
-        $dropdown.css({
-          top: rect.bottom + 4 + 'px',
-          right: (window.innerWidth - rect.right) + 'px'
-        });
+        positionDropdown();
         $dropdown.addClass('show');
       }
     });
 
-    // Close on click outside or scroll
+    // Close on click outside
     $(document).on('click', function() {
-      $('.column-settings-dropdown').removeClass('show');
+      $dropdown.removeClass('show');
     });
 
-    $(window).on('scroll', function() {
-      $('.column-settings-dropdown').removeClass('show');
-    });
-
-    $(document).on('click', '.column-settings-dropdown', function(e) {
+    $dropdown.on('click', function(e) {
       e.stopPropagation();
     });
 
