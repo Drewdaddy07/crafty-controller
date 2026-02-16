@@ -77,7 +77,7 @@ class ServerMetrics:
             )
         else:
             proxy.m_server_info.clear()
-        proxy.m_online_players.set(server_stats["players"] or 0)
+        proxy.m_online_players.set(server_stats["online"] or 0)
         proxy.m_max_players.set(server_stats["max"] or 0)
         proxy.m_server_size.set(instance.server_size)
 
