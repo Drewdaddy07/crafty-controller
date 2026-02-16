@@ -291,9 +291,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 )
                 # Allow token invalidation (logout)
                 or (
-                    re.match(
-                        r"^/api/v2/auth/invalidate_tokens/?$", self.request.path
-                    )
+                    re.match(r"^/api/v2/auth/invalidate_tokens/?$", self.request.path)
                     and self.request.method == "POST"
                 )
                 # Allow API key access (not a user session)

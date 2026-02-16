@@ -105,9 +105,7 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
         password_expires = None
         expires_hours = data.get("expires_hours")
         if expires_hours is not None:
-            password_expires = Helpers.get_utc_now() + timedelta(
-                hours=expires_hours
-            )
+            password_expires = Helpers.get_utc_now() + timedelta(hours=expires_hours)
 
         # Update the user
         HelperUsers.update_user(

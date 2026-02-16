@@ -322,9 +322,7 @@ class ApiAuthLoginHandler(BaseApiHandler):
                 response_data["warning"] = self.helper.translation.translate(
                     "login",
                     "burnedBackupCode",
-                    self.controller.users.get_user_lang_by_id(
-                        user_data.user_id
-                    ),
+                    self.controller.users.get_user_lang_by_id(user_data.user_id),
                 )
             if user_data.require_password_change:
                 response_data["require_password_change"] = True
