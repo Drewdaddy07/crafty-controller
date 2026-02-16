@@ -693,6 +693,8 @@
     server_cpu = document.getElementById('server_cpu_' + server.id);
     server_mem = document.getElementById('server_mem_' + server.id);
     server_world = document.getElementById('server_world_' + server.id);
+    server_port = document.getElementById('server_port_' + server.id);
+    server_version = document.getElementById('server_version_' + server.id);
     server_desc = document.getElementById('server_desc_' + server.id);
     server_online_status = document.getElementById('server_running_status_' + server.id);
     server_players = document.getElementById('server_players_' + server.id);
@@ -740,6 +742,16 @@
     /* Update World Infos */
     server_world.innerHTML = server.world_size
     m_server_world.innerHTML = server.world_size
+
+    /* Update Port */
+    if (server_port) {
+      server_port.innerHTML = server.server_port;
+    }
+
+    /* Update Version */
+    if (server_version) {
+      server_version.innerHTML = server.version;
+    }
 
     /* Update Server Infos */
     if (server.int_ping_results) {
