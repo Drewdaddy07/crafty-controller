@@ -89,7 +89,7 @@ data['lang']) }}{% end %}
                           class="reset_password clickable"
                           data-id="{{data['user']['user_id']}}"
                           data-username="{{data['user']['username']}}"><i
-                            class="fa-solid fa-key"></i></span>
+                            class="fa-solid fa-lock"></i></span>
                         {% elif not data['new_user'] and data['user']['user_id'] == data['exec_user'] %}
                         <span data-toggle="tooltip"
                           title="{{ translate('userConfig', 'changePass', data['lang']) }}"
