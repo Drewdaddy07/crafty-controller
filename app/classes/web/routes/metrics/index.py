@@ -13,9 +13,7 @@ class ApiOpenMetricsIndexHandler(BaseMetricsHandler):
             return
         authorized_servers = auth_data[0] # List[ServerInstance]
 
-        version = f"{self.helper.get_version().get('major')} \
-                    .{self.helper.get_version().get('minor')} \
-                    .{self.helper.get_version().get('sub')}"
+        version = self.helper.get_version_string()
         CRAFTY_INFO.info({"version": version, "docker": f"{self.helper.is_env_docker()}"})
 
         for server in authorized_servers:
