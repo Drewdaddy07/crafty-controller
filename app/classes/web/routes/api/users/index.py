@@ -5,7 +5,7 @@ from jsonschema.exceptions import ValidationError
 from app.classes.shared.translation import Translation
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.roles import Roles, HelperRoles
-from app.classes.models.users import PUBLIC_USER_ATTRS
+from app.classes.models.users import PUBLIC_USER_ATTRS, HelperUsers
 from app.classes.web.base_api_handler import BaseApiHandler
 
 logger = logging.getLogger(__name__)
@@ -139,6 +139,7 @@ class ApiUsersIndexHandler(BaseApiHandler):
         roles = data.get("roles", None)
         hints = data.get("hints", True)
         theme = data.get("theme", "default")
+        require_password_change = data.get("require_password_change", False)
 
         if username.lower() in ["system", ""]:
             return self.finish_json(
@@ -230,6 +231,11 @@ class ApiUsersIndexHandler(BaseApiHandler):
                 "server_quantity": server_quantity,
             },
         )
+
+        if require_password_change:
+            HelperUsers.update_user(
+                user_id, {"require_password_change": True}
+            )
 
         self.controller.management.add_to_audit_log(
             user["user_id"],
