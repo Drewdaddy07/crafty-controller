@@ -3,6 +3,8 @@ from prometheus_client.metrics import MetricWrapperBase
 from prometheus_client.samples import Sample
 from prometheus_client.values import ValueClass
 
+from typing import Iterable
+
 
 class UncheckedCounter(MetricWrapperBase):
     _type = "counter"
