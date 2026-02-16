@@ -281,6 +281,37 @@ class BaseHandler(tornado.web.RequestHandler):
                     },
                 )
 
+            # Temp password gate: block all requests except password change
+            # and logout if user must change their password
+            if user.get("require_password_change") and not (
+                # Allow password change via PATCH /api/v2/users/@me or by ID
+                (
+                    re.match(r"^/api/v2/users/(@me|\d+)/?$", self.request.path)
+                    and self.request.method == "PATCH"
+                )
+                # Allow token invalidation (logout)
+                or (
+                    re.match(
+                        r"^/api/v2/auth/invalidate_tokens/?$", self.request.path
+                    )
+                    and self.request.method == "POST"
+                )
+                # Allow API key access (not a user session)
+                or token_data.get("token_id")
+            ):
+                return self.finish_json(
+                    403,
+                    {
+                        "status": "error",
+                        "error": "PASSWORD_CHANGE_REQUIRED",
+                        "error_data": self.helper.translation.translate(
+                            "login",
+                            "passwordChangeRequired",
+                            user["lang"],
+                        ),
+                    },
+                )
+
             superuser = user["superuser"]
             server_permissions_api_mask = ""
             if api_key is not None:
