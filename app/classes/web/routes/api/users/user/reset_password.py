@@ -67,6 +67,20 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
                 },
             )
 
+        # Prevent non-superusers from resetting superuser passwords
+        target_user = HelperUsers.get_user(user_id)
+        if target_user["superuser"] and not superuser:
+            return self.finish_json(
+                403,
+                {
+                    "status": "error",
+                    "error": "ACCESS_DENIED",
+                    "error_data": self.helper.translation.translate(
+                        "validators", "insufficientPerms", auth_data[4]["lang"]
+                    ),
+                },
+            )
+
         # Parse request body (may be empty)
         try:
             if self.request.body:
@@ -107,7 +121,6 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
         )
 
         # Audit log
-        target_user = HelperUsers.get_user(user_id)
         expiry_msg = (
             f", expires in {expires_hours}h" if expires_hours else ", no expiry"
         )
