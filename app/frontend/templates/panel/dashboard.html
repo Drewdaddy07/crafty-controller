@@ -217,10 +217,8 @@
                     </a>
                     {% end %}
                   </td>
-                  <td class="col-serverIcon" draggable="false">
-                    {% if server['stats']['icon'] %}
-                    <img src="data:image/png;base64,{{ server['stats']['icon'] }}" alt="Server Icon" style="width: 32px; height: 32px;" />
-                    {% end %}
+                  <td class="col-serverIcon" draggable="false" id="server_icon_{{server['server_data']['server_id']}}">
+                    <img src="/static/assets/images/pack.png" alt="Server Icon" style="width: 32px; height: 32px;" />
                   </td>
                   <td draggable="false" id="controls{{server['server_data']['server_id']}}" class="col-actions actions_serverlist">
                     {% if server['user_command_permission'] %}
@@ -716,6 +714,7 @@
     server_mem = document.getElementById('server_mem_' + server.id);
     server_world = document.getElementById('server_world_' + server.id);
     server_port = document.getElementById('server_port_' + server.id);
+    server_icon = document.getElementById('server_icon_' + server.id);
     server_version = document.getElementById('server_version_' + server.id);
     server_desc = document.getElementById('server_desc_' + server.id);
     server_online_status = document.getElementById('server_running_status_' + server.id);
@@ -824,12 +823,11 @@
     }
 
     /* Update Icon */
-    var serverIconCell = document.querySelector('#' + server.id + ' .col-serverIcon');
-    if (serverIconCell) {
-      if (server.icon && server.icon !== 'False') {
-        serverIconCell.innerHTML = '<img src="data:image/png;base64,' + server.icon + '" alt="Server Icon" style="width: 32px; height: 32px;" />';
+    if (server_icon) {
+      if (server.icon && server.icon !== 'False' && server.icon !== 'None') {
+        server_icon.innerHTML = '<img src="data:image/png;base64,' + server.icon + '" alt="Server Icon" style="width: 32px; height: 32px;" />';
       } else {
-        serverIconCell.innerHTML = '';
+        server_icon.innerHTML = '<img src="/static/assets/images/pack.png" alt="Server Icon" style="width: 32px; height: 32px;" />';
       }
     }
 
