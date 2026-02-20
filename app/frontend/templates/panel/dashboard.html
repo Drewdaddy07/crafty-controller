@@ -218,7 +218,11 @@
                     {% end %}
                   </td>
                   <td class="col-serverIcon" draggable="false" id="server_icon_{{server['server_data']['server_id']}}">
+                    {% if server['stats'].get('icon') and server['stats']['icon'] not in ('', 'False', 'None') %}
+                    <img src="data:image/png;base64,{{ server['stats']['icon'] }}" alt="Server Icon" style="width: 32px; height: 32px;" />
+                    {% else %}
                     <img src="/static/assets/images/pack.png" alt="Server Icon" style="width: 32px; height: 32px;" />
+                    {% end %}
                   </td>
                   <td draggable="false" id="controls{{server['server_data']['server_id']}}" class="col-actions actions_serverlist">
                     {% if server['user_command_permission'] %}
