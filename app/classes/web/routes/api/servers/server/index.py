@@ -475,7 +475,7 @@ class ApiServersServerUpdateConfig(BaseApiHandler):
             )
         big_bucket = {}
         server_obj = self.controller.servers.get_server_obj(server_id)
-        with open(self.helper.big_bucket_cache, "r", encoding="utf-8") as f:
+        with open(self.helper.big_bucket_minecraft_cache, "r", encoding="utf-8") as f:
             big_bucket = json.load(f)
         if "version" in data:
             server_details = data.get("version").split("|")
@@ -493,6 +493,7 @@ class ApiServersServerUpdateConfig(BaseApiHandler):
                     },
                 )
             server_obj.executable_update_url = url[0]
+        server_instance = self.controller.servers.get_server_instance_by_id(server_id)
         if "update_watcher" in data:
             server_obj.update_watcher = data.get("update_watcher")
 
@@ -504,7 +505,8 @@ class ApiServersServerUpdateConfig(BaseApiHandler):
             server_id,
             self.get_remote_ip(),
         )
-
+        server_instance.check_server_version()  # check for a new version after instance
+        # is updated
         return self.finish_json(
             200,
             {
