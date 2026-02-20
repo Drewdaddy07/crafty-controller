@@ -77,7 +77,8 @@
                 </div>
                 {% end %}
                 {% end %}
-                {% if data['server_stats']['server_type'] == "minecraft-java" %}
+                {% if data['server_stats']['server_type'] == "minecraft-java" or data['server_stats']['server_type'] ==
+                "hytale" %}
                 <div class="form-group">
                   <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }}
                     <small class="text-muted ml-1">{{ translate('serverConfig', 'javaVersionDesc', data['lang'])
@@ -129,7 +130,6 @@
                   </div>
 
                   {% if data['super_user'] %}
-
                   <div class="form-group">
                     <label for="server_ip">{{ translate('serverConfig', 'serverIP', data['lang']) }} <small
                         class="text-muted ml-1">- {{ translate('serverConfig', 'serverIPDesc', data['lang']) }}</small>

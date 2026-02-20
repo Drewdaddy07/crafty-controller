@@ -88,7 +88,7 @@ class FileHelpers:
             ):  # check for empty bytes (binary files) this will also capture utf-16
                 return False
             return True
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, PermissionError):
             return False
 
     def probably_can_open_file(self, path: str) -> tuple:
@@ -589,7 +589,15 @@ class FileHelpers:
                         info.filename = self.get_archive_internal_name(
                             file, base_include_path
                         )
-                        zip_ref.extract(file, destination_path)
+                        try:
+                            zip_ref.extract(file, destination_path)
+                        except FileNotFoundError:
+                            logger.error(
+                                "Could not extract file: %s to %s from archive %s",
+                                file,
+                                destination_path,
+                                zip_path,
+                            )
                     percent = round((idx / len(files_list)) * 100)
                     self.send_percentage(server_users, percent, proc_id, False)
             self.send_percentage(server_users, 100, proc_id, True)

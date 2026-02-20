@@ -1,12 +1,12 @@
 [![Crafty Logo](app/frontend/static/assets/images/logo_long.svg)](https://craftycontrol.com)
-# Crafty Controller 4.8.0
+# Crafty Controller 4.9.1
 > Python based Control Panel for your Minecraft Server
 
 ## What is Crafty Controller?
 Crafty Controller is a Minecraft Server Control Panel / Launcher. The purpose
 of Crafty Controller is to launch a Minecraft Server in the background and present
 a web interface for the server administrators to interact with their servers. Crafty
-is compatible with Docker, Linux, Windows 7, Windows 8 and Windows 10.
+is compatible with Docker, Linux, Windows.
 
 ## Documentation
 Documentation available on [Crafty Docs](https://docs.craftycontrol.com)
