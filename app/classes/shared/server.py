@@ -21,9 +21,6 @@ from tzlocal import get_localzone
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.base import JobLookupError, ConflictingIdError
 
-# OpenMetrics/Prometheus Imports
-from prometheus_client import CollectorRegistry, Gauge, Info
-
 from app.classes.remote_stats.stats import Stats
 from app.classes.remote_stats.nitrado_ping import NitradoPing
 from app.classes.remote_stats.ping import ping, ping_raknet
