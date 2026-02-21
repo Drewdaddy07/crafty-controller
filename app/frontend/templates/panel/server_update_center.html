@@ -205,7 +205,7 @@
                     'X-XSRFToken': token
                 },
             });
-            responseData = await res.json();
+            let responseData = await res.json();
             if (responseData.status === "ok") {
                 console.log("good")
                 location.reload();
@@ -265,7 +265,7 @@
                 }
             } else {
                 let payload = { "executable_update_url": $("#executable_update_url").val(), "executable": $("#executable").val() }
-                formDataJsonString = JSON.stringify(payload)
+                let formDataJsonString = JSON.stringify(payload)
                 let res = await fetch(`/api/v2/servers/${serverId}/`, {
                     method: 'PATCH',
                     body: formDataJsonString,
