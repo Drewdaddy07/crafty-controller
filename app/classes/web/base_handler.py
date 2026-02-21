@@ -284,9 +284,9 @@ class BaseHandler(tornado.web.RequestHandler):
             # Temp password gate: block all requests except password change
             # and logout if user must change their password
             if user.get("require_password_change") and not (
-                # Allow password change via PATCH /api/v2/users/@me or by ID
+                # Allow password change via PATCH /api/v2/users/@me
                 (
-                    re.match(r"^/api/v2/users/(@me|\d+)/?$", self.request.path)
+                    re.match(r"^/api/v2/users/@me/?$", self.request.path)
                     and self.request.method == "PATCH"
                 )
                 # Allow token invalidation (logout)

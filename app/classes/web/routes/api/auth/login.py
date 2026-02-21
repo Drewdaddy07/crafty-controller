@@ -1,6 +1,6 @@
 import logging
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from app.classes.models.users import Users
@@ -97,7 +97,12 @@ class ApiAuthLoginHandler(BaseApiHandler):
                 f" login attempt from {self.get_remote_ip()}"
             )
             return self.finish_json(
-                400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
+                400,
+                {
+                    "status": "error",
+                    "error": "INVALID_JSON",
+                    "error_data": "Invalid request body",
+                },
             )
         try:
             validate(data, login_schema)
@@ -277,11 +282,14 @@ class ApiAuthLoginHandler(BaseApiHandler):
             # Check if temp password has expired
             # password_expires may be a string or datetime from SQLite
             password_expires = user_data.password_expires
-            if password_expires and isinstance(password_expires, str):
-                try:
-                    password_expires = datetime.fromisoformat(password_expires)
-                except (ValueError, TypeError):
-                    password_expires = None
+            if password_expires:
+                if isinstance(password_expires, str):
+                    try:
+                        password_expires = datetime.fromisoformat(password_expires)
+                    except (ValueError, TypeError):
+                        password_expires = None
+                if password_expires and password_expires.tzinfo is None:
+                    password_expires = password_expires.replace(tzinfo=timezone.utc)
             if password_expires and password_expires < Helpers.get_utc_now():
                 auth_log.warning(
                     f"User {username} attempted login with expired temp password"

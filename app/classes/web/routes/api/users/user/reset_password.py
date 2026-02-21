@@ -71,7 +71,7 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
                 {
                     "status": "error",
                     "error": "USER_NOT_FOUND",
-                    "error_data": f"User {user_id} not found",
+                    "error_data": "User not found",
                 },
             )
 
@@ -102,7 +102,7 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
                 {
                     "status": "error",
                     "error": "INVALID_JSON",
-                    "error_data": str(e),
+                    "error_data": "Invalid request body",
                 },
             )
 

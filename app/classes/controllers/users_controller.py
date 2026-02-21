@@ -255,6 +255,7 @@ class UsersController:
             elif key == "password":
                 if user_data["password"] is not None and user_data["password"] != "":
                     up_data["password"] = self.helper.encode_pass(user_data["password"])
+                    up_data["valid_tokens_from"] = self.helper.get_utc_now()
                     # If user has require_password_change set, clear it
                     if base_data.get("require_password_change"):
                         up_data["require_password_change"] = False
