@@ -22,7 +22,6 @@ class SteamGame:
 
         except KeyError as why:
             logger.error(f"error reading steamcmd config: {why}")
-            sys.exit(1)
 
         self.os: list[OS] = []
 
