@@ -1,5 +1,7 @@
 # Changelog
 ## --- [4.9.1] - 2026/TBD
+### Refactor
+- Switch from Font Awesome to Phosphor Icons (open source) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/972))
 ### New features
 TBD
 ### Bug fixes
