@@ -9,6 +9,7 @@ TBD
 - Fix bug where zip imports would get stuck after selecting root ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/964))
 - Fix type error on json encode for backup exclusions ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/967))
 - Fix New Backup Exclusions being ignored ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/967))
+- Select default backup when no ID is provided ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/970))
 ### Tweaks
 - Add Hytale Port Ranges to Docker related stack templates & documentation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/965))
 ### Lang
