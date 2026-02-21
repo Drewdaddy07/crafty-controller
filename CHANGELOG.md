@@ -12,6 +12,7 @@ TBD
 - Select default backup when no ID is provided ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/970))
 ### Tweaks
 - Add Hytale Port Ranges to Docker related stack templates & documentation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/965))
+- File Browser Permissions Indicators ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/974))
 ### Lang
 TBD
 <br><br>
