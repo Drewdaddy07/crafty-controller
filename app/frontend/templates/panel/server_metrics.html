@@ -588,11 +588,30 @@
   });
 
   // WebSocket updates and reset button
+
+  // Match live update frequency to historical data interval.
+  // The backend records stats every 30 seconds; adaptive sampling then
+  // keeps every Nth point depending on the selected time range.
+  function getLiveIntervalMs(hours) {
+    var sampleRate;
+    if (hours <= 6)       sampleRate = 1;
+    else if (hours <= 24) sampleRate = 2;
+    else if (hours <= 72) sampleRate = 6;
+    else                  sampleRate = Math.max(1, Math.floor(hours / 12));
+    return sampleRate * 30 * 1000;  // base recording period is 30 s
+  }
+
   $(document).ready(function () {
     if ($(window).width() > 1000) {
       $('[data-toggle="popover"]').popover();
       $('.hints').popover("show");
     }
+
+    const currentHours = {{ data.get('selected_hours', 24) }};
+    const liveInterval = getLiveIntervalMs(currentHours);
+    var lastPushedTs = cpuData.length
+        ? cpuData[cpuData.length - 1].x
+        : 0;
 
     webSocket.on('update_server_details', function (data) {
       // Skip live updates when viewing custom historical range
@@ -608,6 +627,14 @@
       }
 
       const ts = parseServerTime(data.created);
+
+      // Throttle: only push a point when enough time has elapsed to
+      // match the historical data frequency for this time range.
+      if (ts - lastPushedTs < liveInterval) {
+        return;
+      }
+      lastPushedTs = ts;
+
       {% if 'minecraft-java' in data['server_stats']['server_type'] or 'hytale' in data['server_stats']['server_type'] %}
       playerData.push({x: ts, y: data.online !== undefined ? data.online : null});
       {% end %}
@@ -616,7 +643,6 @@
       ramGbData.push({x: ts, y: bytesToGB(data.mem_raw)});
 
       // Sliding window: trim data older than the selected time range
-      const currentHours = {{ data.get('selected_hours', 24) }};
       if (!zoomed) {
         const cutoff = serverCutoff(currentHours);
         while (cpuData.length > 1 && cpuData[0].x < cutoff) {
