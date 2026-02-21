@@ -1,4 +1,18 @@
 # Changelog
+## --- [4.9.1] - 2026/TBD
+### Refactor
+- Switch from Font Awesome to Phosphor Icons (open source) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/972))
+### New features
+TBD
+### Bug fixes
+- Adds missing time variables in static test webhook ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/963))
+- Fix bug where zip imports would get stuck after selecting root ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/964))
+### Tweaks
+- Add Hytale Port Ranges to Docker related stack templates & documentation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/965))
+### Lang
+TBD
+<br><br>
+
 ## --- [4.9.0] - 2026/01/24
 ### New features
 - Add Support For Hytale Servers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/954))
