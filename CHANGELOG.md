@@ -3,9 +3,10 @@
 ### New features
 TBD
 ### Bug fixes
-TBD
+- Adds missing time variables in static test webhook ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/963))
+- Fix bug where zip imports would get stuck after selecting root ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/964))
 ### Tweaks
-TBD
+- Add Hytale Port Ranges to Docker related stack templates & documentation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/965))
 ### Lang
 TBD
 <br><br>
