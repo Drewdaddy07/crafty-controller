@@ -73,12 +73,11 @@
                       }}</small> </label>
                   <input type="text" class="form-control" name="log_path" id="log_path"
                     value="{{ data['server_stats']['server_id']['log_path']  }}"
-                    placeholder="{{ translate('serverConfig', 'serverLogLocation', data['lang']) }}" required>
+                    placeholder="{{ translate('serverConfig', 'serverLogLocation', data['lang']) }}">
                 </div>
                 {% end %}
                 {% end %}
-                {% if data['server_stats']['server_type'] == "minecraft-java" or data['server_stats']['server_type'] ==
-                "hytale" %}
+                {% if data['server_stats']['server_type'] == "minecraft-java" or data['server_stats']['server_type'] == "hytale" %}
                 <div class="form-group">
                   <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }}
                     <small class="text-muted ml-1">{{ translate('serverConfig', 'javaVersionDesc', data['lang'])
