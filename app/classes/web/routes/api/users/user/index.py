@@ -9,7 +9,6 @@ from app.classes.models.roles import HelperRoles
 from app.classes.models.users import HelperUsers
 from app.classes.web.base_api_handler import BaseApiHandler
 
-
 logger = logging.getLogger(__name__)
 
 
