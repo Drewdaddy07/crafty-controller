@@ -303,8 +303,14 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
             )
             for filename in file_list:
                 raw_path = Path(folder, filename).resolve()
+                lib_stat = Path(raw_path).stat()
                 can_open, mime = self.file_helper.probably_can_open_file(str(raw_path))
-                modified_time = datetime.fromtimestamp(Path(raw_path).stat().st_mtime)
+                modified_time = datetime.fromtimestamp(lib_stat.st_mtime)
+                permissions = {
+                    "can_read": os.access(raw_path, os.R_OK),
+                    "can_write": os.access(raw_path, os.W_OK),
+                    "can_execute": os.access(raw_path, os.X_OK),
+                }
                 if backup_id:
                     if str(
                         raw_path
@@ -354,6 +360,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                             ),
                             "dir": True,
                             "excluded": False,
+                            "permissions": permissions,
                             "modified": modified_time.strftime(HUMAN_TIME_FORMAT),
                         }
                     else:
@@ -370,6 +377,7 @@ class ApiServersServerFilesIndexHandler(BaseApiHandler):
                             "dir": False,
                             "excluded": False,
                             "can_open": can_open,
+                            "permissions": permissions,
                             "mime": mime,
                             "modified": modified_time.strftime(HUMAN_TIME_FORMAT),
                             "size": Helpers.human_readable_file_size(file_size),
