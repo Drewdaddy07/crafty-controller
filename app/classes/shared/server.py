@@ -1883,8 +1883,20 @@ class ServerInstance:
                             if line.startswith("server-port="):
                                 game_port = int(line.split("=", 1)[1].strip())
                                 break
-                except (FileNotFoundError, ValueError, OSError):
-                    pass
+                except FileNotFoundError:
+                    logger.warning(
+                        "server.properties not found at %s for server %s"
+                        " — unable to parse game port",
+                        properties_path,
+                        self.server_id,
+                    )
+                except (ValueError, OSError) as e:
+                    logger.warning(
+                        "Failed to parse game port from %s for server %s: %s",
+                        properties_path,
+                        self.server_id,
+                        e,
+                    )
 
         self._game_port_cache = game_port
         return game_port
