@@ -1858,30 +1858,33 @@ class ServerInstance:
 
         game_port = server_port
 
-        if server_type == "hytale":
-            # Try to parse --bind 0.0.0.0:<port> from the execution command
-            if execution_command:
-                match = re.search(r"--bind\s+[\d.]+:(\d+)", execution_command)
-                if match:
-                    game_port = int(match.group(1))
+        match server_type:
+            case "hytale":
+                # Try to parse --bind 0.0.0.0:<port> from the execution command
+                if execution_command:
+                    bind_match = re.search(
+                        r"--bind\s+[\d.]+:(\d+)", execution_command
+                    )
+                    if bind_match:
+                        game_port = int(bind_match.group(1))
+                    else:
+                        # Fallback: Hytale query port is game port + 3
+                        game_port = server_port - 3
                 else:
-                    # Fallback: Hytale query port is game port + 3
                     game_port = server_port - 3
-            else:
-                game_port = server_port - 3
 
-        elif server_type == "minecraft-java":
-            # Try to read server-port from server.properties
-            properties_path = os.path.join(server_path, "server.properties")
-            try:
-                with open(properties_path, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line.startswith("server-port="):
-                            game_port = int(line.split("=", 1)[1].strip())
-                            break
-            except (FileNotFoundError, ValueError, OSError):
-                pass
+            case "minecraft-java":
+                # Try to read server-port from server.properties
+                properties_path = os.path.join(server_path, "server.properties")
+                try:
+                    with open(properties_path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line.startswith("server-port="):
+                                game_port = int(line.split("=", 1)[1].strip())
+                                break
+                except (FileNotFoundError, ValueError, OSError):
+                    pass
 
         self._game_port_cache = game_port
         return game_port
