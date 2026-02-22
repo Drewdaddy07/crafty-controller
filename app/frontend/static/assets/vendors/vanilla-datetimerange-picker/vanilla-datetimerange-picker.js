@@ -7,6 +7,10 @@
 * Special thanks to Dan Grossman.
 * This program is base on Dan Grossman's bootstrap-daterangepicker (version 3.1)
 * I just changed the code a bit to not need jquery.
+* 
+* This file is a modified version of the original for use in Crafty:
+* First a vanilla JS compatibility fix replacing jQuery-style :last selectors with standard .options[length-1] for minute dropdowns.
+* Second, same-day time range selection is relaxed, users can freely pick start and end times on the same day without the picker forcing end time to be after start time, with validation deferred to the apply action.
 */
 
 // IE browser doesn't support "class"
