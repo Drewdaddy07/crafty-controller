@@ -220,6 +220,7 @@ class ServerInstance:
         self.name = None
         self.is_crashed = False
         self.restart_count = 0
+        self._game_port_cache = None
         self.stats = stats
         self.server_object = HelperServers.get_server_obj(self.server_id)
         self.stats_helper = HelperServerStats(self.server_id)
@@ -430,6 +431,9 @@ class ServerInstance:
 
     @callback
     def start_server(self, user_id, forge_install=False):
+        # Clear cached game port so it's recomputed from current config
+        self._game_port_cache = None
+
         if not user_id:
             user_lang = self.helper.get_setting("language")
         else:
@@ -1645,6 +1649,7 @@ class ServerInstance:
                     "world_name": raw_ping_result.get("world_name"),
                     "world_size": raw_ping_result.get("world_size"),
                     "server_port": raw_ping_result.get("server_port"),
+                    "game_port": raw_ping_result.get("game_port"),
                     "int_ping_results": raw_ping_result.get("int_ping_results"),
                     "online": raw_ping_result.get("online"),
                     "max": raw_ping_result.get("max"),
@@ -1704,6 +1709,46 @@ class ServerInstance:
                 return True
         return False
 
+    def _get_game_port(self, server_type, server_port, server_path, execution_command):
+        """Derive the game port from server config, cached per server lifecycle.
+
+        The monitoring/query port stored in the DB may differ from the port
+        players actually connect to. The result is cached and cleared on
+        server start/stop.
+        """
+        if self._game_port_cache is not None:
+            return self._game_port_cache
+
+        game_port = server_port
+
+        if server_type == "hytale":
+            # Try to parse --bind 0.0.0.0:<port> from the execution command
+            if execution_command:
+                match = re.search(r"--bind\s+[\d.]+:(\d+)", execution_command)
+                if match:
+                    game_port = int(match.group(1))
+                else:
+                    # Fallback: Hytale query port is game port + 3
+                    game_port = server_port - 3
+            else:
+                game_port = server_port - 3
+
+        elif server_type == "minecraft-java":
+            # Try to read server-port from server.properties
+            properties_path = os.path.join(server_path, "server.properties")
+            try:
+                with open(properties_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith("server-port="):
+                            game_port = int(line.split("=", 1)[1].strip())
+                            break
+            except (FileNotFoundError, ValueError, OSError):
+                pass
+
+        self._game_port_cache = game_port
+        return game_port
+
     def get_servers_stats(self):
         server_type = HelperServers.get_server_type_by_id(self.server_id)
         server_stats = {}
@@ -1720,6 +1765,12 @@ class ServerInstance:
         internal_ip = server["server_ip"]
         server_port = server["server_port"]
         server_name = server.get("server_name", f"ID#{server_id}")
+        game_port = self._get_game_port(
+            server_type,
+            server_port,
+            server.get("path", ""),
+            server.get("execution_command", ""),
+        )
 
         logger.debug(f"Pinging server '{server}' on {internal_ip}:{server_port}")
         if server_type == "minecraft-bedrock":
@@ -1757,6 +1808,7 @@ class ServerInstance:
                 "world_name": server_name,
                 "world_size": self.server_size,
                 "server_port": server_port,
+                "game_port": game_port,
                 "int_ping_results": int_data,
                 "online": ping_data.get("online", False),
                 "max": ping_data.get("max", False),
@@ -1776,6 +1828,7 @@ class ServerInstance:
                 "world_name": server_name,
                 "world_size": self.server_size,
                 "server_port": server_port,
+                "game_port": game_port,
                 "int_ping_results": int_data,
                 "online": False,
                 "max": False,
@@ -1830,6 +1883,7 @@ class ServerInstance:
                 "world_name": None,
                 "world_size": None,
                 "server_port": None,
+                "game_port": None,
                 "int_ping_results": False,
                 "online": False,
                 "max": False,
@@ -1857,6 +1911,12 @@ class ServerInstance:
 
         internal_ip = server_dt["server_ip"]
         server_port = server_dt["server_port"]
+        game_port = self._get_game_port(
+            server_type,
+            server_port,
+            server_dt.get("path", ""),
+            server_dt.get("execution_command", ""),
+        )
 
         logger.debug(f"Pinging server '{self.name}' on {internal_ip}:{server_port}")
         if HelperServers.get_server_type_by_id(server_id) == "minecraft-bedrock":
@@ -1887,6 +1947,7 @@ class ServerInstance:
                 "world_name": server_name,
                 "world_size": self.server_size,
                 "server_port": server_port,
+                "game_port": game_port,
                 "int_ping_results": int_data,
                 "online": ping_data.get("online", False),
                 "max": ping_data.get("max", False),
@@ -1906,6 +1967,7 @@ class ServerInstance:
                 "world_name": server_name,
                 "world_size": self.server_size,
                 "server_port": server_port,
+                "game_port": game_port,
                 "int_ping_results": int_data,
                 "online": False,
                 "max": False,

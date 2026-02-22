@@ -330,7 +330,7 @@
                       data-count="{{server['server_data']['count_players']}}"></span>
                   </td>
                   <td class="col-port" draggable="false" id="server_port_{{server['server_data']['server_id']}}">
-                    {{ server['stats']['server_port'] }}
+                    {{ server['stats'].get('game_port', server['stats']['server_port']) }}
                   </td>
                   <td class="col-version" draggable="false" id="server_version_{{server['server_data']['server_id']}}">
                     {{ server['stats']['version'] }}
@@ -576,7 +576,7 @@
                     <div class="col-6">
                       <h6>{{ translate('dashboard', 'port', data['lang']) }}</h6>
                       <div draggable="false" id="m_server_port_{{server['server_data']['server_id']}}">
-                        {{ server['stats']['server_port'] }}
+                        {{ server['stats'].get('game_port', server['stats']['server_port']) }}
                       </div>
                     </div>
                     <div class="col-6">
@@ -772,10 +772,10 @@
 
     /* Update Port */
     if (server_port) {
-      server_port.innerHTML = server.server_port;
+      server_port.innerHTML = server.game_port || server.server_port;
     }
     if (m_server_port) {
-      m_server_port.innerHTML = server.server_port;
+      m_server_port.innerHTML = server.game_port || server.server_port;
     }
 
     /* Update Version */
