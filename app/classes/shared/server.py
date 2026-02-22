@@ -1862,9 +1862,7 @@ class ServerInstance:
             case "hytale":
                 # Try to parse --bind 0.0.0.0:<port> from the execution command
                 if execution_command:
-                    bind_match = re.search(
-                        r"--bind\s+[\d.]+:(\d+)", execution_command
-                    )
+                    bind_match = re.search(r"--bind\s+[\d.]+:(\d+)", execution_command)
                     if bind_match:
                         game_port = int(bind_match.group(1))
                     else:
