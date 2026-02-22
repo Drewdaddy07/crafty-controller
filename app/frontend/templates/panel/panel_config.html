@@ -477,7 +477,7 @@
                 placeholder="{{ translate('tempPassword', 'newPassword', data['lang']) }}" autocomplete="off">
               <div class="input-group-append">
                 <button class="btn btn-outline-info" type="button" id="btn_generate_password">
-                  <i class="fas fa-dice"></i>
+                  <i class="ph-fill ph-dice-five"></i>
                   {{ translate('tempPassword', 'generateRandom', data['lang']) }}
                 </button>
               </div>
@@ -550,7 +550,7 @@
                 if (responseData.status === "ok") {
                   let noticeText = "";
                   if (requireChange) {
-                    noticeText += '<p class="text-info mt-2"><i class="fas fa-info-circle"></i> {{ translate("tempPassword", "requireChangeLabel", data["lang"]) }}</p>';
+                    noticeText += '<p class="text-info mt-2"><i class="ph-fill ph-info"></i> {{ translate("tempPassword", "requireChangeLabel", data["lang"]) }}</p>';
                     if (responseData.data.expires) {
                       noticeText += '<small class="text-muted">Expires: '
                         + $("<div>").text(responseData.data.expires).html() + '</small>';
@@ -566,7 +566,7 @@
                           <div class="input-group-append">
                             <button class="btn btn-outline-primary" type="button"
                               onclick="navigator.clipboard.writeText(document.getElementById('generated-password').value)">
-                              <i class="fas fa-copy"></i>
+                              <i class="ph-fill ph-copy"></i>
                               {{ translate('tempPassword', 'copyPassword', data['lang']) }}
                             </button>
                           </div>

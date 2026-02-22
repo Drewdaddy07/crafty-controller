@@ -89,7 +89,7 @@ data['lang']) }}{% end %}
                           class="reset_password clickable"
                           data-id="{{data['user']['user_id']}}"
                           data-username="{{data['user']['username']}}"><i
-                            class="fa-solid fa-lock"></i></span>
+                            class="ph-fill ph-lock"></i></span>
                         {% elif not data['new_user'] and data['user']['user_id'] == data['exec_user'] %}
                         <span data-toggle="tooltip"
                           title="{{ translate('userConfig', 'changePass', data['lang']) }}"
@@ -97,7 +97,7 @@ data['lang']) }}{% end %}
                           data-id="{{data['user']['user_id']}}"
                           data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
                           data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"><i
-                            class="fa-solid fa-lock"></i></span>
+                            class="ph-fill ph-lock"></i></span>
                         {% end %}
                       </span>
                     </div>
@@ -352,7 +352,7 @@ data['lang']) }}{% end %}
                       <br />
                       {% if data['user'].get('require_password_change') %}
                       <span class="text-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
+                        <i class="ph-fill ph-warning"></i>
                         {{ translate('tempPassword', 'tempPasswordStatus', data['lang']) }}
                         {% if data['user'].get('password_expires') %}
                           ({{ translate('tempPassword', 'expiresIn', data['lang']) }}: {{ str(data['user']['password_expires']).split('.')[0] }})
@@ -682,7 +682,7 @@ data['lang']) }}{% end %}
                 placeholder="{{ translate('tempPassword', 'newPassword', data['lang']) }}" autocomplete="off">
               <div class="input-group-append">
                 <button class="btn btn-outline-info" type="button" id="btn_generate_password">
-                  <i class="fas fa-dice"></i>
+                  <i class="ph-fill ph-dice-five"></i>
                   {{ translate('tempPassword', 'generateRandom', data['lang']) }}
                 </button>
               </div>
@@ -755,7 +755,7 @@ data['lang']) }}{% end %}
                 if (responseData.status === "ok") {
                   let noticeText = "";
                   if (requireChange) {
-                    noticeText += '<p class="text-info mt-2"><i class="fas fa-info-circle"></i> {{ translate("tempPassword", "requireChangeLabel", data["lang"]) }}</p>';
+                    noticeText += '<p class="text-info mt-2"><i class="ph-fill ph-info"></i> {{ translate("tempPassword", "requireChangeLabel", data["lang"]) }}</p>';
                     if (responseData.data.expires) {
                       noticeText += '<small class="text-muted">Expires: '
                         + $("<div>").text(responseData.data.expires).html() + '</small>';
@@ -771,7 +771,7 @@ data['lang']) }}{% end %}
                           <div class="input-group-append">
                             <button class="btn btn-outline-primary" type="button"
                               onclick="navigator.clipboard.writeText(document.getElementById('generated-password').value)">
-                              <i class="fas fa-copy"></i>
+                              <i class="ph-fill ph-copy"></i>
                               {{ translate('tempPassword', 'copyPassword', data['lang']) }}
                             </button>
                           </div>
