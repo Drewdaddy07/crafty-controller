@@ -745,9 +745,9 @@ class PanelHandler(BaseHandler):
                 if not sampling_fallback_divisor:
                     sampling_fallback_divisor = 12
 
-                page_data["sampling_tiers"] = sampling_tiers or MASTER_CONFIG[
-                    "sampling_tiers"
-                ]
+                page_data["sampling_tiers"] = (
+                    sampling_tiers or MASTER_CONFIG["sampling_tiers"]
+                )
                 page_data["sampling_fallback_divisor"] = sampling_fallback_divisor
 
                 # Determine if using custom range or preset range
@@ -773,7 +773,9 @@ class PanelHandler(BaseHandler):
                         # Fetch stats with custom date range
                         history_stats = (
                             self.controller.servers.get_history_stats_by_date_range(
-                                server_id, start_time, end_time,
+                                server_id,
+                                start_time,
+                                end_time,
                                 sampling_tiers=sampling_tiers,
                                 sampling_fallback_divisor=sampling_fallback_divisor,
                             )
@@ -813,7 +815,8 @@ class PanelHandler(BaseHandler):
 
                     # Fetch stats with adaptive sampling
                     history_stats = self.controller.servers.get_history_stats_adaptive(
-                        server_id, hours=hours,
+                        server_id,
+                        hours=hours,
                         sampling_tiers=sampling_tiers,
                         sampling_fallback_divisor=sampling_fallback_divisor,
                     )

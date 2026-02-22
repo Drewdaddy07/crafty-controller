@@ -165,9 +165,9 @@ class HelperServerStats:
         self.database.close()
         return server_stats
 
-    def get_history_stats_adaptive(self, server_id, num_hours,
-                                   sampling_tiers=None,
-                                   sampling_fallback_divisor=12):
+    def get_history_stats_adaptive(
+        self, server_id, num_hours, sampling_tiers=None, sampling_fallback_divisor=12
+    ):
         """
         Get server stats with adaptive sampling based on time range.
 
@@ -199,9 +199,14 @@ class HelperServerStats:
         self.database.close()
         return server_stats
 
-    def get_history_stats_by_date_range(self, server_id, start_time, end_time,
-                                        sampling_tiers=None,
-                                        sampling_fallback_divisor=12):
+    def get_history_stats_by_date_range(
+        self,
+        server_id,
+        start_time,
+        end_time,
+        sampling_tiers=None,
+        sampling_fallback_divisor=12,
+    ):
         """
         Get server stats for a custom date range with adaptive sampling
 
@@ -242,8 +247,9 @@ class HelperServerStats:
         self.database.close()
         return server_stats
 
-    def _calculate_sample_rate(self, num_hours, sampling_tiers=None,
-                               sampling_fallback_divisor=12):
+    def _calculate_sample_rate(
+        self, num_hours, sampling_tiers=None, sampling_fallback_divisor=12
+    ):
         """Calculate appropriate sample rate for time range using config tiers"""
         if num_hours <= 0:
             return 1  # Safety: treat invalid input as minimum

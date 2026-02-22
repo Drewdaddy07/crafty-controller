@@ -124,17 +124,22 @@ class ServersController(metaclass=Singleton):
         srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.get_history_stats(server_id, hours)
 
-    def get_history_stats_adaptive(self, server_id, hours,
-                                   sampling_tiers=None,
-                                   sampling_fallback_divisor=12):
+    def get_history_stats_adaptive(
+        self, server_id, hours, sampling_tiers=None, sampling_fallback_divisor=12
+    ):
         srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.get_history_stats_adaptive(
             server_id, hours, sampling_tiers, sampling_fallback_divisor
         )
 
-    def get_history_stats_by_date_range(self, server_id, start_time, end_time,
-                                        sampling_tiers=None,
-                                        sampling_fallback_divisor=12):
+    def get_history_stats_by_date_range(
+        self,
+        server_id,
+        start_time,
+        end_time,
+        sampling_tiers=None,
+        sampling_fallback_divisor=12,
+    ):
         srv = ServersController().get_server_instance_by_id(server_id)
         return srv.stats_helper.get_history_stats_by_date_range(
             server_id, start_time, end_time, sampling_tiers, sampling_fallback_divisor
