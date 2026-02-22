@@ -40,7 +40,6 @@ from app.classes.shared.websocket_manager import WebSocketManager
 from app.classes.steamcmd.steamcmd import SteamCMD
 from app.classes.web.webhooks.webhook_factory import WebhookFactory
 
-
 with redirect_stderr(NullWriter()):
     import psutil
     from psutil import NoSuchProcess
