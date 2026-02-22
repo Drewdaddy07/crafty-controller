@@ -32,6 +32,7 @@ RUN touch /var/mail/ubuntu \
         openjdk-25-jre-headless \
         lib32gcc-s1 \
         tzdata \
+        libbtrfsutil-dev \
     && apt-get autoremove \
     && apt-get clean
 
