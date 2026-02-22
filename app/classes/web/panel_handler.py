@@ -721,6 +721,19 @@ class PanelHandler(BaseHandler):
 
                 max_retention_hours = self.helper.get_setting("history_max_age") * 24
 
+                time_range_presets = self.helper.get_setting(
+                    "time_range_presets", default_return=False
+                )
+                if not time_range_presets:
+                    time_range_presets = [
+                        {
+                            "hours": h,
+                            "label": MetricsTimeRangeHelper.format_display_label(h),
+                        }
+                        for h in MetricsTimeRangeHelper.FALLBACK_OPTIONS
+                    ]
+                page_data["time_range_presets"] = time_range_presets
+
                 # Determine if using custom range or preset range
                 if start_param and end_param:
                     # Custom date range mode
@@ -788,7 +801,9 @@ class PanelHandler(BaseHandler):
                     page_data["range_mode"] = "preset"
 
                 # Generate dropdown options with formatted labels
-                hour_options_raw = MetricsTimeRangeHelper.get_time_options(hours)
+                hour_options_raw = MetricsTimeRangeHelper.get_time_options(
+                    hours, presets=time_range_presets
+                )
                 page_data["hour_options"] = [
                     {
                         "value": h,

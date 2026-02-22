@@ -8,23 +8,30 @@ import typing as t
 class MetricsTimeRangeHelper:
     """Helper for managing metrics time range options"""
 
-    # Default time range options (in hours)
-    DEFAULT_OPTIONS = [1, 3, 6, 12, 24, 48, 168]  # 1h to 7d
+    # Fallback time range options (in hours) when no config presets exist
+    FALLBACK_OPTIONS = [1, 3, 6, 12, 24, 48, 168]  # 1h to 7d
 
     @staticmethod
-    def get_time_options(current_hours: int) -> t.List[int]:
+    def get_time_options(
+        current_hours: int,
+        presets: t.Optional[t.List[t.Dict[str, t.Any]]] = None,
+    ) -> t.List[int]:
         """
         Get dropdown options, ensuring current selection is included
 
         Args:
             current_hours: Currently selected hours
+            presets: Optional list of {"hours": int, "label": str} dicts from config
 
         Returns:
             list: Hour options with current_hours first if not in defaults
         """
-        options = MetricsTimeRangeHelper.DEFAULT_OPTIONS.copy()
+        if presets:
+            options = [p["hours"] for p in presets]
+        else:
+            options = MetricsTimeRangeHelper.FALLBACK_OPTIONS.copy()
 
-        # If current selection isn't in defaults, add it
+        # If current selection isn't in options, add it
         if current_hours not in options:
             options.insert(0, current_hours)
         else:

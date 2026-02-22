@@ -151,6 +151,21 @@ config_json_schema = {
             "error": "typeBool",
             "fill": True,
         },
+        "time_range_presets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "hours": {"type": "integer", "minimum": 1},
+                    "label": {"type": "string", "minLength": 1},
+                },
+                "required": ["hours", "label"],
+                "additionalProperties": False,
+            },
+            "minItems": 1,
+            "error": "typeList",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,

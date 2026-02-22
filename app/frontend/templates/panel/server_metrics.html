@@ -299,27 +299,14 @@
     return moment.utc().utcOffset(serverTimezoneOffset);
   }
 
-  // Preset ranges mapped to hours (matching backend DEFAULT_OPTIONS)
-  const presetRanges = {
-    'Last Hour':    [serverNow().subtract(1, 'hours'), serverNow()],
-    'Last 3 Hours': [serverNow().subtract(3, 'hours'), serverNow()],
-    'Last 6 Hours': [serverNow().subtract(6, 'hours'), serverNow()],
-    'Last 12 Hours':[serverNow().subtract(12, 'hours'), serverNow()],
-    'Last 24 Hours':[serverNow().subtract(24, 'hours'), serverNow()],
-    'Last 2 Days':  [serverNow().subtract(2, 'days'), serverNow()],
-    'Last 7 Days':  [serverNow().subtract(7, 'days'), serverNow()],
-  };
-
-  // Map preset labels to hours param values
-  const presetHours = {
-    'Last Hour': 1,
-    'Last 3 Hours': 3,
-    'Last 6 Hours': 6,
-    'Last 12 Hours': 12,
-    'Last 24 Hours': 24,
-    'Last 2 Days': 48,
-    'Last 7 Days': 168,
-  };
+  // Build preset ranges dynamically from config
+  const configPresets = {% raw json_encode(data.get('time_range_presets', [])) %};
+  const presetRanges = {};
+  const presetHours = {};
+  configPresets.forEach(function(preset) {
+    presetRanges[preset.label] = [serverNow().subtract(preset.hours, 'hours'), serverNow()];
+    presetHours[preset.label] = preset.hours;
+  });
 
   const pickerOpts = {
     timePicker: true,

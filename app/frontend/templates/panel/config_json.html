@@ -120,6 +120,28 @@
                       rows="{{ len(data['all_partitions']) }}" value="{{','.join(item[1])}}"
                       hidden>{{','.join(item[1])}}</textarea>
                   </div>
+                  {% elif item[0] == 'time_range_presets' %}
+                  <div id="time-range-presets-editor">
+                    <table class="table table-sm" id="presets-table">
+                      <thead>
+                        <tr>
+                          <th>Hours</th>
+                          <th>Label</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for preset in item[1] %}
+                        <tr class="preset-row">
+                          <td><input type="number" class="form-control preset-hours" value="{{ preset['hours'] }}" min="1" step="1"></td>
+                          <td><input type="text" class="form-control preset-label" value="{{ preset['label'] }}"></td>
+                          <td><button type="button" class="btn btn-sm btn-danger remove-preset"><i class="ph-bold ph-trash"></i></button></td>
+                        </tr>
+                        {% end %}
+                      </tbody>
+                    </table>
+                    <button type="button" class="btn btn-sm btn-success" id="add-preset"><i class="ph-bold ph-plus"></i> Add Preset</button>
+                  </div>
                   {% elif isinstance(item[1], list) %}
                   <textarea id="{{item[0]}}" value="{{','.join(item[1])}}" type="text" name="{{item[0]}}"
                     class="form-control list">{{','.join(item[1])}}</textarea>
@@ -189,6 +211,9 @@
         return value
       }
     }
+    if (key == "time_range_presets") {
+      return value;
+    }
     if (typeof value == "boolean") {
       return value
     } else {
@@ -211,6 +236,20 @@
     formDataObject.disabled_language_files = $('#lang_select').val();
     formDataObject.monitored_mounts = $('#mount_select').val();
     formDataObject.keywords = $('#keywords').val().split(",");
+
+    // Collect time range presets
+    const presets = [];
+    $('.preset-row').each(function() {
+      const hours = parseInt($(this).find('.preset-hours').val(), 10);
+      const label = $(this).find('.preset-label').val().trim();
+      if (hours > 0 && label) {
+        presets.push({hours: hours, label: label});
+      }
+    });
+    if (presets.length > 0) {
+      presets.sort(function(a, b) { return a.hours - b.hours; });
+      formDataObject.time_range_presets = presets;
+    }
 
     $('#config-form input[type="radio"]:checked').each(function () {
       if ($(this).val() == 'True') {
@@ -291,6 +330,22 @@
     if ($('#file').val()) {
       $('#upload-button').prop("disabled", false);
       console.log("File changed good");
+    }
+  });
+
+  // Time range presets editor
+  $('#add-preset').on('click', function() {
+    const row = '<tr class="preset-row">' +
+      '<td><input type="number" class="form-control preset-hours" value="1" min="1" step="1"></td>' +
+      '<td><input type="text" class="form-control preset-label" value=""></td>' +
+      '<td><button type="button" class="btn btn-sm btn-danger remove-preset"><i class="ph-bold ph-trash"></i></button></td>' +
+      '</tr>';
+    $('#presets-table tbody').append(row);
+  });
+
+  $(document).on('click', '.remove-preset', function() {
+    if ($('.preset-row').length > 1) {
+      $(this).closest('tr').remove();
     }
   });
 </script>
