@@ -7,6 +7,7 @@ import json
 import logging
 from pathlib import Path
 from zoneinfo import ZoneInfoNotFoundError
+import btrfsutil
 import httpx
 import aiofiles
 import nh3
@@ -1345,6 +1346,10 @@ class PanelHandler(BaseHandler):
             }
             page_data["backing_up"] = False
             self.controller.servers.refresh_server_settings(server_id)
+
+            page_data["support_btrfs"] = btrfsutil.is_subvolume(
+                os.path.join(self.helper.servers_dir, server_id)
+            )
 
             page_data["backup_list"] = []
             page_data["backup_path"] = Helpers.wtol_path(

@@ -1241,7 +1241,7 @@ class ServerInstance:
         # so that it remains async.
         # At this point this path cannot be trusted.
         backup_type = backup_config.get("backup_type", "zip_vault")
-        if backup_type == "zip_vault":
+        if backup_type != "snapshot":
             expected_backup_location = Path(
                 backup_config["backup_location"], backup_config["backup_id"]
             )
@@ -1397,7 +1397,7 @@ class ServerInstance:
             f"https://{base_url}/api/v2/servers/{self.server_id}"
             f"/backups/backup/{backup_id}/download/{html.escape(backup_name)}"
         )
-        if conf["backup_type"] == "snapshot":
+        if conf["backup_type"] != "zip_vault":
             size = 0
             url = (
                 f"https://{base_url}/panel/edit_backup?"

@@ -41,11 +41,11 @@
           </span>
           <div class="row">
             <div class="col-md-6 col-sm-12 parent">
-              {% if data["backup_config"].get("backup_type") != "snapshot" %}
+              {% if data["backup_config"].get("backup_type") not in ["snapshot", "btrfs"] %}
               <span id="beta-ribbon" class="d-none">
-                {% else %}
-                <span id="beta-ribbon"></span>
-                {% end %}
+              {% else %}
+              <span id="beta-ribbon">
+              {% end %}
                 <h4 class="ribbon">BETA</h4>
               </span>
               <br>
@@ -77,6 +77,13 @@
                       data-disclaimer="{{ translate('serverBackups', 'snapshotDisclaimer', data['lang']) }}"
                       autocomplete="off"> Snapshot
                   </label>
+                  {% if data["support_btrfs"] %}
+                  <label class="btn btn-secondary">
+                    <input type="radio" class="btn-check" name="backup_type" id="btrfs" value="btrfs"
+                      data-disclaimer="{{ translate('serverBackups', 'btrfsDisclaimer', data['lang']) }}"
+                      autocomplete="off"> BTRFS
+                  </label>
+                  {% end %}
                 </div>
                 <br>
                 <br>
@@ -117,18 +124,22 @@
                     value="{{ data['backup_config']['max_backups']  }}"
                     placeholder="{{ translate('serverBackups', 'maxBackups', data['lang']) }}">
                 </div>
-                <div class="form-group">
-                  <div class="custom-control custom-switch">
-                    {% if data['backup_config']['compress'] %}
-                    <input type="checkbox" class="custom-control-input" id="compress" name="compress" checked=""
-                      value="True">
-                    {% else %}
-                    <input type="checkbox" class="custom-control-input" id="compress" name="compress" value="True">
-                    {% end %}
-                    <label for="compress" class="custom-control-label">{{ translate('serverBackups', 'compress',
-                      data['lang']) }}</label>
+                {% if data["backup_config"].get("backup_type") != "btrfs" %}
+                <span id="compress_switch">
+                  <div class="form-group">
+                    <div class="custom-control custom-switch">
+                      {% if data['backup_config']['compress'] %}
+                      <input type="checkbox" class="custom-control-input" id="compress" name="compress" checked=""
+                        value="True">
+                      {% else %}
+                      <input type="checkbox" class="custom-control-input" id="compress" name="compress" value="True">
+                      {% end %}
+                      <label for="compress" class="custom-control-label">{{ translate('serverBackups', 'compress',
+                        data['lang']) }}</label>
+                    </div>
                   </div>
-                </div>
+                </span>
+                {% end %}
                 <div class="form-group">
                   <div class="custom-control custom-switch">
                     {% if data['backup_config']['shutdown']%}
@@ -172,14 +183,18 @@
                       translate('serverBackups', 'after', data['lang']) }}</label>
                   </div>
                 </div>
-                <div class="form-group">
-                  <label for="server">{{ translate('serverBackups', 'exclusionsTitle', data['lang']) }} <small> - {{
-                      translate('serverBackups', 'excludedChoose', data['lang']) }}</small></label>
-                  <br>
-                  <button class="btn btn-primary mr-2" id="root_files_button"
-                    data-server_path="{{ data['server_stats']['server_id']['path']}}" type="button">{{
-                    translate('serverBackups', 'clickExclude', data['lang']) }}</button>
-                </div>
+                {% if data["backup_config"].get("backup_type") != "btrfs" %}
+                <span id="exclude_selection">
+                  <div class="form-group">
+                    <label for="server">{{ translate('serverBackups', 'exclusionsTitle', data['lang']) }} <small> - {{
+                        translate('serverBackups', 'excludedChoose', data['lang']) }}</small></label>
+                    <br>
+                    <button class="btn btn-primary mr-2" id="root_files_button"
+                      data-server_path="{{ data['server_stats']['server_id']['path']}}" type="button">{{
+                      translate('serverBackups', 'clickExclude', data['lang']) }}</button>
+                  </div>
+                </span>
+                {% end %}
                 <div class="modal fade" id="dir_select" tabindex="-1" aria-labelledby="dir_select" aria-hidden="true">
                   <div class="modal-dialog">
                     <div class="modal-content">
@@ -235,7 +250,7 @@
                     {% for backup in data['backup_list'] %}
                     <tr>
                       <td>
-                        {% if data["backup_config"]["backup_type"] != "snapshot" %}
+                        {% if data["backup_config"]["backup_type"] == "zip_vault" %}
                         <button class="btn btn-primary download" data-file="{{backup['path']}}">
                           <i class="ph-bold ph-download-simple" aria-hidden="true"></i>
                           {{ translate('serverBackups', 'download', data['lang']) }}
@@ -266,22 +281,25 @@
               </div>
             </div>
           </div>
-          <div class="col-md-12 col-sm-12">
-            <br>
-            <br>
-            <div class="card-header header-sm d-flex justify-content-between align-items-center">
-              <h4 class="card-title"><i class="ph-fill ph-hard-drives"></i> {{ translate('serverBackups', 'excludedBackups',
-                data['lang']) }} <small class="text-muted ml-1"></small> </h4>
-            </div>
-            <br>
-            <ul>
-              {% for item in data['exclusions'] %}
-              <li>{{item}}</li>
+          {% if data["backup_config"].get("backup_type") != "btrfs" %}
+          <span id="exclude_viewer">
+            <div class="col-md-12 col-sm-12">
               <br>
-              {% end %}
-            </ul>
-          </div>
-
+              <br>
+              <div class="card-header header-sm d-flex justify-content-between align-items-center">
+                <h4 class="card-title"><i class="ph-fill ph-hard-drives"></i> {{ translate('serverBackups', 'excludedBackups',
+                  data['lang']) }} <small class="text-muted ml-1"></small> </h4>
+              </div>
+              <br>
+              <ul>
+                {% for item in data['exclusions'] %}
+                <li>{{item}}</li>
+                <br>
+                {% end %}
+              </ul>
+            </div>
+          </span>
+          {% end %}
         </div>
       </div>
     </div>
@@ -416,14 +434,38 @@
       $("#beta-ribbon").removeClass("d-none")
       console.log($("#snapshot").data("disclaimer"))
       bootbox.alert($("#snapshot").data("disclaimer"))
+      $("#compress_switch").removeClass("d-none")
+      $("#exclude_selection").removeClass("d-none")
+      $("#exclude_viewer").removeClass("d-none")
     } else {
       console.log("In else")
       $("#beta-ribbon").addClass("d-none")
     }
   })
+
+  $("#btrfs").on("change", function () {
+    if ($("#btrfs").is(':checked')) {
+      $("#beta-ribbon").removeClass("d-none")
+      console.log($("#btrfs").data("disclaimer"))
+      bootbox.alert($("#btrfs").data("disclaimer"))
+      $("#compress_switch").addClass("d-none")
+      $("#exclude_selection").addClass("d-none")
+      $("#exclude_viewer").addClass("d-none")
+    } else {
+      console.log("In else")
+      $("#beta-ribbon").addClass("d-none")
+      $("#compress_switch").removeClass("d-none")
+      $("#exclude_selection").removeClass("d-none")
+      $("#exclude_viewer").removeClass("d-none")
+    }
+  })
+
   $("#zip_vault").on("change", function () {
     console.log("In else")
     $("#beta-ribbon").addClass("d-none")
+    $("#compress_switch").removeClass("d-none")
+    $("#exclude_selection").removeClass("d-none")
+    $("#exclude_viewer").removeClass("d-none")
   })
 
   $(document).ready(function () {

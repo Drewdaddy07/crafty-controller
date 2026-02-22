@@ -426,6 +426,7 @@
         "backupTask": "A backup task has been started.",
         "backups": "Server Backups",
         "before": "Run command before backup",
+        "btrfsDisclaimer": "BTRFS snapshot backups are currently in beta. BTRFS snapshot backups use the built in btrfs snapshots. Backup and restore do work well in testing but you may encounter unforeseen issues. It is adviced to not solely rely on this backup style. Please report any issues you encounter.",
         "cancel": "Cancel",
         "clickExclude": "Click to select Exclusions",
         "compress": "Compress Backup",
