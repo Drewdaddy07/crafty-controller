@@ -80,6 +80,38 @@ class StatsConverter:
         return datetime.timedelta(seconds=threshold_secs)
 
     @classmethod
+    def _empty_range_markers(
+        cls,
+        start_time: datetime.datetime = None,
+        end_time: datetime.datetime = None,
+    ) -> t.List[t.Dict[str, t.Any]]:
+        """Return gap markers for an empty stats range."""
+        result = []
+        if start_time:
+            result.append(cls._make_gap_marker(start_time))
+        if end_time and end_time != start_time:
+            result.append(cls._make_gap_marker(end_time))
+        return result
+
+    @classmethod
+    def _insert_gap_markers(
+        cls,
+        stats: t.List[t.Dict[str, t.Any]],
+        threshold: datetime.timedelta,
+        filled: t.List[t.Dict[str, t.Any]],
+    ) -> None:
+        """Append stats to *filled*, inserting null markers at large gaps."""
+        for i, stat in enumerate(stats):
+            filled.append(stat)
+            if i >= len(stats) - 1:
+                continue
+            curr_time = stat.get("created")
+            next_time = stats[i + 1].get("created")
+            if curr_time and next_time and next_time - curr_time > threshold:
+                mid = curr_time + (next_time - curr_time) / 2
+                filled.append(cls._make_gap_marker(mid))
+
+    @classmethod
     def fill_gaps(
         cls,
         stats: t.List[t.Dict[str, t.Any]],
@@ -104,12 +136,7 @@ class StatsConverter:
             New list with null gap markers inserted where data is missing
         """
         if not stats:
-            result = []
-            if start_time:
-                result.append(cls._make_gap_marker(start_time))
-            if end_time and end_time != start_time:
-                result.append(cls._make_gap_marker(end_time))
-            return result
+            return cls._empty_range_markers(start_time, end_time)
 
         # Compute adaptive gap threshold from the actual data spacing.
         threshold = cls._compute_gap_threshold(stats)
@@ -123,15 +150,7 @@ class StatsConverter:
             filled.append(cls._make_gap_marker(start_time))
 
         # Walk through data and insert gap markers between distant points
-        for i, stat in enumerate(stats):
-            filled.append(stat)
-            if i < len(stats) - 1:
-                curr_time = stat.get("created")
-                next_time = stats[i + 1].get("created")
-                if curr_time and next_time and next_time - curr_time > threshold:
-                    # Single null marker in the middle breaks the line
-                    mid = curr_time + (next_time - curr_time) / 2
-                    filled.append(cls._make_gap_marker(mid))
+        cls._insert_gap_markers(stats, threshold, filled)
 
         # Extend x-axis to end of range if data ends earlier
         if end_time and last_time and end_time - last_time > threshold:
