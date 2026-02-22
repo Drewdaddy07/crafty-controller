@@ -91,7 +91,7 @@ class ApiAuthLoginHandler(BaseApiHandler):
     def post(self):
         try:
             data = json.loads(self.request.body)  # Get request payload
-        except json.decoder.JSONDecodeError as e:
+        except json.decoder.JSONDecodeError:
             logger.error(
                 "Invalid JSON schema for API"
                 f" login attempt from {self.get_remote_ip()}"

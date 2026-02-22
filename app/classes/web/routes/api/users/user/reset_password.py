@@ -96,7 +96,7 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
                 validate(data, reset_password_schema)
             else:
                 data = {}
-        except (json.JSONDecodeError, ValidationError) as e:
+        except (json.JSONDecodeError, ValidationError):
             return self.finish_json(
                 400,
                 {

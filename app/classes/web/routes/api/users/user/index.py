@@ -142,7 +142,7 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
 
         try:
             data = json.loads(self.request.body)
-        except json.decoder.JSONDecodeError as e:
+        except json.decoder.JSONDecodeError:
             return self.finish_json(
                 400,
                 {
