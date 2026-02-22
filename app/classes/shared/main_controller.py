@@ -8,8 +8,8 @@ import time
 import json
 import logging
 import threading
-import btrfsutil
 from zoneinfo import ZoneInfoNotFoundError
+import btrfsutil
 from peewee import DoesNotExist
 
 # TZLocal is set as a hidden import on win pipeline
@@ -406,7 +406,7 @@ class Controller:
                 Helpers.ensure_dir_exists(new_server_path)
         else:
             logger.warning(
-                f"Folder already exists. Continuing without BTRFS Snapshot support."
+                "Folder already exists. Continuing without BTRFS Snapshot support."
             )
 
         Helpers.ensure_dir_exists(backup_path)

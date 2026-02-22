@@ -84,7 +84,11 @@ class BackupManager:
         """
         logger.debug("Starting backup restore validation")
 
-        # Backup file is only expected to be `datetime.zip`, `datetime.btrfs` or `datetime.manifest`.
+        # Backup file is only expected to be:
+        # - `datetime.zip`
+        # - `datetime.btrfs`
+        # - `datetime.manifest`
+
         # We can do some intensive validation of this value by ensuring that the
         # filename can actually resolve to a datetime. We will reject it if not.
         backup_location = Path(backup_location)
@@ -348,7 +352,8 @@ class BackupManager:
                 f"at '{backup_filename}'"
             )
 
-            # Excluded Dirs not supportet with btrfs, can be added later by editing the snapshot after it was taken
+            # Excluded Dirs not supportet with btrfs
+            # can be added later by editing the snapshot after it was taken
 
             # excluded_dirs = HelpersManagement.get_excluded_backup_dirs(
             #    backup_config["backup_id"]
@@ -469,7 +474,7 @@ class BackupManager:
                 for f in files
                 if f["path"].endswith(self.SNAPSHOT_SUFFIX)
             ]
-        elif backup_config["backup_type"] == "btrfs":
+        if backup_config["backup_type"] == "btrfs":
             return [
                 {
                     "path": os.path.relpath(
@@ -619,7 +624,9 @@ class BackupManager:
         """
 
         # self.file_helper.move_dir(server_path,f'{backup_location}')
-        # Currently will just delete the old server, should make a backup to default backups before
+
+        # Currently will just delete the old server
+        # should make a backup to default backups before
 
         self.file_helper.del_dirs(server_path)
 

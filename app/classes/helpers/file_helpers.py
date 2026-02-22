@@ -8,11 +8,11 @@ import shutil
 import ssl
 import time
 import urllib.request
-import btrfsutil
 import zipfile
 import zlib
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
+import btrfsutil
 
 import certifi
 
@@ -518,7 +518,7 @@ class FileHelpers:
             ) from why
 
     @staticmethod
-    def restore_archive(backup_location, server_path):
+    def restore_archive(archive_location, destination):
         with zipfile.ZipFile(archive_location, "r") as zip_ref:
             zip_ref.extractall(destination)
 
@@ -529,7 +529,7 @@ class FileHelpers:
             btrfsutil.create_snapshot(archive_location, destination, read_only=False)
         except Exception as e:
             logger.warning(
-                f"Error backing up: {path_to_server} under {path_to_snapshot}!"
+                f"Error backing up: {archive_location} to {destination}!"
                 f" - Error was: {e}"
             )
             raise
