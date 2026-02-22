@@ -8,6 +8,7 @@ import shutil
 import ssl
 import time
 import urllib.request
+import btrfsutil
 import zipfile
 import zlib
 from pathlib import Path
@@ -428,6 +429,59 @@ class FileHelpers:
                     )
         return True
 
+    def make_backup_btrfs(  # pylint: disable=too-many-positional-arguments
+        self, path_to_snapshot, path_to_server, server_id, backup_id
+    ):
+        # create a ZipFile object
+        path_to_snapshot += ".btrfs"
+        # ex_replace = [p.replace("\\", "/") for p in excluded_dirs]
+        results = {
+            "percent": 0,
+            "total_files": 0,  # Does not mater
+        }
+        WebSocketManager().broadcast_page_params(
+            "/panel/server_detail",
+            {"id": str(server_id)},
+            "backup_status",
+            results,
+        )
+        WebSocketManager().broadcast_page_params(
+            "/panel/edit_backup",
+            {"id": str(server_id)},
+            "backup_status",
+            results,
+        )
+        # Making Btrfs snapshot
+        try:
+            btrfsutil.create_snapshot(path_to_server, path_to_snapshot)
+        except Exception as e:
+            logger.warning(
+                f"Error backing up: {path_to_server} under {path_to_snapshot}!"
+                f" - Error was: {e}"
+            )
+            raise
+
+        # package results
+        results = {
+            "percent": 100,
+            "total_files": 0,
+            "backup_id": backup_id,
+        }
+        # send status results to page.
+        WebSocketManager().broadcast_page_params(
+            "/panel/server_detail",
+            {"id": str(server_id)},
+            "backup_status",
+            results,
+        )
+        WebSocketManager().broadcast_page_params(
+            "/panel/edit_backup",
+            {"id": str(server_id)},
+            "backup_status",
+            results,
+        )
+        return True
+
     def move_item_file_or_dir(self, old_dir, new_dir, item) -> None:
         """
         Move item to new location if it is either a file or a dir. Will raise
@@ -464,9 +518,21 @@ class FileHelpers:
             ) from why
 
     @staticmethod
-    def restore_archive(archive_location, destination):
+    def restore_archive(backup_location, server_path):
         with zipfile.ZipFile(archive_location, "r") as zip_ref:
             zip_ref.extractall(destination)
+
+    @staticmethod
+    def restore_btrfs(archive_location, destination):
+        # restoring Btrfs snapshot
+        try:
+            btrfsutil.create_snapshot(archive_location, destination, read_only=False)
+        except Exception as e:
+            logger.warning(
+                f"Error backing up: {path_to_server} under {path_to_snapshot}!"
+                f" - Error was: {e}"
+            )
+            raise
 
     def send_percentage(self, user, percent, proc_id, complete):
         if isinstance(user, str):

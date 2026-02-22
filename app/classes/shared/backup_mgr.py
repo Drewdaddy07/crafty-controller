@@ -30,6 +30,7 @@ class BackupManager:
     SNAPSHOT_BACKUP_DATE_FORMAT_STRING = "%Y-%m-%d-%H-%M-%S"
     SNAPSHOT_SUFFIX = ".manifest"
     ARCHIVE_SUFFIX = ".zip"
+    BTRFS_SNAPSHOT_SUFFIX = ".btrfs"
 
     def __init__(self, helper, file_helper, management_helper):
         self.helper = helper
@@ -83,7 +84,7 @@ class BackupManager:
         """
         logger.debug("Starting backup restore validation")
 
-        # Backup file is only expected to be `datetime.zip` or `datetime.manifest`.
+        # Backup file is only expected to be `datetime.zip`, `datetime.btrfs` or `datetime.manifest`.
         # We can do some intensive validation of this value by ensuring that the
         # filename can actually resolve to a datetime. We will reject it if not.
         backup_location = Path(backup_location)
@@ -102,7 +103,7 @@ class BackupManager:
             self.broadcast_rejected_restore(backup_config, svr_obj)
             return
 
-        allowed_extensions = ["zip", "manifest"]
+        allowed_extensions = ["zip", "manifest", "btrfs"]
         if backup_file_parts[1] not in allowed_extensions:
             logger.error(
                 f"Extension of given backup file to restore is not in allowed extension"
@@ -114,10 +115,10 @@ class BackupManager:
 
         # We use a different timestamp format between snapshot backups and zip files.
         # This is very funny
-        if backup_config["backup_type"] == "zip_vault":
-            timestamp_format = "%Y-%m-%d_%H-%M-%S"
-        else:
+        if backup_config["backup_type"] == "snapshot":
             timestamp_format = "%Y-%m-%d-%H-%M-%S"
+        else:
+            timestamp_format = "%Y-%m-%d_%H-%M-%S"
 
         try:
             _ = datetime.datetime.strptime(backup_file_parts[0], timestamp_format)
@@ -144,7 +145,7 @@ class BackupManager:
         Args:
             backup_config: The backup configuration for this backup.
             backup_location: Path to the backup_location.
-            backup_file: File to restore, zip or snapshot manifest.
+            backup_file: File to restore, zip, btrfs subvolume or snapshot manifest.
             svr_obj: The server object.
             in_place: Should the backup restore in place?
         """
@@ -153,9 +154,12 @@ class BackupManager:
         if svr_obj.check_running():
             svr_obj.stop_server()
 
-        if backup_config["backup_type"] != "zip_vault":
+        if backup_config["backup_type"] == "snapshot":
             logger.debug("Starting a snapshot backup restore")
             self.snapshot_restore(backup_config, backup_file, svr_obj)
+        elif backup_config["backup_type"] == "btrfs":
+            logger.debug("Starting a BTRFS snapshot backup restore")
+            self.btrfs_restore(server_path, backup_location)
         else:
             error = self.zip_vault_restore(server_path, backup_location, in_place)
         server_users = PermissionsServers.get_server_user_list(svr_obj.server_id)
@@ -204,7 +208,9 @@ class BackupManager:
         time.sleep(3)
         size = False
         # Start the backup
-        if backup_config.get("backup_type", "zip_vault") == "zip_vault":
+        backup_type = backup_config.get("backup_type", "zip_vault")
+
+        if backup_type == "zip_vault":
             backup_file_name = self.zip_vault(backup_config, server)
             if (
                 backup_file_name
@@ -221,6 +227,8 @@ class BackupManager:
                     .stat()
                     .st_size
                 )
+        elif backup_type == "btrfs":
+            backup_file_name = self.btrfs_backup(backup_config, server)
         else:
             backup_file_name = self.snapshot_backup(backup_config, server)
             if (
@@ -312,6 +320,85 @@ class BackupManager:
             self.fail_backup(e, backup_config, server)
             return False
 
+    def btrfs_backup(self, backup_config, server) -> str | bool:
+        # Adjust the location to include the backup ID for destination.
+        backup_location = os.path.join(
+            backup_config["backup_location"], backup_config["backup_id"]
+        )
+
+        # Check if the backup location even exists.
+        if not backup_location:
+            Console.critical("No backup path found. Canceling")
+            return False
+
+        self.helper.ensure_dir_exists(backup_location)
+
+        try:
+            backup_filename = (
+                f"{backup_location}/"
+                f"""{
+                    datetime.datetime.now()
+                    .astimezone(self.tz)
+                    .strftime("%Y-%m-%d_%H-%M-%S")
+                }"""
+            )
+            logger.info(
+                f"Creating backup of server {server.name}"
+                f" (ID#{server.server_id}, path={server.server_path}) "
+                f"at '{backup_filename}'"
+            )
+
+            # Excluded Dirs not supportet with btrfs, can be added later by editing the snapshot after it was taken
+
+            # excluded_dirs = HelpersManagement.get_excluded_backup_dirs(
+            #    backup_config["backup_id"]
+            # )
+            server_dir = Helpers.get_os_understandable_path(server.server_path)
+
+            self.file_helper.make_backup_btrfs(
+                Helpers.get_os_understandable_path(backup_filename),
+                server_dir,
+                server.server_id,
+                backup_config["backup_id"],
+            )
+
+            self.remove_old_backups_btrfs(backup_config, server)
+
+            logger.info(f"Backup of server: {server.name} completed")
+            results = {
+                "percent": 100,
+                "total_files": 0,
+                "current_file": 0,
+                "backup_id": backup_config["backup_id"],
+            }
+            if len(WebSocketManager().clients) > 0:
+                WebSocketManager().broadcast_page_params(
+                    "/panel/server_detail",
+                    {"id": str(server.server_id)},
+                    "backup_status",
+                    results,
+                )
+            server_users = PermissionsServers.get_server_user_list(server.server_id)
+            for user in server_users:
+                WebSocketManager().broadcast_user(
+                    user,
+                    "notification",
+                    self.helper.translation.translate(
+                        "notify",
+                        "backupComplete",
+                        HelperUsers.get_user_lang_by_id(user),
+                    ).format(server.name),
+                )
+            # pause to let people read message.
+            HelpersManagement.update_backup_config(
+                backup_config["backup_id"],
+                {"status": json.dumps({"status": "Standby", "message": ""})},
+            )
+            return Path(backup_filename).name
+        except Exception as e:
+            self.fail_backup(e, backup_config, server)
+            return False
+
     @staticmethod
     def fail_backup(why: Exception, backup_config: dict, server) -> None:
         """
@@ -382,6 +469,18 @@ class BackupManager:
                 for f in files
                 if f["path"].endswith(self.SNAPSHOT_SUFFIX)
             ]
+        elif backup_config["backup_type"] == "btrfs":
+            return [
+                {
+                    "path": os.path.relpath(
+                        f["path"],
+                        start=Helpers.get_os_understandable_path(backup_location),
+                    ),
+                    "size": "",
+                }
+                for f in files
+                if f["path"].endswith(self.BTRFS_SNAPSHOT_SUFFIX)
+            ]
         return [
             {
                 "path": os.path.relpath(
@@ -408,6 +507,21 @@ class BackupManager:
             )
             logger.info(f"Removing old backup '{oldfile['path']}'")
             os.remove(Helpers.get_os_understandable_path(oldfile_path))
+
+    def remove_old_backups_btrfs(self, backup_config, server):
+        while (
+            len(self.list_backups(backup_config, server)) > backup_config["max_backups"]
+            and backup_config["max_backups"] > 0
+        ):
+            backup_list = self.list_backups(backup_config, server.server_id)
+            oldfile = backup_list[0]
+            oldfile_path = os.path.join(
+                backup_config["backup_location"],
+                backup_config["backup_id"],
+                oldfile["path"],
+            )
+            logger.info(f"Removing old backup '{oldfile['path']}'")
+            self.file_helper.del_dirs(Helpers.get_os_understandable_path(oldfile_path))
 
     def snapshot_backup(self, backup_config, server) -> str | bool:
         """
@@ -491,6 +605,27 @@ class BackupManager:
         )
 
         return Path(backup_manifest_path).name
+
+    def btrfs_restore(self, server_path, backup_location) -> bool:
+        """Btrfs restore function. Also Returns a boolean if an error was encountered or
+        not.
+
+        Args:
+              server_path: Target to restore server to
+              backup_location: Source zip file to restore
+
+        Returning: Boolean false if no error was experienced, true if an error was
+        encountered.
+        """
+
+        # self.file_helper.move_dir(server_path,f'{backup_location}')
+        # Currently will just delete the old server, should make a backup to default backups before
+
+        self.file_helper.del_dirs(server_path)
+
+        self.file_helper.restore_btrfs(backup_location, server_path)
+
+        return True  # This doesnt even change anything, I love it.
 
     def zip_vault_restore(self, server_path, backup_location, in_place) -> bool:
         """Zip style restore function. Returns a boolean if an error was encountered or

@@ -8,6 +8,7 @@ import time
 import json
 import logging
 import threading
+import btrfsutil
 from zoneinfo import ZoneInfoNotFoundError
 from peewee import DoesNotExist
 
@@ -398,7 +399,16 @@ class Controller:
             new_server_path.replace(" ", "^ ")
             backup_path.replace(" ", "^ ")
 
-        Helpers.ensure_dir_exists(new_server_path)
+        if not os.path.isdir(new_server_path):
+            try:
+                btrfsutil.subvolume_create(new_server_path)
+            except:
+                Helpers.ensure_dir_exists(new_server_path)
+        else:
+            logger.warning(
+                f"Folder already exists. Continuing without BTRFS Snapshot support."
+            )
+
         Helpers.ensure_dir_exists(backup_path)
 
         def _create_server_properties_if_needed(port, empty=False):

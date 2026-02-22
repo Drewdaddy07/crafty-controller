@@ -69,7 +69,7 @@ BACKUP_PATCH_SCHEMA = {
         },
         "backup_type": {
             "type": "string",
-            "enum": ["zip_vault", "snapshot"],
+            "enum": ["zip_vault", "snapshot", "btrfs"],
             "error": "enumErr",
         },
     },
@@ -113,7 +113,7 @@ BASIC_BACKUP_PATCH_SCHEMA = {
         },
         "backup_type": {
             "type": "string",
-            "enum": ["zip_vault", "snapshot"],
+            "enum": ["zip_vault", "snapshot", "btrfs"],
             "error": "enumErr",
         },
     },
