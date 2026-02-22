@@ -391,18 +391,19 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
             crafty_perms,
         )
 
-        # Skip audit log for silent preference-only updates (e.g. column
-        # visibility, server ordering) to avoid spamming notifications.
-        silent_fields = {"dashboard_columns", "server_order"}
-        if not set(data.keys()).issubset(silent_fields):
-            self.controller.management.add_to_audit_log(
-                user["user_id"],
-                (
-                    f"edited user {user_obj.username} (UID: {user_id})"
-                    f"with roles {user_obj.roles}"
-                ),
-                server_id=None,
-                source_ip=self.get_remote_ip(),
-            )
+        # Suppress notifications for preference-only updates (e.g. column
+        # visibility, server ordering) to avoid spamming, but still audit log.
+        silent_fields = set(self.helper.get_setting("silent_notif_fields", []))
+        notify = not set(data.keys()).issubset(silent_fields)
+        self.controller.management.add_to_audit_log(
+            user["user_id"],
+            (
+                f"edited user {user_obj.username} (UID: {user_id})"
+                f"with roles {user_obj.roles}"
+            ),
+            server_id=None,
+            source_ip=self.get_remote_ip(),
+            notify=notify,
+        )
 
         return self.finish_json(200, {"status": "ok"})

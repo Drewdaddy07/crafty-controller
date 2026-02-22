@@ -151,6 +151,11 @@ config_json_schema = {
             "error": "typeBool",
             "fill": True,
         },
+        "silent_notif_fields": {
+            "type": "array",
+            "error": "typeList",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,

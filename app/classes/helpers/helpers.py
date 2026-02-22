@@ -77,6 +77,7 @@ MASTER_CONFIG = {
     "enable_passkey_auth": False,
     "passkey_rp_name": "Crafty Controller",
     "experimental": False,
+    "silent_notif_fields": ["dashboard_columns", "server_order"],
 }
 
 CONFIG_CATEGORIES = {
@@ -109,6 +110,7 @@ CONFIG_CATEGORIES = {
         "virtual_terminal_lines",
         "keywords",
         "general_user_log_access",
+        "silent_notif_fields",
     ],
     "monitoring": [
         "monitored_mounts",
