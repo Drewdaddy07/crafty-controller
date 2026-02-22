@@ -586,6 +586,7 @@
         "operationStatus": "File Operation Status",
         "options": "Options",
         "overwrite": "Overwrite changes on server",
+        "permissions": "Permissions",
         "rename": "Rename",
         "renameItemQuestion": "What should the new name be?",
         "repull": "Load up to date file from server (All local changes will be lost)",
