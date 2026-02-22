@@ -32,12 +32,12 @@ if ($("body").hasClass("dark-theme")) {
 }
 if ($("canvas").length) {
 	// Chart.js v3+ API
-	if (Chart.defaults.plugins && Chart.defaults.plugins.tooltip) {
+	if (Chart.defaults.plugins?.tooltip) {
 		Chart.defaults.plugins.tooltip.enabled = false;
 		Chart.defaults.font.color = "#354d66";
 		Chart.defaults.font.family = '"Poppins", sans-serif';
 		Chart.defaults.plugins.tooltip.external = function (context) {
-			var tooltipModel = context.tooltip;
+			const tooltipModel = context.tooltip;
 		// Tooltip Element
 		var tooltipEl = document.getElementById("chartjs-tooltip");
 
@@ -94,7 +94,7 @@ if ($("canvas").length) {
 		}
 
 		// Get chart canvas position
-		var position = context.chart.canvas.getBoundingClientRect();
+		const position = context.chart.canvas.getBoundingClientRect();
 
 		// Display, position, and set styles for font
 		tooltipEl.style.opacity = 1;
