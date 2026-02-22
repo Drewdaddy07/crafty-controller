@@ -20,7 +20,7 @@ from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.controllers.roles_controller import RolesController
-from app.classes.helpers.helpers import Helpers
+from app.classes.helpers.helpers import Helpers, MASTER_CONFIG
 from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.shared.metrics_time_helper import MetricsTimeRangeHelper
 from app.classes.shared.stats_helpers import StatsConverter
@@ -734,6 +734,22 @@ class PanelHandler(BaseHandler):
                     ]
                 page_data["time_range_presets"] = time_range_presets
 
+                sampling_tiers = self.helper.get_setting(
+                    "sampling_tiers", default_return=False
+                )
+                if not sampling_tiers:
+                    sampling_tiers = None
+                sampling_fallback_divisor = self.helper.get_setting(
+                    "sampling_fallback_divisor", default_return=False
+                )
+                if not sampling_fallback_divisor:
+                    sampling_fallback_divisor = 12
+
+                page_data["sampling_tiers"] = sampling_tiers or MASTER_CONFIG[
+                    "sampling_tiers"
+                ]
+                page_data["sampling_fallback_divisor"] = sampling_fallback_divisor
+
                 # Determine if using custom range or preset range
                 if start_param and end_param:
                     # Custom date range mode
@@ -757,7 +773,9 @@ class PanelHandler(BaseHandler):
                         # Fetch stats with custom date range
                         history_stats = (
                             self.controller.servers.get_history_stats_by_date_range(
-                                server_id, start_time, end_time
+                                server_id, start_time, end_time,
+                                sampling_tiers=sampling_tiers,
+                                sampling_fallback_divisor=sampling_fallback_divisor,
                             )
                         )
 
@@ -795,7 +813,9 @@ class PanelHandler(BaseHandler):
 
                     # Fetch stats with adaptive sampling
                     history_stats = self.controller.servers.get_history_stats_adaptive(
-                        server_id, hours=hours
+                        server_id, hours=hours,
+                        sampling_tiers=sampling_tiers,
+                        sampling_fallback_divisor=sampling_fallback_divisor,
                     )
 
                     page_data["range_mode"] = "preset"

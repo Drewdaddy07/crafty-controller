@@ -165,21 +165,22 @@ class HelperServerStats:
         self.database.close()
         return server_stats
 
-    def get_history_stats_adaptive(self, server_id, num_hours):
+    def get_history_stats_adaptive(self, server_id, num_hours,
+                                   sampling_tiers=None,
+                                   sampling_fallback_divisor=12):
         """
-        Get server stats with adaptive sampling based on time range
+        Get server stats with adaptive sampling based on time range.
 
-        Sampling strategy:
-        - <= 6 hours: Every point (full resolution)
-        - 6-24 hours: Every 2nd point
-        - 24-72 hours: Every 6th point
-        - > 72 hours: Every 12th point (maintains ~200 points)
+        Sampling uses configurable tiers from config.json when provided,
+        otherwise falls back to built-in defaults (1/2/6/hours÷12).
         """
         self.database.connect(reuse_if_open=True)
         max_age = datetime.datetime.now() - timedelta(hours=num_hours)
 
         # Determine sample rate
-        sample_rate = self._calculate_sample_rate(num_hours)
+        sample_rate = self._calculate_sample_rate(
+            num_hours, sampling_tiers, sampling_fallback_divisor
+        )
 
         query_stats = (
             ServerStats.select()
@@ -198,7 +199,9 @@ class HelperServerStats:
         self.database.close()
         return server_stats
 
-    def get_history_stats_by_date_range(self, server_id, start_time, end_time):
+    def get_history_stats_by_date_range(self, server_id, start_time, end_time,
+                                        sampling_tiers=None,
+                                        sampling_fallback_divisor=12):
         """
         Get server stats for a custom date range with adaptive sampling
 
@@ -217,7 +220,9 @@ class HelperServerStats:
         num_hours = time_delta.total_seconds() / 3600
 
         # Determine sample rate based on time span
-        sample_rate = self._calculate_sample_rate(num_hours)
+        sample_rate = self._calculate_sample_rate(
+            num_hours, sampling_tiers, sampling_fallback_divisor
+        )
 
         query_stats = (
             ServerStats.select()
@@ -237,19 +242,29 @@ class HelperServerStats:
         self.database.close()
         return server_stats
 
-    def _calculate_sample_rate(self, num_hours):
-        """Calculate appropriate sample rate for time range"""
+    def _calculate_sample_rate(self, num_hours, sampling_tiers=None,
+                               sampling_fallback_divisor=12):
+        """Calculate appropriate sample rate for time range using config tiers"""
         if num_hours <= 0:
-            rate = 1  # Safety: treat invalid input as minimum
-        elif num_hours <= 6:
-            rate = 1  # Every point
+            return 1  # Safety: treat invalid input as minimum
+
+        if sampling_tiers:
+            # Tiers must be sorted by max_hours ascending
+            sorted_tiers = sorted(sampling_tiers, key=lambda t: t["max_hours"])
+            for tier in sorted_tiers:
+                if num_hours <= tier["max_hours"]:
+                    return max(1, tier["sample_rate"])
+            # Beyond all tiers: use fallback divisor
+            return max(1, int(num_hours // sampling_fallback_divisor))
+
+        # Legacy fallback if no tiers provided
+        if num_hours <= 6:
+            return 1
         elif num_hours <= 24:
-            rate = 2  # Every 2nd point
+            return 2
         elif num_hours <= 72:
-            rate = 6  # Every 6th point
-        else:
-            rate = max(1, num_hours // 12)  # ~200 points max
-        return rate
+            return 6
+        return max(1, int(num_hours // 12))
 
     def insert_server_stats(self, server_stats):
         self.database.connect(reuse_if_open=True)
