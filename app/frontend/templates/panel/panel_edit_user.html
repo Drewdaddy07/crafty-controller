@@ -355,7 +355,7 @@ data['lang']) }}{% end %}
                         <i class="ph-fill ph-warning"></i>
                         {{ translate('tempPassword', 'tempPasswordStatus', data['lang']) }}
                         {% if data['user'].get('password_expires') %}
-                          ({{ translate('tempPassword', 'expiresIn', data['lang']) }}: {{ str(data['user']['password_expires']).split('.')[0] }})
+                          ({{ translate('tempPassword', 'expiresOn', data['lang']) }}: {{ str(data['user']['password_expires']).split('.')[0] }})
                         {% end %}
                       </span>
                       <br />

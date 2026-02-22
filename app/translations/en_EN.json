@@ -807,7 +807,8 @@
         "generateRandom": "Generate",
         "setPassword": "Set Password",
         "requireChangeLabel": "Require password change on next login",
-        "tempPasswordStatus": "Temporary password active"
+        "tempPasswordStatus": "Temporary password active",
+        "expiresOn": "Password expires on"
     },
     "userConfig": {
         "apiKey": "API Keys",
