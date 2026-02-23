@@ -102,11 +102,9 @@ class ManagementController:
     #                                   Audit_Log Methods
     # **********************************************************************************
 
-    def add_to_audit_log(
-        self, user_id, log_msg, server_id=None, source_ip=None, notify=True
-    ):
+    def add_to_audit_log(self, user_id, log_msg, server_id=None, source_ip=None):
         return self.management_helper.add_to_audit_log(
-            user_id, log_msg, server_id, source_ip, notify
+            user_id, log_msg, server_id, source_ip
         )
 
     def add_to_audit_log_raw(self, user_name, user_id, server_id, log_msg, source_ip):
