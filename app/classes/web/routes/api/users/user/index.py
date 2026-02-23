@@ -9,7 +9,6 @@ from app.classes.models.roles import HelperRoles
 from app.classes.models.users import HelperUsers
 from app.classes.web.base_api_handler import BaseApiHandler
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -395,24 +394,16 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
         # Suppress notifications for preference-only updates (e.g. column
         # visibility, server ordering) to avoid spamming, but still audit log.
         silent_fields = set(self.helper.get_setting("silent_notif_fields", []))
-        audit_msg = (
-            f"edited user {user_obj.username} (UID: {user_id})"
-            f"with roles {user_obj.roles}"
+        notify = not set(data.keys()).issubset(silent_fields)
+        self.controller.management.add_to_audit_log(
+            user["user_id"],
+            (
+                f"edited user {user_obj.username} (UID: {user_id})"
+                f"with roles {user_obj.roles}"
+            ),
+            server_id=None,
+            source_ip=self.get_remote_ip(),
+            notify=notify,
         )
-        if set(data.keys()).issubset(silent_fields):
-            self.controller.management.add_to_audit_log_raw(
-                user_obj.username,
-                user["user_id"],
-                None,
-                audit_msg,
-                self.get_remote_ip(),
-            )
-        else:
-            self.controller.management.add_to_audit_log(
-                user["user_id"],
-                audit_msg,
-                server_id=None,
-                source_ip=self.get_remote_ip(),
-            )
 
         return self.finish_json(200, {"status": "ok"})
