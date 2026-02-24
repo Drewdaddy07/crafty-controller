@@ -1,5 +1,5 @@
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
@@ -117,3 +117,57 @@ def test_restore_starter_invalid_backup_file(
 
     backup_location = tmp_path / backup_file
     mgr.restore_starter(backup_config, backup_location, MagicMock(), False)
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        (
+            "app/servers/mockserver/",
+            "app/backup/backuplocation/",
+        ),  # backup to default location
+        (
+            "app/servers/mockserver/",
+            "somewhere/on/computer",
+        ),  # backup to other location on device
+        ("app/servers/mockserver/", "app/backup/backuplocation/example"),
+    ],
+)
+def test_validate_backup_location_success(test_case: tuple[str, str]):
+    """Test various valid backup locations"""
+    mock_server_instance = Mock()
+    mock_server_instance.server_path, backup_path = test_case
+    mock_backup_config = {"backup_location": backup_path}
+
+    mgr = BackupManager(MagicMock(), MagicMock(), MagicMock())
+
+    output = mgr.validate_backup_location(mock_server_instance, mock_backup_config)
+    assert (True, output)
+
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        (
+            "app/servers/mockserver/",
+            "app/servers/mockserver/",
+        ),  # backing up to same server directory
+        (
+            "app/servers/mockserver",
+            "app/servers/mockservers/example",
+        ),  # backing up to parent
+        ("app/servers/mockserver", "app/servers/mockservers/example/example"),
+    ],
+)
+def test_validate_backup_location_failure(
+    test_case: tuple[str, str],
+):
+    """Test various invalid backup locations"""
+    mock_server_instance = Mock()
+    mock_server_instance.server_path, backup_path = test_case
+
+    mock_backup_config = {"backup_location": backup_path}
+
+    mgr = BackupManager(MagicMock(), MagicMock(), MagicMock())
+
+    output = mgr.validate_backup_location(mock_server_instance, mock_backup_config)
+    assert (False, output)
