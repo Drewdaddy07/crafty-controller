@@ -118,6 +118,7 @@ def test_restore_starter_invalid_backup_file(
     backup_location = tmp_path / backup_file
     mgr.restore_starter(backup_config, backup_location, MagicMock(), False)
 
+
 @pytest.mark.parametrize(
     "test_case",
     [
