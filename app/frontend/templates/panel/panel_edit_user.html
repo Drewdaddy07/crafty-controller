@@ -703,10 +703,9 @@ data['lang']) }}{% end %}
           <div class="form-group mt-3" id="expiry_group">
             <label for="reset_expires">{{ translate('tempPassword', 'expiresIn', data['lang']) }}</label>
             <select class="form-control" id="reset_expires" name="expires">
-              <option value="">{{ translate('tempPassword', 'noExpiry', data['lang']) }}</option>
-              <option value="1">{{ translate('tempPassword', 'oneHour', data['lang']) }}</option>
-              <option value="24" selected>{{ translate('tempPassword', 'twentyFourHours', data['lang']) }}</option>
-              <option value="168">{{ translate('tempPassword', 'sevenDays', data['lang']) }}</option>
+              {% for preset in data.get('temp_password_expiry_presets', []) %}
+              <option value="{{ preset['hours'] if preset['hours'] is not None else '' }}"{{ ' selected' if preset['hours'] == data.get('temp_password_expiry_default') else '' }}>{{ preset['label'] }}</option>
+              {% end %}
             </select>
           </div>
         </form>

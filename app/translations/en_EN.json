@@ -69,7 +69,9 @@
         "superMFA": "Require superusers to enable MFA",
         "virtual_terminal_lines": "How many lines we should allow in your server terminal buffer",
         "enable_passkey_auth": "Enable passkey (WebAuthn) authentication",
-        "passkey_rp_name": "Passkey relying party name (displayed in authenticator prompts)"
+        "passkey_rp_name": "Passkey relying party name (displayed in authenticator prompts)",
+        "temp_password_expiry_presets": "Temp Password Expiry Presets",
+        "temp_password_expiry_default": "Default Expiry (hours)"
     },
     "credits": {
         "developmentTeam": "Development Team",

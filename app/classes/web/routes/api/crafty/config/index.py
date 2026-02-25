@@ -151,6 +151,27 @@ config_json_schema = {
             "error": "typeBool",
             "fill": True,
         },
+        "temp_password_expiry_presets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "hours": {"type": ["integer", "null"], "minimum": 1},
+                    "label": {"type": "string", "minLength": 1},
+                },
+                "required": ["hours", "label"],
+                "additionalProperties": False,
+            },
+            "minItems": 1,
+            "error": "typeList",
+            "fill": True,
+        },
+        "temp_password_expiry_default": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "error": "typeInteger",
+            "fill": True,
+        },
     },
     "additionalProperties": False,
     "minProperties": 1,

@@ -77,6 +77,13 @@ MASTER_CONFIG = {
     "enable_passkey_auth": False,
     "passkey_rp_name": "Crafty Controller",
     "experimental": False,
+    "temp_password_expiry_presets": [
+        {"hours": None, "label": "No Expiration"},
+        {"hours": 1, "label": "1 Hour"},
+        {"hours": 24, "label": "24 Hours"},
+        {"hours": 168, "label": "7 Days"},
+    ],
+    "temp_password_expiry_default": 24,
 }
 
 CONFIG_CATEGORIES = {
@@ -100,6 +107,8 @@ CONFIG_CATEGORIES = {
         "max_login_attempts",
         "enable_passkey_auth",
         "passkey_rp_name",
+        "temp_password_expiry_presets",
+        "temp_password_expiry_default",
     ],
     "logs": [
         "max_log_lines",

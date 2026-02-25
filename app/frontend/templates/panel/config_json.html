@@ -120,6 +120,31 @@
                       rows="{{ len(data['all_partitions']) }}" value="{{','.join(item[1])}}"
                       hidden>{{','.join(item[1])}}</textarea>
                   </div>
+                  {% elif item[0] == 'temp_password_expiry_presets' %}
+                  <div id="temp-pw-expiry-presets-editor">
+                    <table class="table table-sm" id="temp-pw-presets-table">
+                      <thead>
+                        <tr>
+                          <th>Hours</th>
+                          <th>Label</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for preset in item[1] %}
+                        <tr class="temp-pw-preset-row">
+                          <td><input type="number" class="form-control temp-pw-preset-hours" value="{{ preset['hours'] if preset['hours'] is not None else '' }}" min="1" step="1" placeholder="(no expiry)"></td>
+                          <td><input type="text" class="form-control temp-pw-preset-label" value="{{ preset['label'] }}"></td>
+                          <td><button type="button" class="btn btn-sm btn-danger remove-temp-pw-preset"><i class="ph-bold ph-trash"></i></button></td>
+                        </tr>
+                        {% end %}
+                      </tbody>
+                    </table>
+                    <button type="button" class="btn btn-sm btn-success" id="add-temp-pw-preset"><i class="ph-bold ph-plus"></i> Add Preset</button>
+                  </div>
+                  {% elif item[0] == 'temp_password_expiry_default' %}
+                  <input type="number" class="form-control" name="temp_password_expiry_default" id="temp_password_expiry_default" value="{{ item[1] if item[1] is not None else '' }}" min="1" step="1" placeholder="(no expiry = null)">
+                  <small class="form-text text-muted">Enter the hours value of the preset to select by default, or leave blank for "No Expiration".</small>
                   {% elif isinstance(item[1], list) %}
                   <textarea id="{{item[0]}}" value="{{','.join(item[1])}}" type="text" name="{{item[0]}}"
                     class="form-control list">{{','.join(item[1])}}</textarea>
@@ -182,6 +207,12 @@
 {% block js %}
 <script>
   function replacer(key, value) {
+    if (value === null) {
+      return null;
+    }
+    if (key == "temp_password_expiry_presets") {
+      return value;
+    }
     if (key == "disabled_language_files" || key == "monitored_mounts" || key == "keywords") {
       if (value == 0) {
         return []
@@ -220,6 +251,36 @@
       }
     });
 
+    // Collect temp password expiry presets
+    const tempPwPresets = [];
+    $('.temp-pw-preset-row').each(function() {
+      const hoursVal = $(this).find('.temp-pw-preset-hours').val().trim();
+      const label = $(this).find('.temp-pw-preset-label').val().trim();
+      if (label) {
+        tempPwPresets.push({
+          hours: hoursVal === '' ? null : parseInt(hoursVal, 10),
+          label: label
+        });
+      }
+    });
+    if (tempPwPresets.length > 0) {
+      tempPwPresets.sort(function(a, b) {
+        if (a.hours === null) return -1;
+        if (b.hours === null) return 1;
+        return a.hours - b.hours;
+      });
+      formDataObject.temp_password_expiry_presets = tempPwPresets;
+    }
+    // Handle temp_password_expiry_default (convert blank to null)
+    if ('temp_password_expiry_default' in formDataObject) {
+      const defVal = formDataObject.temp_password_expiry_default;
+      if (defVal === '' || defVal === undefined) {
+        formDataObject.temp_password_expiry_default = null;
+      } else {
+        formDataObject.temp_password_expiry_default = parseInt(defVal, 10);
+      }
+    }
+
     // Format the plain form data as JSON
     let formDataJsonString = JSON.stringify(formDataObject, replacer);
 
@@ -241,6 +302,22 @@
         message: responseData.error_data
       });
     }
+  });
+
+  // --- Temp password expiry presets editor ---
+  $(document).on('click', '.remove-temp-pw-preset', function () {
+    if ($('.temp-pw-preset-row').length > 1) {
+      $(this).closest('tr').remove();
+    }
+  });
+  $('#add-temp-pw-preset').on('click', function () {
+    $('#temp-pw-presets-table tbody').append(
+      '<tr class="temp-pw-preset-row">' +
+      '<td><input type="number" class="form-control temp-pw-preset-hours" value="" min="1" step="1" placeholder="(no expiry)"></td>' +
+      '<td><input type="text" class="form-control temp-pw-preset-label" value=""></td>' +
+      '<td><button type="button" class="btn btn-sm btn-danger remove-temp-pw-preset"><i class="ph-bold ph-trash"></i></button></td>' +
+      '</tr>'
+    );
   });
 
   function uuidv4() {

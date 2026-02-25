@@ -174,8 +174,14 @@ class Controller:
 
     def set_config_json(self, data):
         current_config = self.helper.get_all_settings()
+        master_config = Helpers.get_master_config()
         for key in current_config:
             if key in data:
+                current_config[key] = data[key]
+        # Also accept new keys that exist in MASTER_CONFIG but haven't
+        # been seeded into config.json yet (no restart since code update).
+        for key in data:
+            if key not in current_config and key in master_config:
                 current_config[key] = data[key]
         keys = list(current_config.keys())
         keys.sort()

@@ -20,7 +20,7 @@ from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.controllers.roles_controller import RolesController
-from app.classes.helpers.helpers import Helpers
+from app.classes.helpers.helpers import Helpers, MASTER_CONFIG
 from app.classes.shared.main_models import DatabaseShortcuts
 from app.classes.web.base_handler import BaseHandler
 from app.classes.web.webhooks.webhook_factory import WebhookFactory
@@ -845,6 +845,21 @@ class PanelHandler(BaseHandler):
                     exec_user["user_id"]
                 )
 
+            # Load temp password expiry presets from config
+            temp_pw_presets = self.helper.get_setting(
+                "temp_password_expiry_presets"
+            )
+            if temp_pw_presets is False:
+                temp_pw_presets = MASTER_CONFIG["temp_password_expiry_presets"]
+            page_data["temp_password_expiry_presets"] = temp_pw_presets
+
+            temp_pw_default = self.helper.get_setting(
+                "temp_password_expiry_default"
+            )
+            if temp_pw_default is False:
+                temp_pw_default = MASTER_CONFIG["temp_password_expiry_default"]
+            page_data["temp_password_expiry_default"] = temp_pw_default
+
             page_data["active_link"] = "panel_config"
             template = "panel/panel_config.html"
 
@@ -1461,6 +1476,22 @@ class PanelHandler(BaseHandler):
             if exec_user["email"] == "default@example.com":
                 page_data["user"]["email"] = ""
             page_data["passkey_enabled"] = self.controller.passkey.is_enabled()
+
+            # Load temp password expiry presets from config
+            temp_pw_presets = self.helper.get_setting(
+                "temp_password_expiry_presets"
+            )
+            if temp_pw_presets is False:
+                temp_pw_presets = MASTER_CONFIG["temp_password_expiry_presets"]
+            page_data["temp_password_expiry_presets"] = temp_pw_presets
+
+            temp_pw_default = self.helper.get_setting(
+                "temp_password_expiry_default"
+            )
+            if temp_pw_default is False:
+                temp_pw_default = MASTER_CONFIG["temp_password_expiry_default"]
+            page_data["temp_password_expiry_default"] = temp_pw_default
+
             template = "panel/panel_edit_user.html"
 
         elif page == "edit_user_apikeys":
