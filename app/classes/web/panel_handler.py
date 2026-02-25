@@ -229,6 +229,9 @@ class PanelHandler(BaseHandler):
         )
 
         api_key, token_data, exec_user = self.current_user
+        if exec_user.get("require_password_change"):
+            self.redirect("/login")
+            return
         superuser = exec_user["superuser"]
         if api_key is not None:
             superuser = superuser and api_key.full_access

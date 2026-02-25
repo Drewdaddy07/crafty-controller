@@ -338,7 +338,7 @@ class ApiAuthLoginHandler(BaseApiHandler):
                 )
             if user_data.require_password_change:
                 response_data["require_password_change"] = True
-                response_data["page"] = "/panel/change_password"
+                response_data["page"] = "/panel/dashboard"
                 self.controller.management.add_to_audit_log(
                     user_data.user_id,
                     "logged in with temporary password",
