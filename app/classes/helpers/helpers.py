@@ -471,9 +471,9 @@ class Helpers:
 
         return result_of_check == 0
 
-    def create_pass(self, length: int = 16):
-        # Length of password to generate (minimum 8 to ensure complexity)
-        max_len = max(length, 8)
+    def create_pass(self):
+        # Maximum length of password needed
+        max_len = 64
 
         # Declare string of the character that we need in our password
         digits = string.digits

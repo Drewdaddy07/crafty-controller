@@ -23,15 +23,11 @@ reset_password_schema = {
             "type": ["number", "null"],
             "minimum": 1,
         },
-        "password_length": {
-            "type": "integer",
-            "minimum": 8,
-            "maximum": 128,
-        },
         "require_password_change": {
             "type": "boolean",
         },
     },
+    "required": ["password"],
     "additionalProperties": False,
 }
 
@@ -104,13 +100,10 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
                     },
                 )
 
-        # Parse request body (may be empty)
+        # Parse request body
         try:
-            if self.request.body:
-                data = json.loads(self.request.body)
-                validate(data, reset_password_schema)
-            else:
-                data = {}
+            data = json.loads(self.request.body)
+            validate(data, reset_password_schema)
         except (json.JSONDecodeError, ValidationError):
             return self.finish_json(
                 400,
@@ -121,9 +114,7 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
                 },
             )
 
-        # Generate or use provided password
-        password_length = data.get("password_length", 16)
-        password = data.get("password") or self.helper.create_pass(password_length)
+        password = data["password"]
 
         # Calculate expiry if requested
         password_expires = None
