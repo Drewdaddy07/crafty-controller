@@ -9,6 +9,7 @@ from app.classes.models.roles import HelperRoles
 from app.classes.models.users import HelperUsers
 from app.classes.web.base_api_handler import BaseApiHandler
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -141,14 +142,9 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
 
         try:
             data = json.loads(self.request.body)
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as e:
             return self.finish_json(
-                400,
-                {
-                    "status": "error",
-                    "error": "INVALID_JSON",
-                    "error_data": "Invalid request body",
-                },
+                400, {"status": "error", "error": "INVALID_JSON", "error_data": str(e)}
             )
         try:
             validate(data, user_patch_schema)
