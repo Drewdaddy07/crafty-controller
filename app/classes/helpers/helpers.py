@@ -78,7 +78,7 @@ MASTER_CONFIG = {
     "passkey_rp_name": "Crafty Controller",
     "experimental": False,
     "temp_password_expiry_presets": [
-        {"hours": None, "label": "No Expiration"},
+        {"hours": -1, "label": "No Expiration"},
         {"hours": 1, "label": "1 Hour"},
         {"hours": 24, "label": "24 Hours"},
         {"hours": 168, "label": "7 Days"},

@@ -156,7 +156,10 @@ config_json_schema = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "hours": {"type": ["integer", "null"], "minimum": 1},
+                    "hours": {
+                        "type": "integer",
+                        "oneOf": [{"const": -1}, {"minimum": 1}],
+                    },
                     "label": {"type": "string", "minLength": 1},
                 },
                 "required": ["hours", "label"],
@@ -167,8 +170,8 @@ config_json_schema = {
             "fill": True,
         },
         "temp_password_expiry_default": {
-            "type": ["integer", "null"],
-            "minimum": 1,
+            "type": "integer",
+            "oneOf": [{"const": -1}, {"minimum": 1}],
             "error": "typeInteger",
             "fill": True,
         },

@@ -64,8 +64,8 @@ class ApiUsersIndexHandler(BaseApiHandler):
             "properties": {
                 **self.controller.users.user_jsonschema_props,
                 "expires_hours": {
-                    "type": ["number", "null"],
-                    "minimum": 1,
+                    "type": "number",
+                    "oneOf": [{"const": -1}, {"minimum": 1}],
                     "error": "typeInteger",
                     "fill": True,
                 },
@@ -236,7 +236,11 @@ class ApiUsersIndexHandler(BaseApiHandler):
         if require_password_change:
             user_update_data["require_password_change"] = True
         expires_hours = data.get("expires_hours")
-        if require_password_change and expires_hours is not None:
+        if (
+            require_password_change
+            and expires_hours is not None
+            and expires_hours != -1
+        ):
             user_update_data["password_expires"] = Helpers.get_utc_now() + timedelta(
                 hours=expires_hours
             )

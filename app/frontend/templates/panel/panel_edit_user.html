@@ -151,7 +151,7 @@ data['lang']) }}{% end %}
                         <label class="form-label" for="new_user_expires">{{ translate('tempPassword', 'expiresIn', data['lang']) }}</label>
                         <select class="form-control" id="new_user_expires" name="new_user_expires" form="dummy">
                           {% for preset in data.get("temp_password_expiry_presets", []) %}
-                          <option value="{{ '' if preset['hours'] is None else preset['hours'] }}"
+                          <option value="{{ -1 if preset['hours'] is None else preset['hours'] }}"
                             {{ 'selected' if str(preset.get('hours', '')) == str(data.get('temp_password_expiry_default', '')) else '' }}>
                             {{ preset['label'] }}
                           </option>
@@ -571,10 +571,7 @@ data['lang']) }}{% end %}
         }
         formDataObject.require_password_change = $("#new_user_require_change").is(":checked");
         if (formDataObject.require_password_change) {
-          let expiresVal = $("#new_user_expires").val();
-          if (expiresVal !== "") {
-            formDataObject.expires_hours = parseInt(expiresVal);
-          }
+          formDataObject.expires_hours = parseInt($("#new_user_expires").val());
         }
       }
     }

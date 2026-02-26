@@ -134,7 +134,7 @@ $(".reset_password").on("click", function () {
         let p = presets[i];
         let safeLabel = $("<div>").text(p.label).html();
         let selected = (String(p.hours) === String(defaultExpiry)) ? ' selected' : '';
-        let val = (p.hours === null || p.hours === "") ? '' : p.hours;
+        let val = (p.hours === null) ? -1 : p.hours;
         expiryOptions += '<option value="' + val + '"' + selected + '>' + safeLabel + '</option>';
     }
 
@@ -198,10 +198,7 @@ $(".reset_password").on("click", function () {
                         require_password_change: requireChange,
                     };
                     if (requireChange) {
-                        let expiresVal = $("#reset_expires").val();
-                        if (expiresVal !== "") {
-                            body.expires_hours = parseInt(expiresVal);
-                        }
+                        body.expires_hours = parseInt($("#reset_expires").val());
                     }
 
                     (async () => {

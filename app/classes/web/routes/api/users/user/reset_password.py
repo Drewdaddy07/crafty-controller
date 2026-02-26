@@ -20,8 +20,8 @@ reset_password_schema = {
             "minLength": 8,
         },
         "expires_hours": {
-            "type": ["number", "null"],
-            "minimum": 1,
+            "type": "number",
+            "oneOf": [{"const": -1}, {"minimum": 1}],
         },
         "require_password_change": {
             "type": "boolean",
@@ -116,10 +116,14 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
 
         password = data["password"]
 
-        # Calculate expiry if requested
+        # Calculate expiry if requested (-1 means no expiry)
         password_expires = None
         expires_hours = data.get("expires_hours")
-        if data.get("require_password_change", True) and expires_hours is not None:
+        if (
+            data.get("require_password_change", True)
+            and expires_hours is not None
+            and expires_hours != -1
+        ):
             password_expires = Helpers.get_utc_now() + timedelta(hours=expires_hours)
 
         # Update the user
@@ -136,7 +140,7 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
         # Audit log
         expiry_msg = (
             f", expires in {expires_hours}h"
-            if expires_hours is not None
+            if expires_hours is not None and expires_hours != -1
             else ", no expiry"
         )
         self.controller.management.add_to_audit_log(
