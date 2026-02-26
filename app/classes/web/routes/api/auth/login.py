@@ -273,12 +273,6 @@ class ApiAuthLoginHandler(BaseApiHandler):
             )
             logger.info(f"User: {user_data} Logged in from IP: {self.get_remote_ip()}")
 
-            # record this login
-            query = Users.select().where(Users.username == username.lower()).get()
-            query.last_ip = self.get_remote_ip()
-            query.last_login = Helpers.get_time_as_string()
-            query.save()
-
             # Check if temp password has expired
             # password_expires may be a string or datetime from SQLite
             password_expires = user_data.password_expires
@@ -301,6 +295,7 @@ class ApiAuthLoginHandler(BaseApiHandler):
                     None,
                     self.get_remote_ip(),
                 )
+                self.controller.log_attempt(self.get_remote_ip(), username)
                 return self.finish_json(
                     401,
                     {
@@ -313,6 +308,12 @@ class ApiAuthLoginHandler(BaseApiHandler):
                         ),
                     },
                 )
+
+            # record this login
+            query = Users.select().where(Users.username == username.lower()).get()
+            query.last_ip = self.get_remote_ip()
+            query.last_login = Helpers.get_time_as_string()
+            query.save()
 
             # log this login
             self.controller.management.add_to_audit_log(

@@ -243,41 +243,26 @@ class ApiUsersUserIndexHandler(BaseApiHandler):
                 # The user is not superuser so they can't change the superuser status
                 data.pop("superuser")
 
-        # Guard require_password_change - only admins can set this
-        if "require_password_change" in data:
-            if str(user["user_id"]) == str(user_id) and not superuser:
-                return self.finish_json(
-                    400,
-                    {
-                        "status": "error",
-                        "error": "INVALID_FIELD_MODIFY",
-                        "error_data": self.helper.translation.translate(
-                            "validators", "insufficientPerms", auth_data[4]["lang"]
-                        ),
-                    },
-                )
-            if not superuser and EnumPermissionsCrafty.USER_CONFIG not in (
-                exec_user_crafty_permissions
-            ):
-                data.pop("require_password_change")
-
-        # Guard password_expires - only admins can set this
-        if "password_expires" in data:
-            if str(user["user_id"]) == str(user_id) and not superuser:
-                return self.finish_json(
-                    400,
-                    {
-                        "status": "error",
-                        "error": "INVALID_FIELD_MODIFY",
-                        "error_data": self.helper.translation.translate(
-                            "validators", "insufficientPerms", auth_data[4]["lang"]
-                        ),
-                    },
-                )
-            if not superuser and EnumPermissionsCrafty.USER_CONFIG not in (
-                exec_user_crafty_permissions
-            ):
-                data.pop("password_expires")
+        # Guard require_password_change and password_expires - only admins can set
+        for field in ("require_password_change", "password_expires"):
+            if field in data:
+                if str(user["user_id"]) == str(user_id) and not superuser:
+                    return self.finish_json(
+                        400,
+                        {
+                            "status": "error",
+                            "error": "INVALID_FIELD_MODIFY",
+                            "error_data": self.helper.translation.translate(
+                                "validators",
+                                "insufficientPerms",
+                                auth_data[4]["lang"],
+                            ),
+                        },
+                    )
+                if not superuser and EnumPermissionsCrafty.USER_CONFIG not in (
+                    exec_user_crafty_permissions
+                ):
+                    data.pop(field)
 
         if "permissions" in data:
             if str(user["user_id"]) == str(user_id) and not superuser:

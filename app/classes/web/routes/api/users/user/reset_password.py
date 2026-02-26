@@ -21,7 +21,7 @@ reset_password_schema = {
         },
         "expires_hours": {
             "type": ["number", "null"],
-            "minimum": 0,
+            "minimum": 1,
         },
         "password_length": {
             "type": "integer",
@@ -84,7 +84,7 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
                     "status": "error",
                     "error": "ACCESS_DENIED",
                     "error_data": self.helper.translation.translate(
-                        "validators", "insufficientPerms", auth_data[4]["lang"]
+                        "validators", "insufficientPerms", user["lang"]
                     ),
                 },
             )
@@ -99,7 +99,7 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
                         "status": "error",
                         "error": "ACCESS_DENIED",
                         "error_data": self.helper.translation.translate(
-                            "validators", "insufficientPerms", auth_data[4]["lang"]
+                            "validators", "insufficientPerms", user["lang"]
                         ),
                     },
                 )
@@ -128,7 +128,7 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
         # Calculate expiry if requested
         password_expires = None
         expires_hours = data.get("expires_hours")
-        if expires_hours is not None:
+        if data.get("require_password_change", True) and expires_hours is not None:
             password_expires = Helpers.get_utc_now() + timedelta(hours=expires_hours)
 
         # Update the user
@@ -144,7 +144,9 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
 
         # Audit log
         expiry_msg = (
-            f", expires in {expires_hours}h" if expires_hours else ", no expiry"
+            f", expires in {expires_hours}h"
+            if expires_hours is not None
+            else ", no expiry"
         )
         self.controller.management.add_to_audit_log(
             user["user_id"],

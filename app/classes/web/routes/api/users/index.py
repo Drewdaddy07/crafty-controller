@@ -65,7 +65,7 @@ class ApiUsersIndexHandler(BaseApiHandler):
                 **self.controller.users.user_jsonschema_props,
                 "expires_hours": {
                     "type": ["number", "null"],
-                    "minimum": 0,
+                    "minimum": 1,
                     "error": "typeInteger",
                     "fill": True,
                 },
