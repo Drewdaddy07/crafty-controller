@@ -968,6 +968,12 @@ class PanelHandler(BaseHandler):
                 page_data["super-disabled"] = "disabled"
 
             page_data["exec_user"] = exec_user["user_id"]
+            page_data["temp_password_expiry_presets"] = self.helper.get_setting(
+                "temp_password_expiry_presets"
+            )
+            page_data["temp_password_expiry_default"] = self.helper.get_setting(
+                "temp_password_expiry_default"
+            )
 
             page_data["manager"] = {
                 "user_id": -100,

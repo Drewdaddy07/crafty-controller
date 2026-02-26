@@ -1,7 +1,10 @@
 import logging
 import json
+from datetime import timedelta
+
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+from app.classes.helpers.helpers import Helpers
 from app.classes.shared.translation import Translation
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.roles import Roles, HelperRoles
@@ -60,6 +63,12 @@ class ApiUsersIndexHandler(BaseApiHandler):
             "type": "object",
             "properties": {
                 **self.controller.users.user_jsonschema_props,
+                "expires_hours": {
+                    "type": ["number", "null"],
+                    "minimum": 0,
+                    "error": "typeInteger",
+                    "fill": True,
+                },
             },
             "required": ["username", "password"],
             "additionalProperties": False,
@@ -226,6 +235,11 @@ class ApiUsersIndexHandler(BaseApiHandler):
         user_update_data = {"roles": roles, "lang": lang, "hints": hints}
         if require_password_change:
             user_update_data["require_password_change"] = True
+        expires_hours = data.get("expires_hours")
+        if require_password_change and expires_hours is not None:
+            user_update_data["password_expires"] = (
+                Helpers.get_utc_now() + timedelta(hours=expires_hours)
+            )
         self.controller.users.update_user(
             user_id,
             user_update_data,
