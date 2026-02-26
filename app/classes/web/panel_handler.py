@@ -846,16 +846,12 @@ class PanelHandler(BaseHandler):
                 )
 
             # Load temp password expiry presets from config
-            temp_pw_presets = self.helper.get_setting(
-                "temp_password_expiry_presets"
-            )
+            temp_pw_presets = self.helper.get_setting("temp_password_expiry_presets")
             if temp_pw_presets is False:
                 temp_pw_presets = MASTER_CONFIG["temp_password_expiry_presets"]
             page_data["temp_password_expiry_presets"] = temp_pw_presets
 
-            temp_pw_default = self.helper.get_setting(
-                "temp_password_expiry_default"
-            )
+            temp_pw_default = self.helper.get_setting("temp_password_expiry_default")
             if temp_pw_default is False:
                 temp_pw_default = MASTER_CONFIG["temp_password_expiry_default"]
             page_data["temp_password_expiry_default"] = temp_pw_default
@@ -1484,16 +1480,12 @@ class PanelHandler(BaseHandler):
             page_data["passkey_enabled"] = self.controller.passkey.is_enabled()
 
             # Load temp password expiry presets from config
-            temp_pw_presets = self.helper.get_setting(
-                "temp_password_expiry_presets"
-            )
+            temp_pw_presets = self.helper.get_setting("temp_password_expiry_presets")
             if temp_pw_presets is False:
                 temp_pw_presets = MASTER_CONFIG["temp_password_expiry_presets"]
             page_data["temp_password_expiry_presets"] = temp_pw_presets
 
-            temp_pw_default = self.helper.get_setting(
-                "temp_password_expiry_default"
-            )
+            temp_pw_default = self.helper.get_setting("temp_password_expiry_default")
             if temp_pw_default is False:
                 temp_pw_default = MASTER_CONFIG["temp_password_expiry_default"]
             page_data["temp_password_expiry_default"] = temp_pw_default

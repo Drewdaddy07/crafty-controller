@@ -237,8 +237,8 @@ class ApiUsersIndexHandler(BaseApiHandler):
             user_update_data["require_password_change"] = True
         expires_hours = data.get("expires_hours")
         if require_password_change and expires_hours is not None:
-            user_update_data["password_expires"] = (
-                Helpers.get_utc_now() + timedelta(hours=expires_hours)
+            user_update_data["password_expires"] = Helpers.get_utc_now() + timedelta(
+                hours=expires_hours
             )
         self.controller.users.update_user(
             user_id,
