@@ -89,6 +89,21 @@ class ApiUsersUserResetPasswordHandler(BaseApiHandler):
                 },
             )
 
+        # Non-superusers can only reset passwords for users they manage
+        if not superuser:
+            target_model = HelperUsers.get_user_model(user_id)
+            if str(user["user_id"]) != str(target_model.manager):
+                return self.finish_json(
+                    403,
+                    {
+                        "status": "error",
+                        "error": "ACCESS_DENIED",
+                        "error_data": self.helper.translation.translate(
+                            "validators", "insufficientPerms", auth_data[4]["lang"]
+                        ),
+                    },
+                )
+
         # Parse request body (may be empty)
         try:
             if self.request.body:
