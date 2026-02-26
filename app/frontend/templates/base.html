@@ -577,23 +577,6 @@
       console.log('%c[Crafty Controller] %cAlpine.js initialized!', 'font-weight: 900; color: #800080;', 'color: #eee;');
     });
 
-    // Global handler: redirect to change_password page when API returns
-    // PASSWORD_CHANGE_REQUIRED (user has a temp password that must be changed).
-    // Intercepts fetch() since the codebase uses fetch, not jQuery $.ajax.
-    const _origFetch = window.fetch;
-    window.fetch = function (...args) {
-      return _origFetch.apply(this, args).then(function (response) {
-        if (response.status === 403) {
-          response.clone().json().then(function (data) {
-            if (data.error === "PASSWORD_CHANGE_REQUIRED" && location.pathname !== "/panel/change_password") {
-              location.href = "/panel/change_password";
-            }
-          }).catch(function () { /* not JSON, ignore */ });
-        }
-        return response;
-      });
-    };
-
     $(document).ready(function () {
       console.log('%c[Crafty Controller] %cReady for JS!', 'font-weight: 900; color: #800080;', 'font-weight: 900; color: #eee;');
       if ($(document.documentElement).data("username") === "anti-lockout-user") {
