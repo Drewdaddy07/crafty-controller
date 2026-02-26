@@ -144,7 +144,7 @@
                   </div>
                   {% elif item[0] == 'temp_password_expiry_default' %}
                   <input type="number" class="form-control" name="temp_password_expiry_default" id="temp_password_expiry_default" value="{{ -1 if item[1] is None else item[1] }}" min="-1" step="1" placeholder="(-1 = no expiry)">
-                  <small class="form-text text-muted">Enter the hours value of the preset to select by default, or use -1 for "No Expiration".</small>
+                  <small class="form-text text-muted">{{ translate('configJson', 'temp_password_expiry_default_help', data['lang']) }}</small>
                   {% elif isinstance(item[1], list) %}
                   <textarea id="{{item[0]}}" value="{{','.join(item[1])}}" type="text" name="{{item[0]}}"
                     class="form-control list">{{','.join(item[1])}}</textarea>

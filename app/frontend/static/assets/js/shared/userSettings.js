@@ -125,6 +125,7 @@ $(".reset_password").on("click", function () {
     let tPasswordGenerated = el.data("t-password-generated") || "Password Set Successfully";
     let tCopyPassword = el.data("t-copy-password") || "Copy Password";
     let tCancel = el.data("t-cancel") || "Cancel";
+    let tResetError = el.data("t-reset-error") || "Failed to reset password. Please try again.";
 
     // Build expiry options from presets
     let presets = el.data("presets") || [];
@@ -253,7 +254,7 @@ $(".reset_password").on("click", function () {
                         } catch (error) {
                             bootbox.alert({
                                 title: "Error",
-                                message: "Failed to reset password. Please try again."
+                                message: tResetError
                             });
                         }
                     })();

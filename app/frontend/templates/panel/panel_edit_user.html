@@ -100,7 +100,8 @@ data['lang']) }}{% end %}
                           data-t-set-password="{{ translate('tempPassword', 'setPassword', data['lang']) }}"
                           data-t-password-generated="{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}"
                           data-t-copy-password="{{ translate('tempPassword', 'copyPassword', data['lang']) }}"
-                          data-t-cancel="{{ translate('login', 'cancel', data['lang']) }}"><i
+                          data-t-cancel="{{ translate('login', 'cancel', data['lang']) }}"
+                          data-t-reset-error="{{ translate('tempPassword', 'resetError', data['lang']) }}"><i
                             class="ph-fill ph-lock"></i></span>
                         {% elif not data['new_user'] and data['user']['user_id'] == data['exec_user'] %}
                         <span data-toggle="tooltip"
@@ -412,7 +413,8 @@ data['lang']) }}{% end %}
                   data-t-set-password="{{ translate('tempPassword', 'setPassword', data['lang']) }}"
                   data-t-password-generated="{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}"
                   data-t-copy-password="{{ translate('tempPassword', 'copyPassword', data['lang']) }}"
-                  data-t-cancel="{{ translate('login', 'cancel', data['lang']) }}">
+                  data-t-cancel="{{ translate('login', 'cancel', data['lang']) }}"
+                  data-t-reset-error="{{ translate('tempPassword', 'resetError', data['lang']) }}">
                   <i class="ph-fill ph-lock"></i> {{ translate('tempPassword', 'resetPassword', data['lang']) }}
                 </button>
                 {% elif not data['new_user'] and data['user']['user_id'] == data['exec_user'] %}

@@ -71,7 +71,8 @@
         "enable_passkey_auth": "Enable passkey (WebAuthn) authentication",
         "passkey_rp_name": "Passkey relying party name (displayed in authenticator prompts)",
         "temp_password_expiry_presets": "Temp Password Expiry Presets",
-        "temp_password_expiry_default": "Default Expiry (hours)"
+        "temp_password_expiry_default": "Default Expiry (hours)",
+        "temp_password_expiry_default_help": "Enter the hours value of the preset to select by default, or use -1 for \"No Expiration\"."
     },
     "credits": {
         "developmentTeam": "Development Team",
@@ -810,7 +811,8 @@
         "setPassword": "Set Password",
         "requireChangeLabel": "Require password change on next login",
         "tempPasswordStatus": "Temporary password active",
-        "expiresOn": "Password expires on"
+        "expiresOn": "Password expires on",
+        "resetError": "Failed to reset password. Please try again."
     },
     "userConfig": {
         "apiKey": "API Keys",
