@@ -2,6 +2,7 @@
 ## --- [4.10.0] - 2026/TBD
 ### Refactor
 - Switch from Font Awesome to Phosphor Icons (open source) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/972))
+- Overhaul Server Metrics (Frontend) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/971))
 ### New features
 - Experimental SteamCMD Alpha ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/451))
 ### Bug fixes
