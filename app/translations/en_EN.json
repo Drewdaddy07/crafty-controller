@@ -69,7 +69,10 @@
         "superMFA": "Require superusers to enable MFA",
         "virtual_terminal_lines": "How many lines we should allow in your server terminal buffer",
         "enable_passkey_auth": "Enable passkey (WebAuthn) authentication",
-        "passkey_rp_name": "Passkey relying party name (displayed in authenticator prompts)"
+        "passkey_rp_name": "Passkey relying party name (displayed in authenticator prompts)",
+        "temp_password_expiry_presets": "Temp Password Expiry Presets",
+        "temp_password_expiry_default": "Default Expiry (hours)",
+        "temp_password_expiry_default_help": "Enter the hours value of the preset to select by default, or use -1 for \"No Expiration\"."
     },
     "credits": {
         "developmentTeam": "Development Team",
@@ -274,7 +277,9 @@
         "username": "Username",
         "viewStatus": "View Public Status Page",
         "signInWithPasskey": "Sign in with Passkey",
-        "orSeparator": "or"
+        "orSeparator": "or",
+        "passwordChangeRequired": "You must change your password before continuing.",
+        "tempPasswordExpired": "Your temporary password has expired. Please contact an administrator for a new one."
     },
     "notify": {
         "accountSettings": "Account Settings",
@@ -785,6 +790,30 @@
         "starting": "Crafty Is Starting...",
         "tasks": "Starting Tasks Scheduler"
     },
+    "tempPassword": {
+        "resetPassword": "Reset Password",
+        "generatePassword": "Generate Password",
+        "requireChange": "Require password change on next login",
+        "expiresIn": "Password expires in",
+        "noExpiry": "No expiry",
+        "oneHour": "1 hour",
+        "twentyFourHours": "24 hours",
+        "sevenDays": "7 days",
+        "passwordGenerated": "Password has been reset successfully.",
+        "copyPassword": "Copy Password",
+        "changeYourPassword": "Change Your Password",
+        "newPassword": "New Password",
+        "confirmNewPassword": "Confirm New Password",
+        "passwordChanged": "Your password has been changed successfully.",
+        "mustChangePassword": "You must change your password before you can continue.",
+        "passwordLength": "Password Length",
+        "generateRandom": "Generate",
+        "setPassword": "Set Password",
+        "requireChangeLabel": "Require password change on next login",
+        "tempPasswordStatus": "Temporary password active",
+        "expiresOn": "Password expires on",
+        "resetError": "Failed to reset password. Please try again."
+    },
     "userConfig": {
         "apiKey": "API Keys",
         "auth": "Authorized? ",
@@ -814,6 +843,7 @@
         "notExist": "You cannot delete something that doesn't exist!",
         "pageTitle": "Edit User",
         "pageTitleNew": "Create User",
+        "passNotMatch": "Passwords must match",
         "password": "New Password",
         "permName": "Permission Name",
         "repeat": "Confirm Password",

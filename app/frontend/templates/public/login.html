@@ -127,6 +127,42 @@
             </div>
             </form>
 
+            <form id="change-password-form" style="display: none;">
+              {% raw xsrf_form_html() %}
+              <div class="form-group">
+                <div class="alert alert-warning" role="alert"
+                  style="background: rgba(255, 193, 7, 0.15); border: 1px solid rgba(255, 193, 7, 0.4); color: #ffc107; border-radius: 0.4rem;">
+                  {{ translate('tempPassword', 'mustChangePassword', data['lang']) }}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="label">{{ translate('tempPassword', 'newPassword', data['lang']) }}</label>
+                <div class="input-group">
+                  <input type="password" class="form-control login-text-input login-input"
+                    placeholder="{{ translate('tempPassword', 'newPassword', data['lang']) }}"
+                    id="new_password" minlength="8" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="label">{{ translate('tempPassword', 'confirmNewPassword', data['lang']) }}</label>
+                <div class="input-group">
+                  <input type="password" class="form-control login-text-input login-input"
+                    placeholder="{{ translate('tempPassword', 'confirmNewPassword', data['lang']) }}"
+                    id="confirm_password" minlength="8" required>
+                </div>
+              </div>
+              <fieldset id="change-password-error" class="loginError"></fieldset>
+              <div class="form-group">
+                <button type="submit" class="login-input btn btn-primary submit-btn btn-block">
+                  {{ translate('tempPassword', 'changeYourPassword', data['lang']) }}
+                </button>
+              </div>
+
+              <div class="text-block text-center my-3">
+                <span class="text-small font-weight-semibold"><a href="https://craftycontrol.com/">Crafty Control</a></span>
+              </div>
+            </form>
+
           </div>
 
         </div>
@@ -211,6 +247,13 @@
       });
       let responseData = await res.json();
       if (responseData.status === "ok") {
+        if (responseData.data.require_password_change) {
+          // Swap to change password form within the login modal
+          $("#login-form").hide();
+          $("#change-password-form").show();
+          $("#new_password").focus();
+          return;
+        }
         if (responseData.data.warning) {
           bootbox.alert({
             message: responseData.data.warning,
@@ -249,6 +292,61 @@
         totalSeconds--;
       }, 1000);
     }
+
+    // Change password form handler
+    $("#change-password-form").on("submit", async function (e) {
+      e.preventDefault();
+      let newPassword = $("#new_password").val();
+      let confirmPassword = $("#confirm_password").val();
+
+      // Reset error state
+      $("#change-password-error").empty();
+      $("#new_password, #confirm_password").css("outline", "");
+
+      if (newPassword !== confirmPassword) {
+        $("#change-password-error").text("{{ translate('userConfig', 'passNotMatch', data['lang']) }}");
+        $("#new_password, #confirm_password").css("outline", "1px solid red");
+        return;
+      }
+
+      if (newPassword.length < 8) {
+        $("#change-password-error").text("Password must be at least 8 characters.");
+        $("#new_password, #confirm_password").css("outline", "1px solid red");
+        return;
+      }
+
+      const $submitBtn = $(this).find('button[type="submit"]');
+      const originalHtml = $submitBtn.html();
+      $submitBtn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i>');
+
+      try {
+        let xsrf = document.querySelector('#change-password-form input[name="_xsrf"]').value;
+        let res = await fetch(`/api/v2/users/@me`, {
+          method: 'PATCH',
+          headers: {
+            'X-XSRFToken': xsrf,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ "password": newPassword.toString() }),
+        });
+        let responseData = await res.json();
+
+        if (responseData.status === "ok") {
+          bootbox.alert({
+            message: "{{ translate('tempPassword', 'passwordChanged', data['lang']) }}",
+            callback: function () {
+              location.href = "/panel/dashboard";
+            }
+          });
+        } else {
+          $("#change-password-error").text(responseData.error_data || "Failed to change password.");
+        }
+      } catch (error) {
+        $("#change-password-error").text("Failed to change password. Please try again.");
+      } finally {
+        $submitBtn.prop('disabled', false).html(originalHtml);
+      }
+    });
 
     // Passkey authentication - base64URLToBuffer and bufferToBase64URL loaded from passkey.js
 

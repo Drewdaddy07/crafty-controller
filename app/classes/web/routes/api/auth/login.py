@@ -1,6 +1,6 @@
 import logging
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from app.classes.models.users import Users
@@ -268,6 +268,42 @@ class ApiAuthLoginHandler(BaseApiHandler):
             )
             logger.info(f"User: {user_data} Logged in from IP: {self.get_remote_ip()}")
 
+            # Check if temp password has expired
+            # password_expires may be a string or datetime from SQLite
+            password_expires = user_data.password_expires
+            if password_expires:
+                if isinstance(password_expires, str):
+                    try:
+                        password_expires = datetime.fromisoformat(password_expires)
+                    except (ValueError, TypeError):
+                        password_expires = None
+                if password_expires and password_expires.tzinfo is None:
+                    password_expires = password_expires.replace(tzinfo=timezone.utc)
+            if password_expires and password_expires < Helpers.get_utc_now():
+                auth_log.warning(
+                    f"User {username} attempted login with expired temp password"
+                    f" from {self.get_remote_ip()}"
+                )
+                self.controller.management.add_to_audit_log(
+                    user_data.user_id,
+                    "login rejected: temporary password expired",
+                    None,
+                    self.get_remote_ip(),
+                )
+                self.controller.log_attempt(self.get_remote_ip(), username)
+                return self.finish_json(
+                    401,
+                    {
+                        "status": "error",
+                        "error": "TEMP_PASSWORD_EXPIRED",
+                        "error_data": self.helper.translation.translate(
+                            "login",
+                            "tempPasswordExpired",
+                            self.helper.get_setting("language"),
+                        ),
+                    },
+                )
+
             # record this login
             query = Users.select().where(Users.username == username.lower()).get()
             query.last_ip = self.get_remote_ip()
@@ -283,37 +319,30 @@ class ApiAuthLoginHandler(BaseApiHandler):
             )
 
             self.set_current_user(user_data.user_id, token)
+
+            # Build login response
+            response_data = {
+                "token": token,
+                "user_id": str(user_data.user_id),
+                "page": "/panel/dashboard",
+            }
             if valid_backup_code:
-                return self.finish_json(
-                    200,
-                    {
-                        "status": "ok",
-                        "data": {
-                            "token": token,
-                            "user_id": str(user_data.user_id),
-                            "page": "/panel/dashboard",
-                            "warning": self.helper.translation.translate(
-                                "login",
-                                "burnedBackupCode",
-                                self.controller.users.get_user_lang_by_id(
-                                    user_data.user_id
-                                ),
-                            ),
-                        },
-                    },
+                response_data["warning"] = self.helper.translation.translate(
+                    "login",
+                    "burnedBackupCode",
+                    self.controller.users.get_user_lang_by_id(user_data.user_id),
+                )
+            if user_data.require_password_change:
+                response_data["require_password_change"] = True
+                response_data["page"] = "/panel/dashboard"
+                self.controller.management.add_to_audit_log(
+                    user_data.user_id,
+                    "logged in with temporary password",
+                    None,
+                    self.get_remote_ip(),
                 )
 
-            return self.finish_json(
-                200,
-                {
-                    "status": "ok",
-                    "data": {
-                        "token": token,
-                        "user_id": str(user_data.user_id),
-                        "page": "/panel/dashboard",
-                    },
-                },
-            )
+            return self.finish_json(200, {"status": "ok", "data": response_data})
 
         # log this failed login attempt
         self.controller.management.add_to_audit_log(

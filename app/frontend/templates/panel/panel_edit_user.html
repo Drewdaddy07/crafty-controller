@@ -82,11 +82,37 @@ data['lang']) }}{% end %}
                       <h4 class="card-title"><i class="ph-fill ph-user"></i> {{ translate('userConfig', 'userSettings',
                         data['lang']) }}</h4>
 
-                      <span data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
-                        data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"
-                        data-toggle="tooltip" title="{{ translate('userConfig', 'password', data['lang'])}}"
-                        class="edit_password clickable" data-id="{{data['user']['user_id']}}"><i
-                          class="fa-solid fa-lock"></i></span>
+                      <span>
+                        {% if not data['new_user'] and data['superuser'] and data['user']['user_id'] != data['exec_user'] %}
+                        <span data-toggle="tooltip"
+                          title="{{ translate('tempPassword', 'resetPassword', data['lang']) }}"
+                          class="reset_password clickable"
+                          data-id="{{data['user']['user_id']}}"
+                          data-username="{{data['user']['username']}}"
+                          data-presets='{{ json_encode(data.get("temp_password_expiry_presets", [])) }}'
+                          data-default-expiry="{{ data.get('temp_password_expiry_default', '') }}"
+                          data-t-reset-password="{{ translate('tempPassword', 'resetPassword', data['lang']) }}"
+                          data-t-new-password="{{ translate('tempPassword', 'newPassword', data['lang']) }}"
+                          data-t-generate-random="{{ translate('tempPassword', 'generateRandom', data['lang']) }}"
+                          data-t-password-length="{{ translate('tempPassword', 'passwordLength', data['lang']) }}"
+                          data-t-require-change-label="{{ translate('tempPassword', 'requireChangeLabel', data['lang']) }}"
+                          data-t-expires-in="{{ translate('tempPassword', 'expiresIn', data['lang']) }}"
+                          data-t-set-password="{{ translate('tempPassword', 'setPassword', data['lang']) }}"
+                          data-t-password-generated="{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}"
+                          data-t-copy-password="{{ translate('tempPassword', 'copyPassword', data['lang']) }}"
+                          data-t-cancel="{{ translate('login', 'cancel', data['lang']) }}"
+                          data-t-reset-error="{{ translate('tempPassword', 'resetError', data['lang']) }}"><i
+                            class="ph-fill ph-lock"></i></span>
+                        {% elif not data['new_user'] and data['user']['user_id'] == data['exec_user'] %}
+                        <span data-toggle="tooltip"
+                          title="{{ translate('userConfig', 'changePass', data['lang']) }}"
+                          class="edit_password clickable"
+                          data-id="{{data['user']['user_id']}}"
+                          data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
+                          data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"><i
+                            class="ph-fill ph-lock"></i></span>
+                        {% end %}
+                      </span>
                     </div>
                     <div class="card-body">
                       {% if data['new_user'] %}
@@ -98,24 +124,40 @@ data['lang']) }}{% end %}
                           data-lpignore="true" value="{{ data['user']['username']  }}" placeholder="User Name">
                       </div>
                       <div class="form-group">
-                        <label class="form-label" for="password0">{{ translate('userConfig', 'password', data['lang'])
-                          }}<small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang']) }}
-                          </small> </label>
-                        <input type="password" class="form-control" name="password0" id="password0" value=""
-                          autocomplete="new-password" data-lpignore="true" placeholder="Password" form="dummy">
-                        <span class="passwords-match" ,
-                          data-content="{{ translate('panelConfig', 'match', data['lang']) }}" ,
-                          data-placement="right"></span>
+                        <label class="form-label" for="new_user_password">{{ translate('tempPassword', 'newPassword', data['lang']) }}</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" name="new_user_password" id="new_user_password"
+                            autocomplete="off" data-lpignore="true" placeholder="{{ translate('tempPassword', 'newPassword', data['lang']) }}" form="dummy">
+                          <div class="input-group-append">
+                            <button class="btn btn-outline-info" type="button" id="btn_new_user_generate">
+                              <i class="ph-fill ph-dice-five"></i>
+                              {{ translate('tempPassword', 'generateRandom', data['lang']) }}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                       <div class="form-group">
-                        <label class="form-label" for="password1">{{ translate('userConfig', 'repeat', data['lang']) }}
-                          <small class="text-muted ml-1"> - {{ translate('userConfig', 'leaveBlank', data['lang'])
-                            }}</small> </label>
-                        <input type="password" class="form-control" name="password1" id="password1" value=""
-                          autocomplete="new-password" data-lpignore="true" placeholder="Repeat Password" form="dummy">
-                        <span class="passwords-match" ,
-                          data-content="{{ translate('panelConfig', 'match', data['lang']) }}" ,
-                          data-placement="right"></span>
+                        <label class="form-label" for="new_user_pw_length">{{ translate('tempPassword', 'passwordLength', data['lang']) }}</label>
+                        <input type="number" class="form-control" id="new_user_pw_length" value="16" min="8" max="128">
+                      </div>
+                      <div class="form-group">
+                        <div class="form-check" style="text-align:left">
+                          <input type="checkbox" class="form-check-input" id="new_user_require_change" checked>
+                          <label class="form-check-label" for="new_user_require_change">
+                            {{ translate('tempPassword', 'requireChangeLabel', data['lang']) }}
+                          </label>
+                        </div>
+                      </div>
+                      <div class="form-group" id="new_user_expiry_group">
+                        <label class="form-label" for="new_user_expires">{{ translate('tempPassword', 'expiresIn', data['lang']) }}</label>
+                        <select class="form-control" id="new_user_expires" name="new_user_expires" form="dummy">
+                          {% for preset in data.get("temp_password_expiry_presets", []) %}
+                          <option value="{{ -1 if preset['hours'] is None else preset['hours'] }}"
+                            {{ 'selected' if str(preset.get('hours', '')) == str(data.get('temp_password_expiry_default', '')) else '' }}>
+                            {{ preset['label'] }}
+                          </option>
+                          {% end %}
+                        </select>
                       </div>
                       {% else %}
                       <div class="form-group">
@@ -337,6 +379,16 @@ data['lang']) }}{% end %}
                       <br />
                       {{ translate('userConfig', 'manager', data['lang'])}}: {{data['manager']['username'] }}
                       <br />
+                      {% if data['user'].get('require_password_change') %}
+                      <span class="text-warning">
+                        <i class="ph-fill ph-warning"></i>
+                        {{ translate('tempPassword', 'tempPasswordStatus', data['lang']) }}
+                        {% if data['user'].get('password_expires') %}
+                          ({{ translate('tempPassword', 'expiresOn', data['lang']) }}: {{ str(data['user']['password_expires']).split('.')[0] }})
+                        {% end %}
+                      </span>
+                      <br />
+                      {% end %}
                     </p>
                   </blockquote>
                 </div>
@@ -346,10 +398,33 @@ data['lang']) }}{% end %}
                 data-toggle="tooltip" title="{{ translate('userConfig', 'userName', data['lang'])}}"
                 id="username_{{data['user']['user_id']}}" data-name="{{data['user']['username']}}"
                 data-id="{{data['user']['user_id']}}"class="btn btn-outline-info edit_user"><i class="ph-fill ph-gear"></i>{{translate('userConfig', 'changeUser', data['lang'])}}</button>
-                <button data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
-                data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"
-                data-toggle="tooltip" title="{{ translate('userConfig', 'password', data['lang'])}}"
-                data-id="{{data['user']['user_id']}}"class="btn btn-outline-warning edit_password"><i class="ph-fill ph-lock"></i>{{translate('userConfig', 'changePass', data['lang'])}}</button><br><br>
+                {% if not data['new_user'] and data['superuser'] and data['user']['user_id'] != data['exec_user'] %}
+                <button class="btn btn-outline-warning reset_password"
+                  data-id="{{data['user']['user_id']}}"
+                  data-username="{{data['user']['username']}}"
+                  data-presets='{{ json_encode(data.get("temp_password_expiry_presets", [])) }}'
+                  data-default-expiry="{{ data.get('temp_password_expiry_default', '') }}"
+                  data-t-reset-password="{{ translate('tempPassword', 'resetPassword', data['lang']) }}"
+                  data-t-new-password="{{ translate('tempPassword', 'newPassword', data['lang']) }}"
+                  data-t-generate-random="{{ translate('tempPassword', 'generateRandom', data['lang']) }}"
+                  data-t-password-length="{{ translate('tempPassword', 'passwordLength', data['lang']) }}"
+                  data-t-require-change-label="{{ translate('tempPassword', 'requireChangeLabel', data['lang']) }}"
+                  data-t-expires-in="{{ translate('tempPassword', 'expiresIn', data['lang']) }}"
+                  data-t-set-password="{{ translate('tempPassword', 'setPassword', data['lang']) }}"
+                  data-t-password-generated="{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}"
+                  data-t-copy-password="{{ translate('tempPassword', 'copyPassword', data['lang']) }}"
+                  data-t-cancel="{{ translate('login', 'cancel', data['lang']) }}"
+                  data-t-reset-error="{{ translate('tempPassword', 'resetError', data['lang']) }}">
+                  <i class="ph-fill ph-lock"></i> {{ translate('tempPassword', 'resetPassword', data['lang']) }}
+                </button>
+                {% elif not data['new_user'] and data['user']['user_id'] == data['exec_user'] %}
+                <button class="btn btn-outline-warning edit_password"
+                  data-id="{{data['user']['user_id']}}"
+                  data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
+                  data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}">
+                  <i class="ph-fill ph-lock"></i> {{ translate('userConfig', 'changePass', data['lang']) }}
+                </button>
+                {% end %}<br><br>
                 {% if data['new_user'] %}
                 <a class="btn btn-sm btn-danger disabled"><i class="ph-fill ph-trash-simple"></i>{{ translate('userConfig',
                   'deleteUserB', data['lang']) }}</a><br />
@@ -388,33 +463,29 @@ data['lang']) }}{% end %}
 
 {% block js %}
 <script>
-  const userId = new URLSearchParams(document.location.search).get('id');
-  function submit_user(event) {
-    if (!validateForm()) {
-      event.preventDefault();
-    } else {
-      $('#userForm').submit();
-    }
-  }
-  function validateForm() {
-    let password0 = document.getElementById("password0").value;
-    let password1 = document.getElementById("password1").value;
-    if (password0 === "" && password1 === "" && userId){
-      return true
-    }
-    else if (password0 != password1) {
-      $('.passwords-match').popover('show');
-      $('.popover-body').click(function () {
-        $('.passwords-match').popover("hide");
+  let userId = new URLSearchParams(document.location.search).get('id');
+  // add_user page uses -1 as placeholder, treat as new user
+  if (userId === "-1") userId = null;
+
+  // Auto-generate password for new user on page load
+  if (!userId) {
+    $(document).ready(function () {
+      let len = parseInt($("#new_user_pw_length").val()) || 16;
+      $("#new_user_password").val(generatePassword(len));
+
+      $("#btn_new_user_generate").on("click", function () {
+        let len = parseInt($("#new_user_pw_length").val()) || 16;
+        $("#new_user_password").val(generatePassword(len));
       });
-      document.body.scrollTop = 0;
-      document.documentElement.scrollTop = 0;
-      $("#password0").css("outline", "1px solid red");
-      $("#password1").css("outline", "1px solid red");
-      return false;
-    } else {
-      return password1;
-    }
+
+      $("#new_user_require_change").on("change", function () {
+        if ($(this).is(":checked")) {
+          $("#new_user_expiry_group").show();
+        } else {
+          $("#new_user_expiry_group").hide();
+        }
+      });
+    });
   }
   function replacer(key, value) {
       if (typeof value == "boolean" || key === "email" || key === "permissions" || key === "roles") {
@@ -433,8 +504,12 @@ data['lang']) }}{% end %}
       e.preventDefault();
       let password = null;
       if(!userId){
-        password = validateForm();
-        if (!password){
+        password = $("#new_user_password").val();
+        if (!password || password.length < 8) {
+          bootbox.alert({
+            title: "Error",
+            message: "Password must be at least 8 characters. Click Generate to create one."
+          });
           return;
         }
       }
@@ -494,8 +569,12 @@ data['lang']) }}{% end %}
       }
       if(!userId){
         if(typeof password === "string"){
-        formDataObject.password = password;
-      }
+          formDataObject.password = password;
+        }
+        formDataObject.require_password_change = $("#new_user_require_change").is(":checked");
+        if (formDataObject.require_password_change) {
+          formDataObject.expires_hours = parseInt($("#new_user_expires").val());
+        }
       }
     }
       formDataObject.enabled = $("#enabled").is(":checked");
@@ -527,7 +606,47 @@ data['lang']) }}{% end %}
       });
       let responseData = await res.json();
       if (responseData.status === "ok") {
-        window.location.href = "/panel/panel_config";
+        if (!userId && password) {
+          // New user created - show password copy dialog
+          let tPasswordGenerated = "{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}";
+          let tNewPassword = "{{ translate('tempPassword', 'newPassword', data['lang']) }}";
+          let tCopyPassword = "{{ translate('tempPassword', 'copyPassword', data['lang']) }}";
+          let tRequireChangeLabel = "{{ translate('tempPassword', 'requireChangeLabel', data['lang']) }}";
+          let requireChange = $("#new_user_require_change").is(":checked");
+
+          let noticeText = "";
+          if (requireChange) {
+            noticeText += '<p class="text-info mt-2"><i class="ph-fill ph-info"></i> ' + tRequireChangeLabel + '</p>';
+          }
+
+          bootbox.alert({
+            title: tPasswordGenerated,
+            message: `
+              <div class="form-group">
+                <label>${tNewPassword}</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="created-user-password" readonly>
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-primary" type="button"
+                      onclick="navigator.clipboard.writeText(document.getElementById('created-user-password').value)">
+                      <i class="ph-fill ph-copy"></i>
+                      ${tCopyPassword}
+                    </button>
+                  </div>
+                </div>
+                ${noticeText}
+              </div>
+            `,
+            callback: function () {
+              window.location.href = "/panel/panel_config";
+            }
+          });
+          setTimeout(function () {
+            document.getElementById('created-user-password').value = password;
+          }, 100);
+        } else {
+          window.location.href = "/panel/panel_config";
+        }
       } else {
         if (responseData.hasOwnProperty("error_data")){
           bootbox.alert({

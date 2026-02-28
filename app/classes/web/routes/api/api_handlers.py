@@ -88,6 +88,9 @@ from app.classes.web.routes.api.users.user.passkey import (
     ApiUsersPasskeyHandler,
 )
 from app.classes.web.routes.api.users.user.api import ApiUsersUserKeyHandler
+from app.classes.web.routes.api.users.user.reset_password import (
+    ApiUsersUserResetPasswordHandler,
+)
 from app.classes.web.routes.api.users.user.pfp import ApiUsersUserPfpHandler
 from app.classes.web.routes.api.users.user.public import ApiUsersUserPublicHandler
 from app.classes.web.routes.api.crafty.announcements.index import (
@@ -209,6 +212,11 @@ def api_handlers(handler_args):
         (
             r"/api/v2/users/(@me)/?",
             ApiUsersUserIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/([0-9]+)/reset-password/?",
+            ApiUsersUserResetPasswordHandler,
             handler_args,
         ),
         (

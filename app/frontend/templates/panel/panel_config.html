@@ -118,11 +118,32 @@
                               data-toggle="tooltip" title="{{ translate('userConfig', 'userName', data['lang'])}}"
                               id="username_{{user.user_id}}" class="edit_user clickable" data-name="{{user.username}}"
                               data-id="{{user.user_id}}"><i class="ph-fill ph-user"></i></span>
+                            {% if user.user_id != data['user_data']['user_id'] %}
+                            &nbsp;&nbsp;<span
+                              data-toggle="tooltip" title="{{ translate('tempPassword', 'resetPassword', data['lang'])}}"
+                              class="reset_password clickable" data-id="{{user.user_id}}"
+                              data-username="{{user.username}}"
+                              data-presets='{{ json_encode(data.get("temp_password_expiry_presets", [])) }}'
+                              data-default-expiry="{{ data.get('temp_password_expiry_default', '') }}"
+                              data-t-reset-password="{{ translate('tempPassword', 'resetPassword', data['lang']) }}"
+                              data-t-new-password="{{ translate('tempPassword', 'newPassword', data['lang']) }}"
+                              data-t-generate-random="{{ translate('tempPassword', 'generateRandom', data['lang']) }}"
+                              data-t-password-length="{{ translate('tempPassword', 'passwordLength', data['lang']) }}"
+                              data-t-require-change-label="{{ translate('tempPassword', 'requireChangeLabel', data['lang']) }}"
+                              data-t-expires-in="{{ translate('tempPassword', 'expiresIn', data['lang']) }}"
+                              data-t-set-password="{{ translate('tempPassword', 'setPassword', data['lang']) }}"
+                              data-t-password-generated="{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}"
+                              data-t-copy-password="{{ translate('tempPassword', 'copyPassword', data['lang']) }}"
+                              data-t-cancel="{{ translate('login', 'cancel', data['lang']) }}"
+                              data-t-reset-error="{{ translate('tempPassword', 'resetError', data['lang']) }}"><i
+                                class="ph-fill ph-lock"></i></span>
+                            {% else %}
                             &nbsp;&nbsp;<span data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
                               data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"
-                              data-toggle="tooltip" title="{{ translate('userConfig', 'password', data['lang'])}}"
+                              data-toggle="tooltip" title="{{ translate('userConfig', 'changePass', data['lang'])}}"
                               class="edit_password clickable" data-id="{{user.user_id}}"><i
                                 class="ph-fill ph-lock"></i></span>
+                            {% end %}
                             &nbsp;&nbsp;<a data-toggle="tooltip"
                               title="{{ translate('userConfig', 'pageTitle', data['lang'])}}"
                               href="/panel/edit_user?id={{user.user_id}}"><i class="ph-fill ph-pencil-simple"></i></a>
@@ -162,10 +183,23 @@
                               data-toggle="tooltip" title="{{ translate('userConfig', 'userName', data['lang'])}}"
                               id="username_{{user.user_id}}" class="edit_user clickable" data-name="{{user.username}}"
                               data-id="{{user.user_id}}"><i class="ph-fill ph-user"></i></span>
-                            &nbsp;&nbsp;<span data-translate1="{{translate('userConfig', 'password', data['lang'])}}"
-                              data-translate2="{{translate('userConfig', 'repeat', data['lang'])}}"
-                              data-toggle="tooltip" title="{{ translate('userConfig', 'password', data['lang'])}}"
-                              class="edit_password clickable" data-id="{{user.user_id}}"><i
+                            &nbsp;&nbsp;<span
+                              data-toggle="tooltip" title="{{ translate('tempPassword', 'resetPassword', data['lang'])}}"
+                              class="reset_password clickable" data-id="{{user.user_id}}"
+                              data-username="{{user.username}}"
+                              data-presets='{{ json_encode(data.get("temp_password_expiry_presets", [])) }}'
+                              data-default-expiry="{{ data.get('temp_password_expiry_default', '') }}"
+                              data-t-reset-password="{{ translate('tempPassword', 'resetPassword', data['lang']) }}"
+                              data-t-new-password="{{ translate('tempPassword', 'newPassword', data['lang']) }}"
+                              data-t-generate-random="{{ translate('tempPassword', 'generateRandom', data['lang']) }}"
+                              data-t-password-length="{{ translate('tempPassword', 'passwordLength', data['lang']) }}"
+                              data-t-require-change-label="{{ translate('tempPassword', 'requireChangeLabel', data['lang']) }}"
+                              data-t-expires-in="{{ translate('tempPassword', 'expiresIn', data['lang']) }}"
+                              data-t-set-password="{{ translate('tempPassword', 'setPassword', data['lang']) }}"
+                              data-t-password-generated="{{ translate('tempPassword', 'passwordGenerated', data['lang']) }}"
+                              data-t-copy-password="{{ translate('tempPassword', 'copyPassword', data['lang']) }}"
+                              data-t-cancel="{{ translate('login', 'cancel', data['lang']) }}"
+                              data-t-reset-error="{{ translate('tempPassword', 'resetError', data['lang']) }}"><i
                                 class="ph-fill ph-lock"></i></span>
                             &nbsp;&nbsp;<a data-toggle="tooltip"
                               title="{{ translate('userConfig', 'pageTitle', data['lang'])}}"
