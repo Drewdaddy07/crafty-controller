@@ -17,7 +17,7 @@
     <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
       <img class="img-xs rounded-circle profile-picture" onerror="pfpError(this)" src="{{ data['user_data']['pfp'] }}"
         alt="Profile"><span class="badge mfa-warn-badge d-none mfa-warn"><i
-          class="ph-solid ph-warning text-warning"></i></span> </a>
+          class="ph-bold ph-warning text-warning"></i></span> </a>
     <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
       <div class="dropdown-header text-center">
         <img class="img-md rounded-circle profile-picture" onerror="pfpError(this)" src="{{ data['user_data']['pfp'] }}"
@@ -40,7 +40,7 @@
       </div>
       <br />
       <a class="dropdown-item" href="/panel/edit_user?id={{data['user_data']['user_id']}}"><i
-          class="ph-solid ph-gear dropdown-item-icon text-primary"></i>{{
+          class="ph-bold ph-gear dropdown-item-icon text-primary"></i>{{
         translate('notify', 'accountSettings',
         data['lang']) }}</a>
       {% if data['support_perm'] %}
