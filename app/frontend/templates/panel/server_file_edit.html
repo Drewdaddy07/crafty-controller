@@ -49,6 +49,7 @@ end %} {% block content %}
             </div>
             <div id="save-container" class="align-items-center text-center">
                 <button id="saveButton" class="btn btn-outline-success"
+                    style="max-width: 400px;"
                     data-saved='{{translate("serverFilesEditor", "saved" , data["lang"])}}'
                     data-changes='{{translate("serverFilesEditor", "save" , data["lang"])}}'
                     data-leave='{{translate("serverFilesEditor", "unsavedChanges" , data["lang"])}}' onclick="save()">

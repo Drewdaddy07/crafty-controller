@@ -1,10 +1,15 @@
 #editor_container {
     width: 100%;
+    margin: 0 auto;
 }
 
 #editor {
     height: 75vh;
     border-radius: 25px;
+    min-width: 10%;
+    min-height: 3.125em;
+    max-width: 50em;
+    max-height: 85vh;
 }
 
 .content-wrapper {
