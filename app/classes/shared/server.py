@@ -895,7 +895,8 @@ class ServerInstance:
                         executable_path = f"{server_command[1]}{server_command[2]}/"
                         # Let's set the proper server executable
                         server_obj.executable = os.path.join(
-                            f"{executable_path}{version_info[0][0]}-{version}-server.jar"
+                            f"{executable_path}{version_info[0][0]}-{version}"
+                            "-server.jar"
                         )
                         # Now lets set up the new run command.
                         # This is based off the run.sh/bat that
