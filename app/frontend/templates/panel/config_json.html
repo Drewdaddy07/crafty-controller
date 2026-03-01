@@ -86,8 +86,8 @@
                     <button type="button" class="btn btn-outline-default custom-picker"
                       onclick="$('option', $('#lang_select')).each(function(element) {$(this).removeAttr('selected').prop('selected', false); $('.selectpicker').selectpicker('refresh')});">{{
                       translate('panelConfig', 'enableLang', data['lang']) }}</button>
-                    <select id="lang_select" class="form-control selectpicker show-tick" data-icon-base="fas"
-                      data-tick-icon="fa-check" multiple data-style="custom-picker">
+                    <select id="lang_select" class="form-control selectpicker show-tick" data-icon-base="ph"
+                      data-tick-icon="ph-check" multiple data-style="custom-picker">
                       {% for lang in data['all_languages'] %}
                       {% if lang in item[1] %}
                       <option value="{{lang}}" selected>{{translate('language', lang, 'humanized_index', False)}}
@@ -106,8 +106,8 @@
                     <button type="button" class="btn btn-outline-default custom-picker"
                       onclick="$('option', $('#mount_select')).each(function(element) {$(this).removeAttr('selected').prop('selected', false); $('.selectpicker').selectpicker('refresh')});">{{
                       translate('panelConfig', 'noMounts', data['lang']) }}</button>
-                    <select id="mount_select" class="form-control selectpicker show-tick" data-icon-base="fas"
-                      data-tick-icon="fa-check" multiple data-style="custom-picker">
+                    <select id="mount_select" class="form-control selectpicker show-tick" data-icon-base="ph"
+                      data-tick-icon="ph-check" multiple data-style="custom-picker">
                       {% for mount in data['all_partitions'] %}
                       {% if mount in item[1] %}
                       <option selected>{{mount}}</option>

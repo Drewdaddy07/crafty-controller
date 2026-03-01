@@ -66,7 +66,7 @@
                         {% if data['super_user'] %}
                         <div class="input-group-append">
                           <button class="btn custom-picker" type="button" onclick="refreshCache()"><i id="refresh-cache"
-                              class="refresh-class fas fa-sync"></i></button>
+                              class="refresh-class ph ph-arrows-clockwise"></i></button>
                         </div>
                         {% end %}
                       </div>
@@ -110,7 +110,7 @@
                           <div class="card-header p-2" id="Role-1">
                             <p class="mb-0 p-0" data-toggle="collapse" data-target="#collapseRole-1"
                               aria-expanded="true" aria-controls="collapseRole-1">
-                              <i class="fas fa-chevron-down"></i> {{ translate('serverWizard', 'addRole', data['lang'])
+                              <i class="ph ph-caret-down"></i> {{ translate('serverWizard', 'addRole', data['lang'])
                               }}
                               <small style="text-transform: none;"> - {{ translate('serverWizard', 'autoCreate',
                                 data['lang']) }}</small>
@@ -143,7 +143,7 @@
         </div>
         {% if not data["server_api"] and data["online"] %}
         <div class="api-alert">
-          <p><i class="fas fa-exclamation-triangle"></i>&nbsp;{{
+          <p><i class="ph ph-warning"></i>&nbsp;{{
             translate('error', 'bigBucket1', data['lang']) }}<a
               href="https://status.craftycontrol.com/status/craftycontrol" target="_blank" rel="noopener">&nbsp;{{
               translate('error',
@@ -154,7 +154,7 @@
         {% end %}
         {% if not data["online"] %}
         <div class="api-alert">
-          <p><i class="fas fa-exclamation-triangle"></i>&nbsp;{{ translate('error', 'noInternet', data['lang']) }}</p>
+          <p><i class="ph ph-warning"></i>&nbsp;{{ translate('error', 'noInternet', data['lang']) }}</p>
         </div>
         {% end %}
       </div>
@@ -519,7 +519,7 @@
   function wait_msg(importing) {
     bootbox.alert({
       title: importing ? '{% raw translate("serverWizard", "importing", data["lang"]) %}' : '{% raw translate("serverWizard", "downloading", data["lang"]) %}',
-      message: '<i class="fas fa-cloud-download"></i> {% raw translate("serverWizard", "bePatient", data["lang"]) %}',
+      message: '<i class="ph ph-cloud-arrow-down"></i> {% raw translate("serverWizard", "bePatient", data["lang"]) %}',
     });
   }
 
