@@ -301,8 +301,8 @@ class ServerInstance:
         self.server_id = server_id
         self.name = server_name
         self.settings = server_data_obj
-
-        self.check_server_version()  # Check update relies on information from self.settings.
+        # Check update relies on up to date information from self.settings.
+        self.check_server_version()
         # Running it after instead of during init function
 
         self.record_server_stats()
@@ -614,11 +614,14 @@ class ServerInstance:
                     env_mod = True
             if env_mod:
                 logger.debug(
-                    f"Launching process for server {self.server_id} with modified environment {my_env}"
+                    "Launching process for server %s with modified environment %s",
+                    self.server_id,
+                    my_env,
                 )
             else:
                 logger.debug(
-                    f"Launching process for server {self.server_id} with un-modified environment"
+                    "Launching process for server %s with un-modified environment",
+                    self.server_id,
                 )
             try:
                 self.process = subprocess.Popen(
@@ -647,7 +650,9 @@ class ServerInstance:
 
         else:
             logger.debug(
-                f"Starting server {self.server_id} with unknown type {HelperServers.get_server_type_by_id(self.server_id)}"
+                "Starting server %s with unknown type %s",
+                self.server_id,
+                HelperServers.get_server_type_by_id(self.server_id),
             )
             try:
                 self.process = subprocess.Popen(
