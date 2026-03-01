@@ -1,5 +1,5 @@
 # Changelog
-## --- [4.10.0] - 2026/TBD
+## --- [4.10.0] - 2026/03/01
 ### Refactor
 - Switch from Font Awesome to Phosphor Icons (open source) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/972))
 - Overhaul Server Metrics (Frontend) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/971))
@@ -17,8 +17,6 @@
 - Add Hytale Port Ranges to Docker related stack templates & documentation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/965))
 - File Browser Permissions Indicators ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/974))
 - Add update center and compartmentalize big bucket ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/817))
-### Lang
-TBD
 <br><br>
 
 ## --- [4.9.0] - 2026/01/24
