@@ -1,5 +1,4 @@
 import datetime
-import hashlib
 import io
 import logging
 import mimetypes
@@ -7,13 +6,11 @@ import os
 import pathlib
 import shutil
 import ssl
-import tempfile
 import time
 import urllib.request
 import zipfile
 import zlib
 from pathlib import Path
-from typing import BinaryIO
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 import certifi
@@ -21,11 +18,12 @@ import certifi
 from app.classes.models.server_permissions import PermissionsServers
 from app.classes.helpers.cryptography_helper import CryptoHelper
 from app.classes.helpers.helpers import Helpers
-from app.classes.shared.console import Console
 from app.classes.shared.websocket_manager import WebSocketManager
 
 logger = logging.getLogger(__name__)
 
+mimetypes.init(files=[])
+SERVER_DETAIL = "/panel/server_detail"
 PLAIN_TEXT = "text/plain"
 
 
@@ -37,7 +35,6 @@ class FileHelpers:
 
     def __init__(self, helper):
         self.helper: Helpers = helper
-        self.mime_types = mimetypes.MimeTypes()
         self.add_mime_types()  # Add to account for yml, conf, properties, etc
         self.text_mime_prefixes = [
             "text/",
@@ -61,17 +58,44 @@ class FileHelpers:
         mimetypes.add_type(PLAIN_TEXT, ".ini")
         mimetypes.add_type(PLAIN_TEXT, ".conf")
         mimetypes.add_type(PLAIN_TEXT, ".properties")
+        mimetypes.add_type(PLAIN_TEXT, ".prop")
         mimetypes.add_type(PLAIN_TEXT, ".env")
         mimetypes.add_type("application/x-bat", ".ps1")
         mimetypes.add_type("text/x-log", ".log")
 
+    def can_unicode_decode(
+        self, path: str, encoding: str = "utf-8", sample_size: int = 4096
+    ) -> bool:
+        """Check to see if file can be unicode decoded. Check for binary files
+
+        Args:
+            path (str): path to file to check
+            encoding (str, optional): encoding profile. Defaults to "utf-8".
+            sample_size (int, optional): size of sample to take. Defaults to 4096.
+
+        Returns:
+            bool: Returns true if file can be opened, false if not
+        """
+        try:
+            with open(
+                path,
+                "rb",
+            ) as sample:
+                chunk = sample.read(sample_size)
+            chunk.decode(encoding)
+            if (
+                b"\x00" in chunk
+            ):  # check for empty bytes (binary files) this will also capture utf-16
+                return False
+            return True
+        except (UnicodeDecodeError, PermissionError):
+            return False
+
     def probably_can_open_file(self, path: str) -> tuple:
+        if Path(path).is_dir():
+            return (False, None)
         mime = mimetypes.guess_type(path)
-        if str(mime[0]).startswith("text/"):
-            return (True, mime[0])
-        if mime[0] in self.text_mime_prefixes:
-            return (True, mime[0])
-        return (False, mime[0])
+        return (self.can_unicode_decode(path), mime[0])
 
     @staticmethod
     def ssl_get_file(  # pylint: disable=too-many-positional-arguments
@@ -147,6 +171,11 @@ class FileHelpers:
                                 logger.info(
                                     f"SSL File Get - Download progress: {progress:.2f}%"
                                 )
+                                WebSocketManager().broadcast_page(
+                                    SERVER_DETAIL,
+                                    "download_progress",
+                                    round(progress, 1),
+                                )
                     return True
             except (urllib.error.URLError, ssl.SSLError) as e:
                 logger.warning(f"SSL File Get - Attempt {attempt+1} failed: {e}")
@@ -198,31 +227,8 @@ class FileHelpers:
             return clean
 
     def check_mime_types(self, file_path):
-        m_type, _value = self.mime_types.guess_type(file_path)
+        m_type, _value = mimetypes.guess_type(file_path)
         return m_type
-
-    @staticmethod
-    def calculate_file_hash_sha256(file_path: str) -> str:
-        """
-        Takes one parameter of file path.
-        It will generate a SHA256 hash for the path and return it.
-        """
-        sha256_hash = hashlib.sha256()
-        file_path_resolved = pathlib.Path(file_path).resolve()
-        with open(file_path_resolved, "rb") as f:
-            for byte_block in iter(lambda: f.read(4096), b""):
-                sha256_hash.update(byte_block)
-        return sha256_hash.hexdigest()
-
-    @staticmethod
-    def calculate_buffer_hash(buffer: BinaryIO) -> str:
-        """
-        Takes one argument of a stream buffer. Will return a
-        sha256 hash of the buffer
-        """
-        sha256_hash = hashlib.sha256()
-        sha256_hash.update(buffer)
-        return sha256_hash.hexdigest()
 
     @staticmethod
     def copy_dir(src_path, dest_path, dirs_exist_ok=False):
@@ -327,7 +333,10 @@ class FileHelpers:
     ):
         # create a ZipFile object
         path_to_destination += ".zip"
-        ex_replace = [p.replace("\\", "/") for p in excluded_dirs]
+        ex_replace = [
+            Path(self.get_absolute_path(path_to_zip, p)).as_posix()
+            for p in excluded_dirs
+        ]
         total_bytes = 0
         dir_bytes = FileHelpers.get_dir_size(path_to_zip)
         results = {
@@ -335,7 +344,7 @@ class FileHelpers:
             "total_files": self.helper.human_readable_file_size(dir_bytes),
         }
         WebSocketManager().broadcast_page_params(
-            "/panel/server_detail",
+            SERVER_DETAIL,
             {"id": str(server_id)},
             "backup_status",
             results,
@@ -406,7 +415,7 @@ class FileHelpers:
                     }
                     # send status results to page.
                     WebSocketManager().broadcast_page_params(
-                        "/panel/server_detail",
+                        SERVER_DETAIL,
                         {"id": str(server_id)},
                         "backup_status",
                         results,
@@ -459,26 +468,87 @@ class FileHelpers:
         with zipfile.ZipFile(archive_location, "r") as zip_ref:
             zip_ref.extractall(destination)
 
-    def cleanup_unzip(self, temp_dir: Path, server_update: bool, new_dir: Path):
-        ignored_names = [
-            "server.properties",
-            "permissions.json",
-            "allowlist.json",
-        ]
-        # we'll iterate through the top level directory moving everything
-        # out of the temp directory and into it's final home.
-        for item in os.listdir(temp_dir):
-            # if the file is one of our ignored names we'll skip it
-            if item in ignored_names and server_update:
-                continue
-            # we handle files and dirs differently or we'll crash out.
+    def send_percentage(self, user, percent, proc_id, complete):
+        if isinstance(user, str):
+            WebSocketManager().broadcast_user(
+                user,
+                "zip_status",
+                {"id": None, "percent": percent, "complete": complete},
+            )
+        else:
+            for usr in user:
+                WebSocketManager().broadcast_user(
+                    usr,
+                    "zip_status",
+                    {"id": proc_id, "percent": percent, "complete": complete},
+                )
+
+    def should_extract(
+        self, file, base_include_path, excluded_files, server_update
+    ) -> bool:
+        """Checks a number of inclusions or exclusions against a given file to see
+        if that file should be unpacked to the target directory.
+
+        ** Base include path and excluded files should not be used in conjunction with
+        eachother.
+
+        Args:
+            file (str): file name from Path zip object namelist
+            base_include_path (str): string from root dir select that shows base path
+            like 'server_files/myserver/' (should not be used with excluded_files)
+            excluded_files (list): list of file exclusions (should not be used with base
+            include path)
+            server_update (bool): whether or not the method was called as a result
+            of a server update process.
+
+        Returns:
+            bool: Whether or not the file from the list should be included in the
+            unzipped archive.
+        """
+        if server_update and file in excluded_files:
+            return False
+
+        if not base_include_path:
+            return True
+
+        try:
+            pathlib.PurePosixPath(file).relative_to(
+                pathlib.PurePosixPath(base_include_path)
+            )
+            return True
+        except ValueError:
+            return False
+
+    def get_archive_internal_name(self, file, base_include_path) -> str:
+        """If we have a base include path we will rewrite the internal zip object path
+        to remove the /path/to/file/in/archive so we don't have nested folders when we
+        unzip. This will return the relative path to the archive to avoid nesting.
+
+        Args:
+            file (str): file from namelist from zip object
+            base_include_path (str): string from root dir select that shows base path
+            like 'server_files/myserver/'
+
+        Returns:
+            str | PurePosixPath: returns the original file name or new file name
+        """
+        if base_include_path:  # Rewrite path of zip_ref_info if we have a base include
             try:
-                self.move_item_file_or_dir(temp_dir, new_dir, item)
-            except shutil.Error as ex:
-                logger.error(f"ERROR IN ZIP IMPORT: {ex}")
+                rel = pathlib.PurePosixPath(file).relative_to(base_include_path)
+                return str(rel)
+            except ValueError:
+                logger.debug("%s is not relative to %s", file, base_include_path)
+        return str(file)
 
     def unzip_file(
-        self, zip_path, server_id, server_update: bool = False, proc_id=None
+        self,
+        zip_path,
+        destination_path,
+        server_id=None,
+        server_update: bool = False,
+        proc_id=None,
+        user_id=None,
+        base_include_path=None,
     ) -> None:
         """
         Unzips zip file at zip_path to location generated at new_dir based on zip
@@ -492,37 +562,51 @@ class FileHelpers:
         Returns: None
 
         """
-        server_users = PermissionsServers.get_server_user_list(server_id)
-        # Get directory without zipfile name
-        new_dir = pathlib.Path(zip_path).parents[0]
+        ignored_names = [
+            "server.properties",
+            "permissions.json",
+            "allowlist.json",
+        ]
+        server_users = user_id
+        if not server_users:
+            server_users = PermissionsServers.get_server_user_list(server_id)
+
         # make sure we're able to access the zip file
         if Helpers.check_file_perms(zip_path) and os.path.isfile(zip_path):
             # make sure the directory we're unzipping this to exists
-            Helpers.ensure_dir_exists(new_dir)
-            # we'll make a temporary directory to unzip this to.
-            temp_dir = tempfile.mkdtemp()
-            try:
-                with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                    # we'll extract this to the temp dir using zipfile module
-                    files_list = zip_ref.namelist()
-                    for idx, file in enumerate(files_list):
-                        percent = round((idx / len(files_list)) * 100)
-                        zip_ref.extract(file, temp_dir)
-                        for user in server_users:
-                            WebSocketManager().broadcast_user(
-                                user,
-                                "zip_status",
-                                {"id": proc_id, "percent": percent, "complete": False},
+            Helpers.ensure_dir_exists(destination_path)
+            with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                files_list = zip_ref.namelist()
+                for idx, file in enumerate(files_list):
+                    info = zip_ref.getinfo(file)
+                    # Skip directory entries
+                    if info.is_dir():
+                        continue
+                    target = Path(destination_path, file).resolve()
+                    try:
+                        self.helper.validate_traversal(destination_path, target)
+                    except ValueError:
+                        self.send_percentage(server_users, 100, proc_id, True)
+                        return logger.error("Traversal detected. Dumping out.")
+                    # if the file is one of our ignored names we'll skip it
+                    if self.should_extract(
+                        file, base_include_path, ignored_names, server_update
+                    ):
+                        info.filename = self.get_archive_internal_name(
+                            file, base_include_path
+                        )
+                        try:
+                            zip_ref.extract(info, destination_path)
+                        except FileNotFoundError:
+                            logger.error(
+                                "Could not extract file: %s to %s from archive %s",
+                                file,
+                                destination_path,
+                                zip_path,
                             )
-                self.cleanup_unzip(Path(temp_dir), server_update, new_dir)
-                for user in server_users:
-                    WebSocketManager().broadcast_user(
-                        user,
-                        "zip_status",
-                        {"id": proc_id, "percent": 100, "complete": True},
-                    )
-            except Exception as ex:
-                Console.error(ex)
+                    percent = round((idx / len(files_list)) * 100)
+                    self.send_percentage(server_users, percent, proc_id, False)
+            self.send_percentage(server_users, 100, proc_id, True)
 
     @staticmethod
     def get_absolute_path(server_path, path) -> str:
@@ -540,16 +624,6 @@ class FileHelpers:
             path = str(Path(server_path, request_path))
 
         return str(path)
-
-    @staticmethod
-    def unzip_server(zip_path, user_id):
-        if Helpers.check_file_perms(zip_path):
-            temp_dir = tempfile.mkdtemp()
-            with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                # extracts archive to temp directory
-                zip_ref.extractall(temp_dir)
-            if user_id:
-                return temp_dir
 
     @staticmethod
     def get_chunk_path_from_hash(chunk_hash: bytes, repository_location: Path) -> Path:

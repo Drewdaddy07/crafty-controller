@@ -1,13 +1,52 @@
 # Changelog
-## --- [4.7.1] - 2026/TBD
+## --- [4.10.0] - 2026/03/02
+### Refactor
+- Switch from Font Awesome to Phosphor Icons (open source) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/972))
+- Overhaul Server Metrics (Frontend) ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/971))
+- Customizable Dashboard Columns ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/977))
 ### New features
-TBD
+- Experimental SteamCMD Alpha ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/451))
 ### Bug fixes
-TBD
+- Adds missing time variables in static test webhook ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/963))
+- Fix bug where zip imports would get stuck after selecting root ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/964))
+- Fix type error on json encode for backup exclusions ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/967))
+- Fix New Backup Exclusions being ignored ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/967))
+- Select default backup when no ID is provided ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/970))
+- Fix UI for vanilla java version OP and DeOp commands for Vanilla Java ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/978))
 ### Tweaks
-TBD
-### Lang
-TBD
+- Add Hytale Port Ranges to Docker related stack templates & documentation ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/965))
+- File Browser Permissions Indicators ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/974))
+- Add update center and compartmentalize big bucket ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/817))
+<br><br>
+
+## --- [4.9.0] - 2026/01/24
+### New features
+- Add Support For Hytale Servers ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/954))
+### Bug fixes
+- Add error data to servers running global dir ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/961))
+- Fix bug where directories could not be selected ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/960))
+- Add try except to unzip extract to avoid failure over missing files ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/959))
+### Tweaks
+- Add Java 25 support to Docker image ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/948))
+<br><br>
+
+## --- [4.8.0] - 2026/01/22
+### New features
+- Passkey Authentication Support ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/952))
+### Bug fixes
+- Fix crash on startup due to big bucket cache refresh ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/941))
+- Fix issue where files would incorrectly be classified as not able to be opened by missing mimetypes ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/944))
+- Fix issue where filter list size would change during iteration causing the program to halt silently ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/944))
+- [`CVE-2026-0963`] Security: Add `validate_traversal` calls to `ServerFilesOperationHandler` ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/951))
+- Remove HTML encoding on files return ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/943))
+- [`CVE-2026-0805`] Security: Snapshot Backup Traversal ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/937))
+- Catch backup dispatch errors crashing command_watcher ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/955))
+### Tweaks
+- Change the way MFA warning is displayed on front end ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/953))
+- Allow middle mouse new tab and `ctrl + click` new tab ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/945))
+- Add permission error to exceptions for can_open_files ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/957))
+### Regressions
+- Remove local file imports ([Merge Request](https://gitlab.com/crafty-controller/crafty-4/-/merge_requests/936))
 <br><br>
 
 ## --- [4.7.0] - 2025/12/25

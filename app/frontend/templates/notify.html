@@ -1,7 +1,7 @@
 <ul class="navbar-nav ml-auto">
   <li class="nav-item dropdown notif-li">
     <a class="nav-link count-indicator dropdown-toggle" id="notifDropdown" href="#" aria-expanded="false">
-      <i class="fas fa-broadcast-tower
+      <i class="ph-fill ph-cell-tower
         {% if data.get('update_available') %}
             text-danger
         {% end %}
@@ -16,7 +16,8 @@
   <li class="nav-item dropdown user-dropdown">
     <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
       <img class="img-xs rounded-circle profile-picture" onerror="pfpError(this)" src="{{ data['user_data']['pfp'] }}"
-        alt="Profile"> </a>
+        alt="Profile"><span class="badge mfa-warn-badge d-none mfa-warn"><i
+          class="ph-bold ph-warning text-warning"></i></span> </a>
     <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
       <div class="dropdown-header text-center">
         <img class="img-md rounded-circle profile-picture" onerror="pfpError(this)" src="{{ data['user_data']['pfp'] }}"
@@ -31,8 +32,15 @@
         {% end %}
         <p class="font-weight-light text-muted mb-0">Email: {{ data['user_data']['email'] }}</p>
       </div>
+      <div id="mfa-container" class="d-none mfa-warn-text mfa-warn card-header header-sm justify-content-center">
+        <a id="mfa-link" class="small mfa-dark" href="/panel/edit_user_otp?id={{data['user_data']['user_id']}}"
+          target="_blank"><i class="ph-fill ph-warning"></i>{{translate("base",
+          "getMFA", data['lang'])}}
+        </a>
+      </div>
+      <br />
       <a class="dropdown-item" href="/panel/edit_user?id={{data['user_data']['user_id']}}"><i
-          class="fa-solid fa-user-gear dropdown-item-icon text-primary"></i>{{
+          class="ph-bold ph-gear dropdown-item-icon text-primary"></i>{{
         translate('notify', 'accountSettings',
         data['lang']) }}</a>
       {% if data['support_perm'] %}
@@ -155,7 +163,7 @@
       $("#notif-count").show()
       $("#notif-count").text(data.length).html();
     } else {
-      $("#announcements").text(`<li><p class='my-3 text-center'><i class="fa fa-bell-slash" aria-hidden="true"></i></p></li>`).html();
+      $("#announcements").text(`<li><p class='my-3 text-center'><i class="ph-fill ph-bell-slash" aria-hidden="true"></i></p></li>`).html();
       $("#notif-count").hide()
     }
     $(".clear-button").on("click", function (event) {
@@ -169,7 +177,7 @@
         localStorage.setItem("notif-count", notif_count);
         $("#notif-count").text(notif_count).html();
       } else {
-        $("#announcements").html(`<li><p class='my-3 text-center'><i class="fa fa-bell-slash" aria-hidden="true"></i></p></li>`)
+        $("#announcements").html(`<li><p class='my-3 text-center'><i class="ph-fill ph-bell-slash" aria-hidden="true"></i></p></li>`)
         $("#notif-count").html("");
       }
 
@@ -242,5 +250,28 @@
 
   $(document).ready(function () {
     getAnnouncements();
+    const bg = getComputedStyle(document.documentElement)
+      .getPropertyValue("--dropdown-bg")
+      .trim();
+    if (isLight(bg)) {
+      $("#mfa-link").addClass("mfa-light");
+      $("#mfa-link").removeClass("mfa-dark");
+    }
   })
+
+  function isLight(color) {
+    let hex = color.replace("#", "");
+
+    // Expand shorthand (#abc → #aabbcc)
+    if (hex.length === 3) {
+      hex = hex.split("").map(c => c + c).join("");
+    }
+
+    const r = Number.parseInt(hex.substring(0, 2), 16);
+    const g = Number.parseInt(hex.substring(2, 4), 16);
+    const b = Number.parseInt(hex.substring(4, 6), 16);
+
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6;
+  }
 </script>

@@ -123,14 +123,73 @@ config_json_schema = {
             "type": "string",
             "pattern": (
                 r"^(?:(?:\d{1,3}\.){3}\d{1,3}"
-                r"|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(?::\d{1,5})?$"
+                r"|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}"
+                r"|localhost)(?::\d{1,5})?$"
             ),
+            "error": "typeString",
+            "fill": True,
         },
         "max_login_attempts": {"type": "integer", "error": "typeInt", "fill": True},
         "superMFA": {"type": "boolean", "error": "typeBool", "fill": True},
         "general_user_log_access": {
             "type": "boolean",
             "error": "typeBool",
+            "fill": True,
+        },
+        "enable_passkey_auth": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "passkey_rp_name": {
+            "type": "string",
+            "error": "typeString",
+            "fill": True,
+        },
+        "experimental": {
+            "type": "boolean",
+            "error": "typeBool",
+            "fill": True,
+        },
+        "silent_notif_fields": {
+            "type": "array",
+            "error": "typeList",
+            "fill": True,
+        },
+        "time_range_presets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "hours": {"type": "integer", "minimum": 1},
+                    "label": {"type": "string", "minLength": 1},
+                },
+                "required": ["hours", "label"],
+                "additionalProperties": False,
+            },
+            "minItems": 1,
+            "error": "typeList",
+            "fill": True,
+        },
+        "sampling_tiers": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "max_hours": {"type": "integer", "minimum": 1},
+                    "sample_rate": {"type": "integer", "minimum": 1},
+                },
+                "required": ["max_hours", "sample_rate"],
+                "additionalProperties": False,
+            },
+            "minItems": 1,
+            "error": "typeList",
+            "fill": True,
+        },
+        "sampling_fallback_divisor": {
+            "type": "integer",
+            "minimum": 1,
+            "error": "typeInteger",
             "fill": True,
         },
     },

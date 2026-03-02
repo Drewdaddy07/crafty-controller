@@ -8,6 +8,10 @@ from app.classes.web.routes.api.auth.invalidate_tokens import (
     ApiAuthInvalidateTokensHandler,
 )
 from app.classes.web.routes.api.auth.login import ApiAuthLoginHandler
+from app.classes.web.routes.api.auth.passkey import (
+    ApiAuthPasskeyLoginOptionsHandler,
+    ApiAuthPasskeyLoginVerifyHandler,
+)
 from app.classes.web.routes.api.roles.index import ApiRolesIndexHandler
 from app.classes.web.routes.api.roles.role.index import ApiRolesRoleIndexHandler
 from app.classes.web.routes.api.roles.role.servers import ApiRolesRoleServersHandler
@@ -17,7 +21,10 @@ from app.classes.web.routes.api.servers.index import ApiServersIndexHandler
 from app.classes.web.routes.api.servers.server.action import (
     ApiServersServerActionHandler,
 )
-from app.classes.web.routes.api.servers.server.index import ApiServersServerIndexHandler
+from app.classes.web.routes.api.servers.server.index import (
+    ApiServersServerIndexHandler,
+    ApiServersServerUpdateConfig,
+)
 from app.classes.web.routes.api.servers.server.logs import ApiServersServerLogsHandler
 from app.classes.web.routes.api.servers.server.public import (
     ApiServersServerPublicHandler,
@@ -75,6 +82,11 @@ from app.classes.web.routes.api.users.user.otp import (
     APIUsersTOTPRecovery,
     APIUsersTOTPVerifyIndexHandler,
 )
+from app.classes.web.routes.api.users.user.passkey import (
+    ApiUsersPasskeyIndexHandler,
+    ApiUsersPasskeyVerifyHandler,
+    ApiUsersPasskeyHandler,
+)
 from app.classes.web.routes.api.users.user.api import ApiUsersUserKeyHandler
 from app.classes.web.routes.api.users.user.pfp import ApiUsersUserPfpHandler
 from app.classes.web.routes.api.users.user.public import ApiUsersUserPublicHandler
@@ -93,7 +105,10 @@ from app.classes.web.routes.api.crafty.stats.stats import ApiCraftyHostStatsHand
 from app.classes.web.routes.api.crafty.clogs.index import ApiCraftyLogIndexHandler
 from app.classes.web.routes.api.crafty.clogs.support import ApiCraftySupportIndexHandler
 from app.classes.web.routes.api.crafty.imports.index import ApiImportFilesIndexHandler
-from app.classes.web.routes.api.crafty.exe_cache import ApiCraftyJarCacheIndexHandler
+from app.classes.web.routes.api.crafty.exe_cache import (
+    ApiCraftyJarCacheIndexHandler,
+    ApiCraftySteamCacheIndexHandler,
+)
 from app.classes.web.routes.api.crafty.antilockout.index import ApiCraftyLockoutHandler
 
 
@@ -108,6 +123,16 @@ def api_handlers(handler_args):
         (
             r"/api/v2/auth/invalidate_tokens/?",
             ApiAuthInvalidateTokensHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/auth/passkey/login/options/?",
+            ApiAuthPasskeyLoginOptionsHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/auth/passkey/login/verify/?",
+            ApiAuthPasskeyLoginVerifyHandler,
             handler_args,
         ),
         (
@@ -151,12 +176,12 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
-            r"/api/v2/crafty/JarCache/?",
+            r"/api/v2/crafty/JarCache(?:/([0-9-]+))?",
             ApiCraftyJarCacheIndexHandler,
             handler_args,
         ),
         (
-            r"/api/v2/import/file/unzip/?",
+            r"/api/v2/import/archive/select?",
             ApiImportFilesIndexHandler,
             handler_args,
         ),
@@ -227,6 +252,36 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
+            r"/api/v2/users/([0-9]+)/passkeys/?",
+            ApiUsersPasskeyIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/(@me)/passkeys/?",
+            ApiUsersPasskeyIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/([0-9]+)/passkeys/([a-z0-9-]+)/verify/?",
+            ApiUsersPasskeyVerifyHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/(@me)/passkeys/([a-z0-9-]+)/verify/?",
+            ApiUsersPasskeyVerifyHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/([0-9]+)/passkeys/([a-z0-9-]+)/?",
+            ApiUsersPasskeyHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/users/(@me)/passkeys/([a-z0-9-]+)/?",
+            ApiUsersPasskeyHandler,
+            handler_args,
+        ),
+        (
             r"/api/v2/users/([0-9]+)/permissions/?",
             ApiUsersUserPermissionsHandler,
             handler_args,
@@ -263,8 +318,23 @@ def api_handlers(handler_args):
             handler_args,
         ),
         (
+            r"/api/v2/crafty/JarCache/?",
+            ApiCraftyJarCacheIndexHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/crafty/SteamCache/?",
+            ApiCraftySteamCacheIndexHandler,
+            handler_args,
+        ),
+        (
             r"/api/v2/servers/status/?",
             ApiServersServerStatusHandler,
+            handler_args,
+        ),
+        (
+            r"/api/v2/servers/([a-z0-9-]+)/update/config/?",
+            ApiServersServerUpdateConfig,
             handler_args,
         ),
         (

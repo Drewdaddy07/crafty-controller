@@ -20,8 +20,10 @@ from app.classes.models.server_permissions import EnumPermissionsServer
 from app.classes.models.crafty_permissions import EnumPermissionsCrafty
 from app.classes.models.management import HelpersManagement
 from app.classes.controllers.roles_controller import RolesController
-from app.classes.helpers.helpers import Helpers
+from app.classes.helpers.helpers import Helpers, MASTER_CONFIG
 from app.classes.shared.main_models import DatabaseShortcuts
+from app.classes.shared.metrics_time_helper import MetricsTimeRangeHelper
+from app.classes.shared.stats_helpers import StatsConverter
 from app.classes.web.base_handler import BaseHandler
 from app.classes.web.webhooks.webhook_factory import WebhookFactory
 
@@ -37,6 +39,7 @@ SUBPAGE_PERMS = {
     "admin_controls": EnumPermissionsServer.PLAYERS,
     "metrics": EnumPermissionsServer.LOGS,
     "webhooks": EnumPermissionsServer.CONFIG,
+    "update_center": EnumPermissionsServer.CONFIG,
 }
 
 SCHEDULE_AUTH_ERROR_URL = "/panel/error?error=Unauthorized access To Schedules"
@@ -182,6 +185,17 @@ class PanelHandler(BaseHandler):
                 return None
         return server_id
 
+    def get_earliest_metrics_date(self, server_id):
+        """Get the earliest metrics date for Air Datepicker minDate restriction"""
+        try:
+            earliest = self.controller.servers.get_server_stats_earliest(server_id)
+            if earliest is not None:
+                return earliest.created.isoformat()
+            return None
+        except Exception as e:
+            logger.warning(f"Failed to get earliest metrics date: {e}")
+            return None
+
     # Server fetching, spawned asynchronously
     # TODO: Make the related front-end elements update with AJAX
     def fetch_server_data(self, page_data):
@@ -303,6 +317,7 @@ class PanelHandler(BaseHandler):
                 "mfa"
             ),  # set value if the token has MFA set to true or not
             # for warning banner
+            "password_auth_disabled": exec_user.get("disable_password_auth", False),
             "update_available": self.helper.update_available,
             "support_perm": self.helper.get_setting("general_user_log_access")
             or exec_user["superuser"],
@@ -440,6 +455,15 @@ class PanelHandler(BaseHandler):
 
             # set user server order
             user_order = self.controller.users.get_user_by_id(exec_user["user_id"])
+            dashboard_cols_raw = user_order.get(
+                "dashboard_columns",
+                "server,actions,cpuUsage,memUsage,size,players,status",
+            )
+            if not dashboard_cols_raw or not dashboard_cols_raw.strip():
+                dashboard_cols_raw = (
+                    "server,actions,cpuUsage,memUsage,size,players,status"
+                )
+            page_data["dashboard_columns"] = dashboard_cols_raw.split(",")
             user_order = user_order["server_order"].split(",")
             page_servers = []
             server_ids = []
@@ -488,10 +512,11 @@ class PanelHandler(BaseHandler):
                 server_obj = self.controller.servers.get_server_instance_by_id(
                     server["server_data"]["server_id"]
                 )
-                alert = False
-                if server_obj.last_backup_status():
-                    alert = True
-                server["alert"] = alert
+                server["alert"] = server_obj.last_backup_failed
+                server["update"] = (
+                    server_obj.update_available
+                    and server["server_data"]["update_watcher"]
+                )  # Only add update notify if user has the watcher enabled
 
             # num players is set to zero here. If we poll all servers while
             # dashboard is loading it takes FOREVER. We leave this to the
@@ -527,7 +552,11 @@ class PanelHandler(BaseHandler):
                 server_obj = self.controller.servers.get_server_instance_by_id(
                     server_id
                 )
-                page_data["backup_failed"] = server_obj.last_backup_status()
+                page_data["backup_failed"] = server_obj.last_backup_failed
+                page_data["update"] = server_obj.update_available
+                page_data["update_next_run"] = server_obj.server_scheduler.get_job(
+                    f"{server_obj.server_id}_update_watcher"
+                ).next_run_time.strftime("%m/%d/%Y, %H:%M:%S")
             server_obj = None
 
             if not self.failed_server:
@@ -649,6 +678,18 @@ class PanelHandler(BaseHandler):
                     server_id
                 )
 
+            if subpage == "update_center":
+                page_data["server_api"] = (
+                    self.controller.big_bucket._check_bucket_alive()
+                )
+                page_data["server_types"] = self.controller.big_bucket.get_bucket_data()
+                page_data["js_server_types"] = json.dumps(
+                    self.controller.big_bucket.get_bucket_data()
+                )
+                if page_data["server_types"] is None:
+                    page_data["server_types"] = []
+                    page_data["js_server_types"] = []
+
             if subpage == "config":
                 page_data["java_versions"] = Helpers.find_java_installs()
                 server_obj: Servers = self.controller.servers.get_server_obj(server_id)
@@ -679,21 +720,156 @@ class PanelHandler(BaseHandler):
                 self.controller.servers.refresh_server_settings(server_id)
 
             if subpage == "metrics":
-                try:
-                    days = int(self.get_argument("days", "1"))
-                except ValueError as e:
-                    self.redirect(
-                        f"/panel/error?error=Type error: Argument must be an int {e}"
-                    )
-                page_data["options"] = [1, 2, 3]
-                if not days in page_data["options"]:
-                    page_data["options"].insert(0, days)
+                # Check for custom date range parameters
+                start_param = self.get_argument("start", None)
+                end_param = self.get_argument("end", None)
+
+                # Support both 'hours' and legacy 'days' parameter
+                hours_param = self.get_argument("hours", None)
+                days_param = self.get_argument("days", None)
+
+                max_retention_hours = self.helper.get_setting("history_max_age") * 24
+
+                time_range_presets = self.helper.get_setting(
+                    "time_range_presets", default_return=False
+                )
+                if not time_range_presets:
+                    time_range_presets = [
+                        {
+                            "hours": h,
+                            "label": MetricsTimeRangeHelper.format_display_label(h),
+                        }
+                        for h in MetricsTimeRangeHelper.FALLBACK_OPTIONS
+                    ]
+                page_data["time_range_presets"] = time_range_presets
+
+                sampling_tiers = self.helper.get_setting(
+                    "sampling_tiers", default_return=False
+                )
+                if not sampling_tiers:
+                    sampling_tiers = None
+                sampling_fallback_divisor = self.helper.get_setting(
+                    "sampling_fallback_divisor", default_return=False
+                )
+                if not sampling_fallback_divisor:
+                    sampling_fallback_divisor = 12
+
+                page_data["sampling_tiers"] = (
+                    sampling_tiers or MASTER_CONFIG["sampling_tiers"]
+                )
+                page_data["sampling_fallback_divisor"] = sampling_fallback_divisor
+
+                # Determine if using custom range or preset range
+                if start_param and end_param:
+                    # Custom date range mode
+                    try:
+                        # Parse ISO format datetime strings
+                        start_time = datetime.datetime.fromisoformat(start_param)
+                        end_time = datetime.datetime.fromisoformat(end_param)
+
+                        # Validation: ensure end is not before start
+                        if end_time < start_time:
+                            self.redirect(
+                                "/panel/error?error=End time must be after start time"
+                            )
+                            return
+
+                        # Same-date selection: expand to full day
+                        if end_time == start_time:
+                            start_time = start_time.replace(hour=0, minute=0, second=0)
+                            end_time = end_time.replace(hour=23, minute=59, second=59)
+
+                        # Fetch stats with custom date range
+                        history_stats = (
+                            self.controller.servers.get_history_stats_by_date_range(
+                                server_id,
+                                start_time,
+                                end_time,
+                                sampling_tiers=sampling_tiers,
+                                sampling_fallback_divisor=sampling_fallback_divisor,
+                            )
+                        )
+
+                        # Calculate hours for display purposes
+                        time_delta = end_time - start_time
+                        hours = int(time_delta.total_seconds() / 3600)
+
+                        page_data["range_mode"] = "custom"
+                        page_data["start_time"] = start_time.isoformat()
+                        page_data["end_time"] = end_time.isoformat()
+
+                    except (ValueError, TypeError) as e:
+                        self.redirect(f"/panel/error?error=Invalid date format ({e})")
+                        return
                 else:
-                    page_data["options"].insert(
-                        0, page_data["options"].pop(page_data["options"].index(days))
+                    # Preset range mode (existing logic)
+                    try:
+                        if hours_param is not None:
+                            hours = int(hours_param)
+                        elif days_param is not None:
+                            days = int(days_param)
+                            hours = days * 24
+                        else:
+                            hours = 24  # Default to 1 day
+                    except ValueError as e:
+                        self.redirect(
+                            "/panel/error?error=Type error: "
+                            f"Time argument must be an int ({e})"
+                        )
+                        return
+
+                    # Validation: clamp to retention limits
+                    hours = MetricsTimeRangeHelper.clamp_hours(
+                        hours, max_retention_hours
                     )
-                page_data["history_stats"] = self.controller.servers.get_history_stats(
-                    server_id, hours=(days * 24)
+
+                    # Fetch stats with adaptive sampling
+                    history_stats = self.controller.servers.get_history_stats_adaptive(
+                        server_id,
+                        hours=hours,
+                        sampling_tiers=sampling_tiers,
+                        sampling_fallback_divisor=sampling_fallback_divisor,
+                    )
+
+                    page_data["range_mode"] = "preset"
+
+                # Generate dropdown options with formatted labels
+                hour_options_raw = MetricsTimeRangeHelper.get_time_options(
+                    hours, presets=time_range_presets
+                )
+                page_data["hour_options"] = [
+                    {
+                        "value": h,
+                        "label": MetricsTimeRangeHelper.format_display_label(h),
+                    }
+                    for h in hour_options_raw
+                ]
+                page_data["selected_hours"] = hours
+                page_data["max_retention_hours"] = max_retention_hours
+                page_data["history_stats"] = history_stats
+                page_data["earliest_metrics_date"] = self.get_earliest_metrics_date(
+                    server_id
+                )
+
+                # Fill gaps with zero-value points so the chart
+                # spans the full requested range
+                if page_data.get("range_mode") == "custom":
+                    range_start = datetime.datetime.fromisoformat(
+                        page_data["start_time"]
+                    )
+                    range_end = datetime.datetime.fromisoformat(page_data["end_time"])
+                else:
+                    range_end = datetime.datetime.now()
+                    range_start = range_end - datetime.timedelta(hours=hours)
+                history_stats = StatsConverter.fill_gaps(
+                    history_stats,
+                    start_time=range_start,
+                    end_time=range_end,
+                )
+
+                # Prepare chart datasets using helper
+                page_data["chart_data"] = StatsConverter.prepare_chart_datasets(
+                    history_stats, server_type=page_data["server_stats"]["server_type"]
                 )
             if subpage == "webhooks":
                 page_data["webhooks"] = (
@@ -831,6 +1007,7 @@ class PanelHandler(BaseHandler):
                 page_data["config-json"] = self.helper.get_categorized_settings(
                     self.helper.get_all_settings()
                 )
+
                 page_data["availables_languages"] = []
                 page_data["all_languages"] = []
                 page_data["all_partitions"] = self.helper.get_all_mounts()
@@ -954,7 +1131,7 @@ class PanelHandler(BaseHandler):
             if server_id is None:
                 return self.redirect("/panel/error?error=Invalid Server ID")
             server_obj = self.controller.servers.get_server_instance_by_id(server_id)
-            page_data["backup_failed"] = server_obj.last_backup_status()
+            page_data["backup_failed"] = server_obj.last_backup_failed
             server_obj = None
             page_data["active_link"] = "webhooks"
             page_data["server_data"] = self.controller.servers.get_server_data_by_id(
@@ -1008,7 +1185,7 @@ class PanelHandler(BaseHandler):
             if server_id is None:
                 return self.redirect("/panel/error?error=Invalid Server ID")
             server_obj = self.controller.servers.get_server_instance_by_id(server_id)
-            page_data["backup_failed"] = server_obj.last_backup_status()
+            page_data["backup_failed"] = server_obj.last_backup_failed
             server_obj = None
             page_data["active_link"] = "webhooks"
             page_data["server_data"] = self.controller.servers.get_server_data_by_id(
@@ -1058,7 +1235,7 @@ class PanelHandler(BaseHandler):
             if server_id is None:
                 return self.redirect("/panel/error?error=Invalid Schedule ID")
             server_obj = self.controller.servers.get_server_instance_by_id(server_id)
-            page_data["backup_failed"] = server_obj.last_backup_status()
+            page_data["backup_failed"] = server_obj.last_backup_failed
             server_obj = None
             page_data["schedules"] = HelpersManagement.get_schedules_by_server(
                 server_id
@@ -1124,7 +1301,7 @@ class PanelHandler(BaseHandler):
             if not server_id:
                 return self.redirect("/panel/error?error=Invalid Schedule ID")
             server_obj = self.controller.servers.get_server_instance_by_id(server_id)
-            page_data["backup_failed"] = server_obj.last_backup_status()
+            page_data["backup_failed"] = server_obj.last_backup_failed
             server_obj = None
 
             page_data["schedules"] = HelpersManagement.get_schedules_by_server(
@@ -1235,7 +1412,7 @@ class PanelHandler(BaseHandler):
                 server_obj = self.controller.servers.get_server_instance_by_id(
                     server_id
                 )
-                page_data["backup_failed"] = server_obj.last_backup_status()
+                page_data["backup_failed"] = server_obj.last_backup_failed
             page_data["user_permissions"] = (
                 self.controller.server_perms.get_user_id_permissions_list(
                     exec_user["user_id"], server_id
@@ -1306,7 +1483,7 @@ class PanelHandler(BaseHandler):
                 server_obj = self.controller.servers.get_server_instance_by_id(
                     server_id
                 )
-                page_data["backup_failed"] = server_obj.last_backup_status()
+                page_data["backup_failed"] = server_obj.last_backup_failed
             page_data["user_permissions"] = (
                 self.controller.server_perms.get_user_id_permissions_list(
                     exec_user["user_id"], server_id
@@ -1437,6 +1614,7 @@ class PanelHandler(BaseHandler):
 
             if exec_user["email"] == "default@example.com":
                 page_data["user"]["email"] = ""
+            page_data["passkey_enabled"] = self.controller.passkey.is_enabled()
             template = "panel/panel_edit_user.html"
 
         elif page == "edit_user_apikeys":
@@ -1459,10 +1637,11 @@ class PanelHandler(BaseHandler):
                 return
             if int(user_id) != exec_user["user_id"] and not exec_user["superuser"]:
                 self.redirect(
-                    "/panel/error?error=You are not authorized to view this page."
+                    "/panel/error?error=Unauthorized access: you do not have permission to edit this user's API keys."
                 )
                 return
 
+            page_data["passkey_enabled"] = self.controller.passkey.is_enabled()
             template = "panel/panel_edit_user_apikeys.html"
 
         elif page == "edit_user_otp":
@@ -1477,6 +1656,7 @@ class PanelHandler(BaseHandler):
                 codes.append({"name": totp.name, "id": totp.id})
 
             page_data["totp"] = codes
+            page_data["passkey_enabled"] = self.controller.passkey.is_enabled()
             # self.controller.crafty_perms.list_defined_crafty_permissions()
 
             if user_id is None:
@@ -1484,11 +1664,51 @@ class PanelHandler(BaseHandler):
                 return
             if int(user_id) != exec_user["user_id"] and not exec_user["superuser"]:
                 self.redirect(
-                    "/panel/error?error=You are not authorized to view this page."
+                    "/panel/error?error=Unauthorized access: you do not have permission to edit this user's OTP settings."
                 )
                 return
 
             template = "panel/panel_edit_user_otp.html"
+
+        elif page == "edit_user_passkey":
+            user_id = self.get_argument("id", None)
+            user_obj = self.controller.users.get_user_object(user_id)
+            page_data["user"] = self.controller.users.get_user_by_id(user_id)
+            page_data["passkey_enabled"] = self.controller.passkey.is_enabled()
+
+            if not page_data["passkey_enabled"]:
+                self.redirect("/panel/error?error=Passkey authentication is disabled")
+                return
+
+            passkeys = []
+            for pk in user_obj.passkey_user:
+                passkeys.append(
+                    {
+                        "id": pk.id,
+                        "name": pk.name,
+                        "device_type": pk.device_type,
+                        "backed_up": pk.backed_up,
+                        "created_at": str(pk.created_at),
+                        "last_used_at": (
+                            str(pk.last_used_at) if pk.last_used_at else None
+                        ),
+                    }
+                )
+
+            page_data["passkeys"] = passkeys
+            page_data["disable_password_auth"] = user_obj.disable_password_auth
+            page_data["has_passkeys"] = len(passkeys) > 0
+
+            if user_id is None:
+                self.redirect("/panel/error?error=Invalid User ID")
+                return
+            if int(user_id) != exec_user["user_id"] and not exec_user["superuser"]:
+                self.redirect(
+                    "/panel/error?error=Unauthorized access: you do not have permission to edit this user's passkey settings."
+                )
+                return
+
+            template = "panel/panel_edit_user_passkey.html"
 
         elif page == "remove_user":
             # pylint: disable=no-member
@@ -1640,4 +1860,5 @@ class PanelHandler(BaseHandler):
             time=time,
             utc_offset=(time.timezone * -1 / 60 / 60),
             translate=self.translator.translate,
+            json=json,
         )

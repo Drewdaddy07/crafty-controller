@@ -139,6 +139,18 @@ class UsersController:
                 "error": "typeString",
                 "fill": True,
             },
+            "dashboard_columns": {
+                "type": "string",
+                "error": "typeString",
+                "fill": True,
+            },
+            "disable_password_auth": {
+                "type": "boolean",
+                "examples": [False],
+                "title": "Disable Password Authentication",
+                "error": "typeBool",
+                "fill": True,
+            },
         }
 
     # **********************************************************************************

@@ -45,6 +45,10 @@ class Users(BaseModel):
     pfp = CharField(default="/static/assets/images/faces-clipart/pic-3.png")
     theme = CharField(default="default")
     cleared_notifs = CharField(default="default")
+    disable_password_auth = BooleanField(default=False)
+    dashboard_columns = CharField(
+        default="server,actions,cpuUsage,memUsage,size,players,status"
+    )
 
     class Meta:
         table_name = "users"

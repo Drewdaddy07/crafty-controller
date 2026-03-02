@@ -3,6 +3,7 @@ import logging
 import shutil
 import asyncio
 import pathlib
+from pathlib import Path
 import anyio
 from PIL import Image
 from app.classes.models.server_permissions import EnumPermissionsServer
@@ -34,7 +35,11 @@ IMAGE_MIME_TYPES = [
     "image/webp",
 ]
 
-ARCHIVE_MIME_TYPES = ["application/zip"]
+ARCHIVE_MIME_TYPES = [
+    "application/zip",
+    "application/x-zip-compressed",
+    "application/octet-stream",
+]
 
 
 class ApiFilesUploadHandler(BaseApiHandler):
@@ -116,9 +121,7 @@ class ApiFilesUploadHandler(BaseApiHandler):
                     },
                 )
             # Set directory to upload import dir
-            self.upload_dir = os.path.join(
-                self.controller.project_root, "import", "upload"
-            )
+            self.upload_dir = Path(self.controller.project_root, "import", "upload")
             u_type = "server_import"
             accepted_types = ARCHIVE_MIME_TYPES
         else:
@@ -220,7 +223,7 @@ class ApiFilesUploadHandler(BaseApiHandler):
                     await file.write(chunk)
             # We'll check the file hash against the sent hash once the file is
             # written. We cannot check this buffer.
-            calculated_hash = self.file_helper.calculate_file_hash_sha256(
+            calculated_hash = self.helper.crypto_helper.calculate_file_hash_sha256(
                 os.path.join(self.upload_dir, self.filename)
             )
             logger.info(
@@ -272,7 +275,9 @@ class ApiFilesUploadHandler(BaseApiHandler):
             )
 
         # Calculate the hash of the buffer and compare it against the expected hash
-        calculated_hash = self.file_helper.calculate_buffer_hash(self.request.body)
+        calculated_hash = self.helper.crypto_helper.calculate_buffer_hash(
+            self.request.body
+        )
         if str(self.chunk_hash) != str(calculated_hash):
             logger.error(
                 f"File upload failed. Filename: {self.filename}"
