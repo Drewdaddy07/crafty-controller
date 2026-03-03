@@ -229,7 +229,8 @@ class BackupManager:
         if not self.validate_backup_location(server, backup_config):
             self.fail_backup(
                 Exception(
-                    "Recursive backup target: backup location can not be within directory that is being backed up"
+                    "Recursive backup target: backup location can not be within "
+                    "directory that is being backed up"
                 ),
                 backup_config,
                 server,

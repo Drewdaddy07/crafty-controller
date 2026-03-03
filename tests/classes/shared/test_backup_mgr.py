@@ -131,6 +131,7 @@ def test_restore_starter_invalid_backup_file(
             "somewhere/on/computer",
         ),  # backup to other location on device
         ("app/servers/mockserver/", "app/backup/backuplocation/example"),
+        # backup to other folder in crafty backup directory
     ],
 )
 def test_validate_backup_location_success(test_case: tuple[str, str]):
@@ -141,8 +142,9 @@ def test_validate_backup_location_success(test_case: tuple[str, str]):
 
     mgr = BackupManager(MagicMock(), MagicMock(), MagicMock())
 
-    output = mgr.validate_backup_location(mock_server_instance, mock_backup_config)
-    assert (True, output)
+    assert (
+        mgr.validate_backup_location(mock_server_instance, mock_backup_config) is True
+    )
 
 
 @pytest.mark.parametrize(
@@ -154,9 +156,10 @@ def test_validate_backup_location_success(test_case: tuple[str, str]):
         ),  # backing up to same server directory
         (
             "app/servers/mockserver",
-            "app/servers/mockservers/example",
+            "app/servers/mockserver/example",
         ),  # backing up to parent
-        ("app/servers/mockserver", "app/servers/mockservers/example/example"),
+        ("app/servers/mockserver", "app/servers/mockserver/example/example"),
+        # backing up to folder 2 levels in from parent
     ],
 )
 def test_validate_backup_location_failure(
@@ -165,10 +168,10 @@ def test_validate_backup_location_failure(
     """Test various invalid backup locations"""
     mock_server_instance = Mock()
     mock_server_instance.server_path, backup_path = test_case
-
     mock_backup_config = {"backup_location": backup_path}
 
     mgr = BackupManager(MagicMock(), MagicMock(), MagicMock())
 
-    output = mgr.validate_backup_location(mock_server_instance, mock_backup_config)
-    assert (False, output)
+    assert (
+        mgr.validate_backup_location(mock_server_instance, mock_backup_config) is False
+    )
