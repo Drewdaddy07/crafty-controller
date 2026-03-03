@@ -224,6 +224,7 @@ class BackupManager:
                     "notify", "backupStarted", HelperUsers.get_user_lang_by_id(user)
                 ).format(server.name),
             )
+            Return
         time.sleep(3)
         size = False
         if not self.validate_backup_location(server, backup_config):
