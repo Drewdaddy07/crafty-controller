@@ -198,17 +198,21 @@ class HelpersManagement:
 
     @staticmethod
     def get_secret_api_key():
-        settings = CraftySettings.select(CraftySettings.secret_api_key).where(
-            CraftySettings.id == 1
+        settings = (
+            CraftySettings.select(CraftySettings.secret_api_key)
+            .where(CraftySettings.id == 1)
+            .first()
         )
-        return settings[0].secret_api_key
+        return settings.secret_api_key
 
     @staticmethod
     def get_cookie_secret():
-        settings = CraftySettings.select(CraftySettings.cookie_secret).where(
-            CraftySettings.id == 1
+        settings = (
+            CraftySettings.select(CraftySettings.cookie_secret)
+            .where(CraftySettings.id == 1)
+            .first()
         )
-        return settings[0].cookie_secret
+        return settings.cookie_secret
 
     @staticmethod
     def set_cookie_secret(key):
@@ -224,7 +228,8 @@ class HelpersManagement:
         settings = CraftySettings.select(CraftySettings.login_photo).where(
             CraftySettings.id == 1
         )
-        return settings[0].login_photo
+        settings = settings.first()
+        return settings.login_photo
 
     @staticmethod
     def set_login_image(photo):
@@ -237,7 +242,8 @@ class HelpersManagement:
         settings = CraftySettings.select(CraftySettings.login_opacity).where(
             CraftySettings.id == 1
         )
-        return settings[0].login_opacity
+        settings = settings.first()
+        return settings.login_opacity
 
     @staticmethod
     def set_login_opacity(opacity):
@@ -250,7 +256,8 @@ class HelpersManagement:
         settings = CraftySettings.select(CraftySettings.master_server_dir).where(
             CraftySettings.id == 1
         )
-        return settings[0].master_server_dir
+        settings = settings.first()
+        return settings.master_server_dir
 
     @staticmethod
     def set_master_server_dir(server_dir):
