@@ -235,6 +235,7 @@ class BackupManager:
                 backup_config,
                 server,
             )
+            return (False, "error")
         # Start the backup
         if backup_config.get("backup_type", "zip_vault") == "zip_vault":
             backup_file_name = self.zip_vault(backup_config, server)
@@ -269,7 +270,6 @@ class BackupManager:
         backup_location = os.path.join(
             backup_config["backup_location"], backup_config["backup_id"]
         )
-
         # Check if the backup location even exists.
         if not backup_location:
             Console.critical("No backup path found. Canceling")
