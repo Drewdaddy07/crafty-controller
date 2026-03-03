@@ -163,7 +163,7 @@ async function uploadFile(type, file = null, path = null, file_num = 0, fileId =
 
         $(`#upload-progress-bar-${fileId}`).removeClass("progress-bar-striped");
         $(`#upload-progress-bar-${fileId}`).addClass("bg-success");
-        $(`#upload-progress-bar-${fileId}`).html('<i style="color: black;" class="fas fa-box-check"></i>');
+        $(`#upload-progress-bar-${fileId}`).html('<i style="color: black;" class="ph ph-box-check"></i>');
         removeProgressItem(fileId);
 
         if (activeUploads == 1) {

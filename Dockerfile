@@ -30,8 +30,12 @@ RUN touch /var/mail/ubuntu \
         openjdk-17-jre-headless \
         openjdk-21-jre-headless \
         openjdk-25-jre-headless \
-        lib32gcc-s1 \
         tzdata \
+    && if [ "$TARGETARCH" = "amd64" ]; then \
+         apt-get -y --no-install-recommends install lib32gcc-s1; \
+       else \
+         echo "Skipping SteamCMD 32-bit deps on $TARGETARCH (no native support)."; \
+       fi \
     && apt-get autoremove \
     && apt-get clean
 

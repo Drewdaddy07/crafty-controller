@@ -40,7 +40,6 @@ from app.classes.shared.websocket_manager import WebSocketManager
 from app.classes.steamcmd.steamcmd import SteamCMD
 from app.classes.web.webhooks.webhook_factory import WebhookFactory
 
-
 with redirect_stderr(NullWriter()):
     import psutil
     from psutil import NoSuchProcess
@@ -222,6 +221,7 @@ class ServerInstance:
         self.name = None
         self.is_crashed = False
         self.restart_count = 0
+        self._game_port_cache = None
         self.stats = stats
         self.server_object = HelperServers.get_server_obj(self.server_id)
         self.stats_helper = HelperServerStats(self.server_id)
@@ -301,8 +301,8 @@ class ServerInstance:
         self.server_id = server_id
         self.name = server_name
         self.settings = server_data_obj
-
-        self.check_server_version()  # Check update relies on information from self.settings.
+        # Check update relies on up to date information from self.settings.
+        self.check_server_version()
         # Running it after instead of during init function
 
         self.record_server_stats()
@@ -443,6 +443,9 @@ class ServerInstance:
 
     @callback
     def start_server(self, user_id, forge_install=False):
+        # Clear cached game port so it's recomputed from current config
+        self._game_port_cache = None
+
         if not user_id:
             user_lang = self.helper.get_setting("language")
         else:
@@ -593,7 +596,7 @@ class ServerInstance:
                                     logger.warning(
                                         "Path traversal detected on server {self.server_id} for env {k} value {i}, skipping"
                                     )
-                                p = str(p).replace(":", "\:")
+                                p = str(p).replace(":", "\\:")
                                 items_validated.append(p)
                             if my_env.get(key, None):
                                 if value["mode"] == "append":
@@ -611,11 +614,14 @@ class ServerInstance:
                     env_mod = True
             if env_mod:
                 logger.debug(
-                    f"Launching process for server {self.server_id} with modified environment {my_env}"
+                    "Launching process for server %s with modified environment %s",
+                    self.server_id,
+                    my_env,
                 )
             else:
                 logger.debug(
-                    f"Launching process for server {self.server_id} with un-modified environment"
+                    "Launching process for server %s with un-modified environment",
+                    self.server_id,
                 )
             try:
                 self.process = subprocess.Popen(
@@ -644,7 +650,9 @@ class ServerInstance:
 
         else:
             logger.debug(
-                f"Starting server {self.server_id} with unknown type {HelperServers.get_server_type_by_id(self.server_id)}"
+                "Starting server %s with unknown type %s",
+                self.server_id,
+                HelperServers.get_server_type_by_id(self.server_id),
             )
             try:
                 self.process = subprocess.Popen(
@@ -887,7 +895,8 @@ class ServerInstance:
                         executable_path = f"{server_command[1]}{server_command[2]}/"
                         # Let's set the proper server executable
                         server_obj.executable = os.path.join(
-                            f"{executable_path}{version_info[0][0]}-{version}-server.jar"
+                            f"{executable_path}{version_info[0][0]}-{version}"
+                            "-server.jar"
                         )
                         # Now lets set up the new run command.
                         # This is based off the run.sh/bat that
@@ -1783,6 +1792,7 @@ class ServerInstance:
                     "world_name": raw_ping_result.get("world_name"),
                     "world_size": raw_ping_result.get("world_size"),
                     "server_port": raw_ping_result.get("server_port"),
+                    "game_port": raw_ping_result.get("game_port"),
                     "int_ping_results": raw_ping_result.get("int_ping_results"),
                     "online": raw_ping_result.get("online"),
                     "max": raw_ping_result.get("max"),
@@ -1805,6 +1815,7 @@ class ServerInstance:
                     "running": raw_ping_result.get("running"),
                     "cpu": raw_ping_result.get("cpu"),
                     "mem": raw_ping_result.get("mem"),
+                    "mem_raw": raw_ping_result.get("mem_raw"),
                     "mem_percent": raw_ping_result.get("mem_percent"),
                     "world_name": raw_ping_result.get("world_name"),
                     "world_size": raw_ping_result.get("world_size"),
@@ -1842,6 +1853,59 @@ class ServerInstance:
                 return True
         return False
 
+    def _get_game_port(self, server_type, server_port, server_path, execution_command):
+        """Derive the game port from server config, cached per server lifecycle.
+
+        The monitoring/query port stored in the DB may differ from the port
+        players actually connect to. The result is cached and cleared on
+        server start/stop.
+        """
+        if self._game_port_cache is not None:
+            return self._game_port_cache
+
+        game_port = server_port
+
+        match server_type:
+            case "hytale":
+                # Try to parse --bind 0.0.0.0:<port> from the execution command
+                if execution_command:
+                    bind_match = re.search(r"--bind\s+[\d.]+:(\d+)", execution_command)
+                    if bind_match:
+                        game_port = int(bind_match.group(1))
+                    else:
+                        # Fallback: Hytale query port is game port + 3
+                        game_port = server_port - 3
+                else:
+                    game_port = server_port - 3
+
+            case "minecraft-java":
+                # Try to read server-port from server.properties
+                properties_path = os.path.join(server_path, "server.properties")
+                try:
+                    with open(properties_path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line.startswith("server-port="):
+                                game_port = int(line.split("=", 1)[1].strip())
+                                break
+                except FileNotFoundError:
+                    logger.warning(
+                        "server.properties not found at %s for server %s"
+                        " — unable to parse game port",
+                        properties_path,
+                        self.server_id,
+                    )
+                except (ValueError, OSError) as e:
+                    logger.warning(
+                        "Failed to parse game port from %s for server %s: %s",
+                        properties_path,
+                        self.server_id,
+                        e,
+                    )
+
+        self._game_port_cache = game_port
+        return game_port
+
     def get_backup_config(self, backup_id) -> dict:
         if not backup_id:
             return HelpersManagement.get_default_server_backup(self.server_id)
@@ -1863,6 +1927,12 @@ class ServerInstance:
         internal_ip = server["server_ip"]
         server_port = server["server_port"]
         server_name = server.get("server_name", f"ID#{server_id}")
+        game_port = self._get_game_port(
+            server_type,
+            server_port,
+            server.get("path", ""),
+            server.get("execution_command", ""),
+        )
 
         logger.debug(f"Pinging server '{server}' on {internal_ip}:{server_port}")
         if server_type in ("minecraft-bedrock", "raknet"):
@@ -1896,10 +1966,12 @@ class ServerInstance:
                 "running": self.check_running(),
                 "cpu": p_stats.get("cpu_usage", 0),
                 "mem": p_stats.get("memory_usage", 0),
+                "mem_raw": p_stats.get("memory_usage_raw", 0),
                 "mem_percent": p_stats.get("mem_percentage", 0),
                 "world_name": server_name,
                 "world_size": self.server_size,
                 "server_port": server_port,
+                "game_port": game_port,
                 "int_ping_results": int_data,
                 "online": ping_data.get("online", False),
                 "max": ping_data.get("max", False),
@@ -1915,10 +1987,12 @@ class ServerInstance:
                 "running": self.check_running(),
                 "cpu": p_stats.get("cpu_usage", 0),
                 "mem": p_stats.get("memory_usage", 0),
+                "mem_raw": p_stats.get("memory_usage_raw", 0),
                 "mem_percent": p_stats.get("mem_percentage", 0),
                 "world_name": server_name,
                 "world_size": self.server_size,
                 "server_port": server_port,
+                "game_port": game_port,
                 "int_ping_results": int_data,
                 "online": False,
                 "max": False,
@@ -1973,6 +2047,7 @@ class ServerInstance:
                 "world_name": None,
                 "world_size": None,
                 "server_port": None,
+                "game_port": None,
                 "int_ping_results": False,
                 "online": False,
                 "max": False,
@@ -2000,6 +2075,12 @@ class ServerInstance:
 
         internal_ip = server_dt["server_ip"]
         server_port = server_dt["server_port"]
+        game_port = self._get_game_port(
+            server_type,
+            server_port,
+            server_dt.get("path", ""),
+            server_dt.get("execution_command", ""),
+        )
 
         logger.debug(f"Pinging server '{self.name}' on {internal_ip}:{server_port}")
         if HelperServers.get_server_type_by_id(server_id) in (
@@ -2029,10 +2110,12 @@ class ServerInstance:
                 "running": self.check_running(),
                 "cpu": p_stats.get("cpu_usage", 0),
                 "mem": p_stats.get("memory_usage", 0),
+                "mem_raw": p_stats.get("memory_usage_raw", 0),
                 "mem_percent": p_stats.get("mem_percentage", 0),
                 "world_name": server_name,
                 "world_size": self.server_size,
                 "server_port": server_port,
+                "game_port": game_port,
                 "int_ping_results": int_data,
                 "online": ping_data.get("online", False),
                 "max": ping_data.get("max", False),
@@ -2048,10 +2131,12 @@ class ServerInstance:
                 "running": self.check_running(),
                 "cpu": p_stats.get("cpu_usage", 0),
                 "mem": p_stats.get("memory_usage", 0),
+                "mem_raw": p_stats.get("memory_usage_raw", 0),
                 "mem_percent": p_stats.get("mem_percentage", 0),
                 "world_name": server_name,
                 "world_size": self.server_size,
                 "server_port": server_port,
+                "game_port": game_port,
                 "int_ping_results": int_data,
                 "online": False,
                 "max": False,

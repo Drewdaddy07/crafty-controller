@@ -77,6 +77,22 @@ MASTER_CONFIG = {
     "enable_passkey_auth": False,
     "passkey_rp_name": "Crafty Controller",
     "experimental": False,
+    "silent_notif_fields": ["dashboard_columns", "server_order"],
+    "time_range_presets": [
+        {"hours": 1, "label": "Last Hour"},
+        {"hours": 3, "label": "Last 3 Hours"},
+        {"hours": 6, "label": "Last 6 Hours"},
+        {"hours": 12, "label": "Last 12 Hours"},
+        {"hours": 24, "label": "Last 24 Hours"},
+        {"hours": 48, "label": "Last 2 Days"},
+        {"hours": 168, "label": "Last 7 Days"},
+    ],
+    "sampling_tiers": [
+        {"max_hours": 6, "sample_rate": 1},
+        {"max_hours": 24, "sample_rate": 2},
+        {"max_hours": 72, "sample_rate": 6},
+    ],
+    "sampling_fallback_divisor": 12,
 }
 
 CONFIG_CATEGORIES = {
@@ -109,11 +125,15 @@ CONFIG_CATEGORIES = {
         "virtual_terminal_lines",
         "keywords",
         "general_user_log_access",
+        "silent_notif_fields",
     ],
     "monitoring": [
         "monitored_mounts",
         "dir_size_poll_freq_minutes",
         "stats_update_frequency_seconds",
+        "time_range_presets",
+        "sampling_tiers",
+        "sampling_fallback_divisor",
     ],
     "miscellaneous": ["delete_default_json"],
 }
@@ -1351,8 +1371,8 @@ class Helpers:
                     + """\n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">"""  # pylint: disable=line-too-long
                     + """<input type="radio" name="root_path" value="{dpath}">"""
                     + """<span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">"""  # pylint: disable=line-too-long
-                    + """  <i class="text-info far fa-folder"></i>"""
-                    + """  <i class="text-info far fa-folder-open"></i>"""
+                    + """  <i class="text-info ph ph-folder"></i>"""
+                    + """  <i class="text-info ph ph-folder-open"></i>"""
                     + """  {filename}"""
                     + """  </span>"""
                     + """</input></div><li>"""
@@ -1376,8 +1396,8 @@ class Helpers:
                     + """\n<div id="{dpath}" data-path="{dpath}" data-name="{filename}" class="tree-caret tree-ctx-item tree-folder">"""  # pylint: disable=line-too-long
                     + """<input type="radio" name="root_path" value="{dpath}">"""
                     + """<span id="{dpath}span" class="files-tree-title" data-path="{dpath}" data-name="{filename}" onclick="getDirView(event)">"""  # pylint: disable=line-too-long
-                    + """  <i class="text-info far fa-folder"></i>"""
-                    + """  <i class="text-info far fa-folder-open"></i>"""
+                    + """  <i class="text-info ph ph-folder"></i>"""
+                    + """  <i class="text-info ph ph-folder-open"></i>"""
                     + """  {filename}"""
                     + """  </span>"""
                     + """</input></div><li>"""
