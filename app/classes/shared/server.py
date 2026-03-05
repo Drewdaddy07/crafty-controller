@@ -21,9 +21,6 @@ from tzlocal import get_localzone
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.base import JobLookupError, ConflictingIdError
 
-# OpenMetrics/Prometheus Imports
-from prometheus_client import CollectorRegistry, Gauge, Info
-
 from app.classes.remote_stats.stats import Stats
 from app.classes.remote_stats.nitrado_ping import NitradoPing
 from app.classes.remote_stats.ping import ping, ping_raknet
@@ -226,7 +223,6 @@ class ServerInstance:
         self.server_object = HelperServers.get_server_obj(self.server_id)
         self.stats_helper = HelperServerStats(self.server_id)
         self.last_backup_failed = False
-        self.server_registry = CollectorRegistry()
 
         try:
             with open(
@@ -255,7 +251,6 @@ class ServerInstance:
             self.tz = ZoneInfo("Europe/London")
         self.server_scheduler = BackgroundScheduler(timezone=str(self.tz))
         self.dir_scheduler = BackgroundScheduler(timezone=str(self.tz))
-        self.init_registries()
         self.server_scheduler.start()
         self.dir_scheduler.start()
         self.start_dir_calc_task()
@@ -1741,10 +1736,7 @@ class ServerInstance:
             self.update_available = False
 
     def start_dir_calc_task(self):
-        server_dt = HelperServers.get_server_data_by_id(self.server_id)
-        self.server_size = Helpers.human_readable_file_size(
-            self.file_helper.get_dir_size(server_dt["path"])
-        )
+        self.calc_dir_size()
         self.dir_scheduler.add_job(
             self.calc_dir_size,
             "interval",
@@ -1760,9 +1752,7 @@ class ServerInstance:
 
     def calc_dir_size(self):
         server_dt = HelperServers.get_server_data_by_id(self.server_id)
-        self.server_size = Helpers.human_readable_file_size(
-            self.file_helper.get_dir_size(server_dt["path"])
-        )
+        self.server_size = self.file_helper.get_dir_size(server_dt["path"])
 
     # **********************************************************************************
     #                               Minecraft Servers Statistics
@@ -1969,7 +1959,7 @@ class ServerInstance:
                 "mem_raw": p_stats.get("memory_usage_raw", 0),
                 "mem_percent": p_stats.get("mem_percentage", 0),
                 "world_name": server_name,
-                "world_size": self.server_size,
+                "world_size": Helpers.human_readable_file_size(self.server_size),
                 "server_port": server_port,
                 "game_port": game_port,
                 "int_ping_results": int_data,
@@ -1990,7 +1980,7 @@ class ServerInstance:
                 "mem_raw": p_stats.get("memory_usage_raw", 0),
                 "mem_percent": p_stats.get("mem_percentage", 0),
                 "world_name": server_name,
-                "world_size": self.server_size,
+                "world_size": Helpers.human_readable_file_size(self.server_size),
                 "server_port": server_port,
                 "game_port": game_port,
                 "int_ping_results": int_data,
@@ -2113,7 +2103,7 @@ class ServerInstance:
                 "mem_raw": p_stats.get("memory_usage_raw", 0),
                 "mem_percent": p_stats.get("mem_percentage", 0),
                 "world_name": server_name,
-                "world_size": self.server_size,
+                "world_size": Helpers.human_readable_file_size(self.server_size),
                 "server_port": server_port,
                 "game_port": game_port,
                 "int_ping_results": int_data,
@@ -2134,7 +2124,7 @@ class ServerInstance:
                 "mem_raw": p_stats.get("memory_usage_raw", 0),
                 "mem_percent": p_stats.get("mem_percentage", 0),
                 "world_name": server_name,
-                "world_size": self.server_size,
+                "world_size": Helpers.human_readable_file_size(self.server_size),
                 "server_port": server_port,
                 "game_port": game_port,
                 "int_ping_results": int_data,
@@ -2151,49 +2141,12 @@ class ServerInstance:
         server_stats = self.get_servers_stats()
         self.stats_helper.insert_server_stats(server_stats)
 
-        self.cpu_usage.labels(f"{self.server_id}").set(server_stats.get("cpu"))
-        self.mem_usage_percent.labels(f"{self.server_id}").set(
-            server_stats.get("mem_percent")
-        )
-        self.minecraft_version.labels(f"{self.server_id}").info(
-            {"version": f"{server_stats.get('version')}"}
-        )
-        self.online_players.labels(f"{self.server_id}").set(server_stats.get("online"))
-
         # delete old data
         max_age = self.helper.get_setting("history_max_age")
         now = datetime.datetime.now()
         minimum_to_exist = now - datetime.timedelta(days=max_age)
 
         self.stats_helper.remove_old_stats(minimum_to_exist)
-
-    def init_registries(self):
-        # REGISTRY Entries for Server Stats functions
-        self.cpu_usage = Gauge(
-            name="CPU_Usage",
-            documentation="The CPU usage of the server",
-            labelnames=["server_id"],
-            registry=self.server_registry,
-        )
-        self.mem_usage_percent = Gauge(
-            name="Mem_Usage",
-            documentation="The Memory usage of the server",
-            labelnames=["server_id"],
-            registry=self.server_registry,
-        )
-        self.minecraft_version = Info(
-            name="Minecraft_Version",
-            documentation="The version of the minecraft of this server",
-            labelnames=["server_id"],
-            registry=self.server_registry,
-        )
-
-        self.online_players = Gauge(
-            name="online_players",
-            documentation="The number of players online for a server",
-            labelnames=["server_id"],
-            registry=self.server_registry,
-        )
 
     def get_server_history(self):
         history = self.stats_helper.get_history_stats(self.server_id, 1)
