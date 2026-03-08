@@ -167,50 +167,7 @@ class ServerHandler(BaseHandler):
                 page_data["js_server_types"] = []
             template = "server/wizard.html"
 
-        if page == "bedrock_step1":
-            if not superuser and not self.controller.crafty_perms.can_create_server(
-                exec_user["user_id"]
-            ):
-                self.redirect(SERVER_CREATOR_ERROR)
-                return
-            page_data["server_api"] = True
-            template = "server/bedrock_wizard.html"
 
-        if page == "steam_cmd_step1":
-            if not superuser and not self.controller.crafty_perms.can_create_server(
-                exec_user["user_id"]
-            ):
-                self.redirect(
-                    "/panel/error?error=Unauthorized access: "
-                    "not a server creator or server limit reached"
-                )
-                return
-            if not self.helper.get_setting("experimental"):
-                error_string = self.helper.translation.translate(
-                    "error", "experimental", exec_user["lang"]
-                )
-                return self.redirect(f"/panel/error?error={error_string}")
-            try:
-                steamcmd = SteamCMD(
-                    self.controller.big_bucket.get_bucket_data(
-                        self.helper.big_bucket_steamapps_cache
-                    )
-                )
-                page_data["os"] = OS
-                page_data["servers"] = steamcmd.games
-            except KeyError:
-                page_data["server_api"] = False
-                page_data["servers"] = []
-            template = "server/steam_wizard.html"
-
-        if page == "hytale_step1":
-            if not superuser and not self.controller.crafty_perms.can_create_server(
-                exec_user["user_id"]
-            ):
-                self.redirect(SERVER_CREATOR_ERROR)
-                return
-            page_data["server_api"] = True
-            template = "server/hytale_wizard.html"
 
         self.render(
             template,

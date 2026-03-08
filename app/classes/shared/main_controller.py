@@ -800,104 +800,6 @@ class Controller:
         )
         return new_id
 
-    # **********************************************************************************
-    #                                   BEDROCK IMPORTS
-    # **********************************************************************************
-
-    def import_bedrock_server(
-        self,
-        server_name: str,
-        server_path: str,
-        server_exe: str,
-        port: int,
-        user_id: int,
-    ):
-        server_id = Helpers.create_uuid()
-        new_server_dir = os.path.join(self.helper.servers_dir, server_id)
-        backup_path = os.path.join(self.helper.backup_path, server_id)
-        if Helpers.is_os_windows():
-            new_server_dir = Helpers.wtol_path(new_server_dir)
-            backup_path = Helpers.wtol_path(backup_path)
-            new_server_dir.replace(" ", "^ ")
-            backup_path.replace(" ", "^ ")
-
-        Helpers.ensure_dir_exists(new_server_dir)
-        Helpers.ensure_dir_exists(backup_path)
-        server_path = Helpers.get_os_understandable_path(server_path)
-
-        full_jar_path = os.path.join(new_server_dir, server_exe)
-
-        if Helpers.is_os_windows():
-            server_command = f'"{full_jar_path}"'
-        else:
-            server_command = f"./{server_exe}"
-        logger.debug("command: " + server_command)
-        server_log_file = ""
-        server_stop = "stop"
-
-        new_id = self.register_server(
-            server_name,
-            server_id,
-            new_server_dir,
-            server_command,
-            server_exe,
-            server_log_file,
-            server_stop,
-            port,
-            user_id,
-            server_type="minecraft-bedrock",
-        )
-        ServersController.set_import(new_id)
-        self.import_helper.import_bedrock_server(
-            server_path, new_server_dir, port, full_jar_path, new_id
-        )
-        return new_id
-
-    def create_bedrock_server(self, server_name, user_id):
-        server_id = Helpers.create_uuid()
-        new_server_dir = os.path.join(self.helper.servers_dir, server_id)
-        backup_path = os.path.join(self.helper.backup_path, server_id)
-        server_exe = "bedrock_server"
-        if Helpers.is_os_windows():
-            # if this is windows we will override the linux bedrock server name.
-            server_exe = "bedrock_server.exe"
-            new_server_dir = Helpers.wtol_path(new_server_dir)
-            backup_path = Helpers.wtol_path(backup_path)
-            new_server_dir.replace(" ", "^ ")
-            backup_path.replace(" ", "^ ")
-
-        Helpers.ensure_dir_exists(new_server_dir)
-        Helpers.ensure_dir_exists(backup_path)
-
-        full_jar_path = os.path.join(new_server_dir, server_exe)
-
-        if Helpers.is_os_windows():
-            server_command = f'"{full_jar_path}"'
-        else:
-            server_command = f"./{server_exe}"
-        logger.debug("command: " + server_command)
-        server_log_file = ""
-        server_stop = "stop"
-
-        new_id = self.register_server(
-            server_name,
-            server_id,
-            new_server_dir,
-            server_command,
-            server_exe,
-            server_log_file,
-            server_stop,
-            "19132",
-            user_id,
-            server_type="minecraft-bedrock",
-        )
-        ServersController.set_import(new_id)
-        self.import_helper.download_bedrock_server(new_server_dir, new_id)
-        return new_id
-
-    # **********************************************************************************
-    #                                   BEDROCK IMPORTS END
-    # **********************************************************************************
 
     def rename_backup_dir(self, old_server_id, new_server_id, new_uuid):
         server_obj = self.servers.get_server_obj(new_server_id)
@@ -964,6 +866,26 @@ class Controller:
             except Exception as e:
                 logger.error(f"Unable to create required server files due to :{e}")
                 return False
+
+            #Creates the JSON object for the server to reference for its type, name, and uuid
+
+            json_path = os.path.join(server_dir, "server-info.json")
+
+            if not Helpers.check_file_exists(json_path):
+                try:
+
+                    server_data = {
+                        "server_uuid": server_uuid,
+                        "server_name": name,
+                        "server_type": server_type
+                    }
+
+                    with open(json_path, "w", encoding="utf-8") as json_file:
+                        json.dump(server_data, json_file, indent=4)
+
+                except Exception as e:
+                    logger.error(f"Unable to create server-info.json due to: {e}")
+                    return False
 
         # let's re-init all servers
         self.servers.init_all_servers()
