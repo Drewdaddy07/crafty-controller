@@ -513,7 +513,7 @@ class ServerInstance:
         # If this is a forge installer we're running we can bypass the eula checks.
         if forge_install is True:
             e_flag = True
-        if not e_flag and self.settings["type"] == "minecraft-java":
+        if not e_flag and HelperServers.get_server_monitoring_type_by_id(self.server_id) == "minecraft-java":
             if user_id:
                 WebSocketManager().broadcast_user(
                     user_id, "send_eula_bootbox", {"id": self.server_id}
@@ -535,7 +535,7 @@ class ServerInstance:
 
         if (
             not Helpers.is_os_windows()
-            and HelperServers.get_server_type_by_id(self.server_id)
+            and HelperServers.get_server_monitoring_type_by_id(self.server_id)
             == "minecraft-bedrock"
         ):
             logger.info(
@@ -576,7 +576,7 @@ class ServerInstance:
         #               STEAM SERVERS
         # ***********************************************
         # ***********************************************
-        elif HelperServers.get_server_type_by_id(self.server_id) == "steam_cmd":
+        elif HelperServers.get_server_monitoring_type_by_id(self.server_id) == "steam_cmd":
             my_env = os.environ
             env_mod = False
             if Helpers.check_file_exists(Path(self.server_path, "env.json")):
@@ -652,7 +652,7 @@ class ServerInstance:
             logger.debug(
                 "Starting server %s with unknown type %s",
                 self.server_id,
-                HelperServers.get_server_type_by_id(self.server_id),
+                HelperServers.get_server_monitoring_type_by_id(self.server_id),
             )
             try:
                 self.process = subprocess.Popen(
@@ -1581,7 +1581,7 @@ class ServerInstance:
                 )
             self.stats_helper.set_update(False)
             return
-        server_type = HelperServers.get_server_type_by_id(self.server_id)
+        server_type = HelperServers.get_server_monitoring_type_by_id(self.server_id)
         # lets download the files
         if server_type == "minecraft-java":
             jar_dir = os.path.dirname(current_executable)
@@ -1590,11 +1590,11 @@ class ServerInstance:
             downloaded = FileHelpers.ssl_get_file(
                 self.settings["executable_update_url"], jar_dir, jar_file_name
             )
-        elif self.server_object.type == "hytale":
+        elif getattr(self.server_object, "monitoring_type", self.server_object.type) == "hytale":
             self.import_helper.download_install_hytale(self.server_path, self.server_id)
             downloaded = True
         # SteamCMD #####################
-        elif HelperServers.get_server_type_by_id(self.server_id) == "steam_cmd":
+        elif HelperServers.get_server_monitoring_type_by_id(self.server_id) == "steam_cmd":
             try:
                 # Set our storage locations
                 steamcmd_path = os.path.join(self.settings["path"], "steamcmd_files")
@@ -1912,7 +1912,7 @@ class ServerInstance:
         return HelpersManagement.get_backup_config(backup_id)
 
     def get_servers_stats(self):
-        server_type = HelperServers.get_server_type_by_id(self.server_id)
+        server_type = HelperServers.get_server_monitoring_type_by_id(self.server_id)
         server_stats = {}
 
         server_id = self.server_id
@@ -2006,7 +2006,7 @@ class ServerInstance:
 
     def get_server_players(self):
         server = HelperServers.get_server_data_by_id(self.server_id)
-        server_type = HelperServers.get_server_type_by_id(self.server_id)
+        server_type = HelperServers.get_server_monitoring_type_by_id(self.server_id)
         logger.debug(f"Getting players for server {server['server_name']}")
 
         internal_ip = server["server_ip"]
@@ -2030,7 +2030,7 @@ class ServerInstance:
         return []
 
     def get_raw_server_stats(self, server_id):
-        server_type = HelperServers.get_server_type_by_id(server_id)
+        server_type = HelperServers.get_server_monitoring_type_by_id(server_id)
         int_data = False
         ping_data = {}
 
@@ -2083,7 +2083,7 @@ class ServerInstance:
         )
 
         logger.debug(f"Pinging server '{self.name}' on {internal_ip}:{server_port}")
-        if HelperServers.get_server_type_by_id(server_id) in (
+        if HelperServers.get_server_monitoring_type_by_id(server_id) in (
             "minecraft-bedrock",
             "raknet",
         ):

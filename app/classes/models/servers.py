@@ -37,7 +37,8 @@ class Servers(BaseModel):
     server_ip = CharField(default="127.0.0.1")
     server_port = IntegerField(default=25565)
     logs_delete_after = IntegerField(default=0)
-    type = CharField(default="minecraft-java")
+    type = CharField(default="lobby")
+    monitoring_type = CharField(default="minecraft-java")
     show_status = BooleanField(default=1)
     created_by = IntegerField(default=-100)
     # created_by = ForeignKeyField(Users, backref="creator_server", null=True)
@@ -72,6 +73,7 @@ class HelperServers:
         server_stop: str,
         server_type: str,
         created_by: int,
+        monitoring_type: str = "minecraft-java",
         server_port: int = 25565,
         server_host: str = "127.0.0.1",
         app_id: int = None,
@@ -112,6 +114,7 @@ class HelperServers:
             server_ip=server_host,
             stop_command=server_stop,
             type=server_type,
+            monitoring_type=monitoring_type,
             created_by=created_by,
             app_id=app_id,
         ).server_id
@@ -124,10 +127,29 @@ class HelperServers:
     def get_total_owned_servers(user_id):
         return Servers.select().where(Servers.created_by == user_id).count()
 
+
+    @staticmethod
+    def map_type_to_monitoring_type(server_type: str) -> str:
+        mapping = {
+            "minecraft-java": "minecraft-java",
+            "minecraft-bedrock": "minecraft-bedrock",
+            "hytale": "hytale",
+            "steam_cmd": "steam_cmd",
+        }
+        return mapping.get(server_type, "minecraft-java")
+
     @staticmethod
     def get_server_type_by_id(server_id):
         server_type = Servers.select().where(Servers.server_id == server_id).get()
         return server_type.type
+
+    @staticmethod
+    def get_server_monitoring_type_by_id(server_id):
+        server = Servers.select().where(Servers.server_id == server_id).get()
+        monitoring_type = getattr(server, "monitoring_type", None)
+        if monitoring_type:
+            return monitoring_type
+        return HelperServers.map_type_to_monitoring_type(server.type)
 
     @staticmethod
     def update_server(server_obj):

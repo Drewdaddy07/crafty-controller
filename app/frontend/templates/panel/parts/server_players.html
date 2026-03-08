@@ -31,7 +31,7 @@
                                     type="button" class="btn btn-danger">Ban</button></div>
                             <div class="col"><button onclick="send_command_to_server(`kick {{ player['name'] }}`)"
                                     type="button" class="btn btn-outline-danger">Kick</button></div>
-                            {% if data['server_stats']['server_type'] == "hytale" %}
+                            {% if data['server_stats']['monitoring_type'] == "hytale" %}
                             <div class="col"><button onclick="send_command_to_server(`op add {{ player['name'] }}`)"
                                     type="button" class="btn btn-warning">OP</button></div>
                             <div class="col"><button onclick="send_command_to_server(`op remove {{ player['name'] }}`)"

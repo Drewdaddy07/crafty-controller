@@ -14,14 +14,6 @@
       <a class="nav-link active" href="/server/step1" role="tab" aria-selected="false">
         <i class="ph-fill ph-file-text"></i>Minecraft-Java</a>
     </li>
-    <li class="nav-item term-nav-item">
-      <a class="nav-link" href="/server/bedrock_step1" role="tab" aria-selected="false">
-        <i class="ph-fill ph-file-text"></i>Minecraft-Bedrock</a>
-    </li>
-    <li class="nav-item term-nav-item">
-      <a class="nav-link" href="/server/hytale_step1" role="tab" aria-selected="false">
-        <i class="ph-fill ph-file-text"></i>Hytale</a>
-    </li>
     {% if data.get("experimental") %}
     <li class="nav-item term-nav-item">
       <a class="nav-link" href="/server/steam_cmd_step1" role="tab" aria-selected="false">
@@ -55,6 +47,17 @@
                       <label for="server_name">{{ translate('serverWizard', 'serverName', data['lang']) }}</label>
                       <input type="text" class="form-control" id="server_name" name="name"
                         placeholder="{{ translate('serverWizard', 'myNewServer', data['lang']) }}" required>
+                    </div>
+                  </div>
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label for="server_role">Server Role / Mode</label>
+                      <select class="form-control" id="server_role" name="type" required>
+                        <option value="" selected disabled>Select one</option>
+                        <option value="lobby">Lobby</option>
+                        <option value="proxy">Proxy</option>
+                        <option value="br">BR</option>
+                      </select>
                     </div>
                   </div>
 
@@ -141,6 +144,15 @@
               <label for="server_name">{{ translate('serverWizard', 'serverName', data['lang']) }}</label>
               <input type="text" class="form-control" id="server_name" name="name" value=""
                 placeholder="{{ translate('serverWizard', 'myNewServer', data['lang']) }}" required>
+            </div>
+            <div class="form-group">
+              <label for="import_server_role">Server Role / Mode</label>
+              <select class="form-control" id="import_server_role" name="type" required>
+                <option value="" selected disabled>Select one</option>
+                <option value="lobby">Lobby</option>
+                <option value="proxy">Proxy</option>
+                <option value="br">BR</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="server">{{ translate('serverWizard', 'serverUpload', data['lang']) }}</label>
@@ -333,6 +345,7 @@
       console.log(formDataObject);
       let send_data = {
         "name": formDataObject.name,
+        "type": formDataObject.type,
         "roles": calcRoles(),
         "monitoring_type": "minecraft_java",
         "minecraft_java_monitoring_data": {
@@ -379,6 +392,7 @@
       }
       let send_data = {
         "name": formDataObject.name,
+        "type": formDataObject.type,
         "roles": calcRoles(),
         "monitoring_type": "minecraft_java",
         "minecraft_java_monitoring_data": {

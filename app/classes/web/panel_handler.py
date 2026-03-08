@@ -644,6 +644,9 @@ class PanelHandler(BaseHandler):
                 page_data["server_stats"]["server_type"] = (
                     self.controller.servers.get_server_type_by_id(server_id)
                 )
+            page_data["server_stats"]["monitoring_type"] = (
+                self.controller.servers.get_server_monitoring_type_by_id(server_id)
+            )
 
             if not subpage:
                 for spage, perm in SUBPAGE_PERMS.items():
@@ -1158,6 +1161,9 @@ class PanelHandler(BaseHandler):
             page_data["server_stats"]["server_type"] = (
                 self.controller.servers.get_server_type_by_id(server_id)
             )
+            page_data["server_stats"]["monitoring_type"] = (
+                self.controller.servers.get_server_monitoring_type_by_id(server_id)
+            )
             page_data["new_webhook"] = True
             page_data["webhook"] = {}
             page_data["webhook"]["webhook_type"] = "Custom"
@@ -1211,6 +1217,9 @@ class PanelHandler(BaseHandler):
             )
             page_data["server_stats"]["server_type"] = (
                 self.controller.servers.get_server_type_by_id(server_id)
+            )
+            page_data["server_stats"]["monitoring_type"] = (
+                self.controller.servers.get_server_monitoring_type_by_id(server_id)
             )
             page_data["new_webhook"] = False
             page_data["webhook"] = self.controller.management.get_webhook_by_id(
@@ -1267,6 +1276,9 @@ class PanelHandler(BaseHandler):
             )
             page_data["server_stats"]["server_type"] = (
                 self.controller.servers.get_server_type_by_id(server_id)
+            )
+            page_data["server_stats"]["monitoring_type"] = (
+                self.controller.servers.get_server_monitoring_type_by_id(server_id)
             )
             page_data["new_schedule"] = True
             page_data["schedule"] = {}
@@ -1339,6 +1351,9 @@ class PanelHandler(BaseHandler):
             )
             page_data["server_stats"]["server_type"] = (
                 self.controller.servers.get_server_type_by_id(server_id)
+            )
+            page_data["server_stats"]["monitoring_type"] = (
+                self.controller.servers.get_server_monitoring_type_by_id(server_id)
             )
             page_data["new_schedule"] = False
             page_data["schedule"] = {}
@@ -1448,6 +1463,9 @@ class PanelHandler(BaseHandler):
             page_data["server_stats"]["server_type"] = (
                 self.controller.servers.get_server_type_by_id(server_id)
             )
+            page_data["server_stats"]["monitoring_type"] = (
+                self.controller.servers.get_server_monitoring_type_by_id(server_id)
+            )
             page_data["exclusions"] = (
                 self.controller.management.get_excluded_backup_dirs(backup_id)
             )
@@ -1515,6 +1533,9 @@ class PanelHandler(BaseHandler):
             )
             page_data["server_stats"]["server_type"] = (
                 self.controller.servers.get_server_type_by_id(server_id)
+            )
+            page_data["server_stats"]["monitoring_type"] = (
+                self.controller.servers.get_server_monitoring_type_by_id(server_id)
             )
             page_data["exclusions"] = []
 

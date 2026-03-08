@@ -66,6 +66,7 @@ class ServersController(metaclass=Singleton):
         server_stop: str,
         server_type: str,
         created_by: int,
+        monitoring_type: str = "minecraft-java",
         server_port: int = 25565,
         server_host: str = "127.0.0.1",
         app_id: int = None,
@@ -101,6 +102,7 @@ class ServersController(metaclass=Singleton):
             server_stop,
             server_type,
             created_by,
+            monitoring_type,
             server_port,
             server_host,
             app_id,
@@ -534,6 +536,10 @@ class ServersController(metaclass=Singleton):
     @staticmethod
     def get_server_type_by_id(server_id):
         return HelperServers.get_server_type_by_id(server_id)
+
+    @staticmethod
+    def get_server_monitoring_type_by_id(server_id):
+        return HelperServers.get_server_monitoring_type_by_id(server_id)
 
     @staticmethod
     def server_id_authorized(server_id_a, user_id):

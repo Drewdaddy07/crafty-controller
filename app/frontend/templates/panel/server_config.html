@@ -66,7 +66,7 @@
                   </div>
 
                 </div>
-                {% if data['server_stats']['server_type'] != "minecraft-bedrock" %}
+                {% if data['server_stats']['monitoring_type'] != "minecraft-bedrock" %}
                 <div class="form-group">
                   <label for="log_path">{{ translate('serverConfig', 'serverLogLocation', data['lang']) }} <small
                       class="text-muted ml-1"> - {{ translate('serverConfig', 'serverLogLocationDesc', data['lang'])
@@ -77,7 +77,7 @@
                 </div>
                 {% end %}
                 {% end %}
-                {% if data['server_stats']['server_type'] == "minecraft-java" or data['server_stats']['server_type'] == "hytale" %}
+                {% if data['server_stats']['monitoring_type'] == "minecraft-java" or data['server_stats']['monitoring_type'] == "hytale" %}
                 <div class="form-group">
                   <label for="java_selection">{{ translate('serverConfig', 'javaVersion', data['lang']) }}
                     <small class="text-muted ml-1">{{ translate('serverConfig', 'javaVersionDesc', data['lang'])

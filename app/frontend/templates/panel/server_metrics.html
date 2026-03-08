@@ -639,7 +639,7 @@
       }
       lastPushedTs = ts;
 
-      {% if 'minecraft-java' in data['server_stats']['server_type'] or 'hytale' in data['server_stats']['server_type'] %}
+      {% if 'minecraft-java' in data['server_stats']['monitoring_type'] or 'hytale' in data['server_stats']['monitoring_type'] %}
       playerData.push({x: ts, y: data.online !== undefined ? data.online : null});
       {% end %}
       cpuData.push({x: ts, y: data.cpu});

@@ -38,7 +38,7 @@
                     </span>
                     <div class="row">
                         <div class="col-md-9 col-sm-12">
-                            {% if data['server_stats']['server_type'] == "minecraft-java" %}
+                            {% if data['server_stats']['monitoring_type'] == "minecraft-java" %}
                             <div id="selectHead" class="form-adapability">
                                 <select id="ba" class="form-control">
                                     <option value="0">Basic</option>
@@ -50,7 +50,7 @@
                             {% end %}
                             <br>
                             <div id="basic">
-                                {% if data['server_stats']['server_type'] == "minecraft-java" %}
+                                {% if data['server_stats']['monitoring_type'] == "minecraft-java" %}
                                 <div
                                     class="card-header header-sm d-flex justify-content-between align-items-center form-adapability">
                                     <span id="update-url" class="text-secondary" style="font-size: .9vw;">{{
@@ -62,7 +62,7 @@
                             </div>
                             <div id="advanced" class="d-none form-adapability">
                                 {% if data['super_user'] %}
-                                {% if data['server_stats']['server_type'] == "minecraft-java" %}
+                                {% if data['server_stats']['monitoring_type'] == "minecraft-java" %}
                                 <div class="form-group">
                                     <label for="executable_update_url">{{ translate('serverConfig', 'exeUpdateURL',
                                         data['lang']) }}
@@ -100,7 +100,7 @@
                                     <h4 class="card-title text-center">Update Information
                                     </h4>
                                     <blockquote class="blockquote">
-                                        {% if data['server_stats']['server_type'] == "minecraft-java" %}
+                                        {% if data['server_stats']['monitoring_type'] == "minecraft-java" %}
                                         <div class="form-group">
                                             <div class="custom-control custom-switch">
                                                 <input type="checkbox" class="custom-control-input" id="update_watcher"

@@ -595,7 +595,8 @@ class Controller:
             server_port=monitoring_port,
             created_by=user_id,
             server_host=monitoring_host,
-            server_type=monitoring_type,
+            server_type=data.get("type", "lobby"),
+            monitoring_type=monitoring_type,
         )
         self.management.add_default_backup_config(
             new_server_id,
@@ -792,7 +793,8 @@ class Controller:
             server_stop,
             port,
             user_id,
-            server_type="minecraft-java",
+            server_type="lobby",
+            monitoring_type="minecraft-java",
         )
         ServersController.set_import(new_id)
         self.import_helper.import_java_zip_server(
@@ -845,7 +847,8 @@ class Controller:
             server_stop,
             port,
             user_id,
-            server_type="minecraft-bedrock",
+            server_type="lobby",
+            monitoring_type="minecraft-bedrock",
         )
         ServersController.set_import(new_id)
         self.import_helper.import_bedrock_server(
@@ -889,7 +892,8 @@ class Controller:
             server_stop,
             "19132",
             user_id,
-            server_type="minecraft-bedrock",
+            server_type="lobby",
+            monitoring_type="minecraft-bedrock",
         )
         ServersController.set_import(new_id)
         self.import_helper.download_bedrock_server(new_server_dir, new_id)
@@ -927,6 +931,7 @@ class Controller:
         server_port: int,
         created_by: int,
         server_type: str,
+        monitoring_type: str = "minecraft-java",
         server_host: str = "127.0.0.1",
         app_id: int = None,
     ):
@@ -941,6 +946,7 @@ class Controller:
             server_stop,
             server_type,
             created_by,
+            monitoring_type,
             server_port,
             server_host,
             app_id,

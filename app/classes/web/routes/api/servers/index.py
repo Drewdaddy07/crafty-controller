@@ -24,6 +24,7 @@ new_server_schema = {
     "type": "object",
     "required": [
         "name",
+        "type",
         "monitoring_type",
         "create_type",
     ],
@@ -35,6 +36,14 @@ new_server_schema = {
             "minLength": 2,
             "pattern": r"^[^/\\\\#]*$",
             "error": "serverCreateName",
+        },
+        "type": {
+            "title": "Server role",
+            "type": "string",
+            "default": "lobby",
+            "enum": ["lobby", "proxy", "br"],
+            "error": "enumErr",
+            "fill": True,
         },
         "roles": {
             "title": "Roles to add",

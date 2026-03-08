@@ -18,14 +18,6 @@
       <a class="nav-link" href="/server/step1" role="tab" aria-selected="false">
         <i class="ph-fill ph-file-text"></i>Minecraft-Java</a>
     </li>
-    <li class="nav-item term-nav-item">
-      <a class="nav-link active" href="/server/bedrock_step1" role="tab" aria-selected="false">
-        <i class="ph-fill ph-file-text"></i>Minecraft-Bedrock</a>
-    </li>
-    <li class="nav-item term-nav-item">
-      <a class="nav-link" href="/server/hytale_step1" role="tab" aria-selected="false">
-        <i class="ph-fill ph-file-text"></i>Hytale</a>
-    </li>
     {% if data.get("experimental") %}
     <li class="nav-item term-nav-item">
       <a class="nav-link" href="/server/steam_cmd_step1" role="tab" aria-selected="false">
@@ -324,6 +316,7 @@
       console.log(formDataObject);
       let send_data = {
         "name": formDataObject.name,
+        "type": "lobby",
         "roles": calcRoles(),
         "monitoring_type": "minecraft_bedrock",
         "minecraft_bedrock_monitoring_data": {
@@ -366,6 +359,7 @@
       }
       let send_data = {
         "name": formDataObject.name,
+        "type": "lobby",
         "roles": calcRoles(),
         "monitoring_type": "minecraft_bedrock",
         "minecraft_bedrock_monitoring_data": {
