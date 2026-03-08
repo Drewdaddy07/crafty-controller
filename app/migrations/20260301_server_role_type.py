@@ -2,18 +2,23 @@
 import peewee
 
 
-LEGACY_MONITORING_TYPES = (
-    "minecraft-java",
-    "minecraft-bedrock",
-    "hytale",
-    "steam_cmd",
-)
+def _column_exists(database, table_name, column_name):
+    cursor = database.execute_sql(f"PRAGMA table_info({table_name})")
+    rows = cursor.fetchall()
+    return any(row[1] == column_name for row in rows)
 
 
 def migrate(migrator, database, **kwargs):
-    migrator.add_columns(
-        "servers", monitoring_type=peewee.CharField(default="minecraft-java")
-    )
+    # NOTE:
+    # MigrationManager runs migrator.run() *after* this function returns,
+    # so any SQL in this function cannot rely on queued add_columns calls.
+    # Add the column immediately with raw SQL, then perform backfill updates.
+    if not _column_exists(database, "servers", "monitoring_type"):
+        database.execute_sql(
+            "ALTER TABLE servers ADD COLUMN monitoring_type VARCHAR(255) "
+            "DEFAULT 'minecraft-java'"
+        )
+
     database.execute_sql(
         """
         UPDATE servers
@@ -22,7 +27,7 @@ def migrate(migrator, database, **kwargs):
             WHEN type IN ('minecraft-bedrock', 'minecraft_bedrock') THEN 'minecraft-bedrock'
             WHEN type = 'hytale' THEN 'hytale'
             WHEN type = 'steam_cmd' THEN 'steam_cmd'
-            ELSE 'minecraft-java'
+            ELSE COALESCE(monitoring_type, 'minecraft-java')
         END
         """
     )
@@ -36,4 +41,5 @@ def migrate(migrator, database, **kwargs):
 
 
 def rollback(migrator, database, **kwargs):
-    migrator.drop_columns("servers", ["monitoring_type"])
+    if _column_exists(database, "servers", "monitoring_type"):
+        migrator.drop_columns("servers", ["monitoring_type"])
