@@ -877,7 +877,9 @@ class Controller:
                     server_data = {
                         "server_uuid": server_uuid,
                         "server_name": name,
-                        "server_type": server_type
+                        "server_type": server_type,
+                        "server_address": server_host,
+                        "server_port": server_port
                     }
 
                     with open(json_path, "w", encoding="utf-8") as json_file:
